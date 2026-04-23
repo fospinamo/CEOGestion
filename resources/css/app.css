@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Segoe UI', 'Helvetica Neue', sans-serif;
+    
+    /* Paleta CEO Soluciones */
+    --color-primary: #1A4B8E;
+    --color-primary-dark: #0D2A54;
+    --color-primary-light: #2E7DFF;
+    --color-neutral: #F4F7FA;
+    
+    --color-blue-50: #F0F6FF;
+    --color-blue-100: #E0EEFF;
+    --color-blue-200: #C1DDFF;
+    --color-blue-300: #A2CCFF;
+    --color-blue-400: #2E7DFF;
+    --color-blue-500: #1A4B8E;
+    --color-blue-600: #1540A3;
+    --color-blue-700: #0D2A54;
+    --color-blue-800: #08193A;
+    --color-blue-900: #050E20;
+}
