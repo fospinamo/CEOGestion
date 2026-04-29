@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UsuarioController;
 
 // =======================================
 // RUTAS PÚBLICAS
@@ -116,6 +117,9 @@ Route::middleware(['auth'])->group(function () {
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
     });
+
+    // Recurso de Usuarios (CRUD)
+    Route::resource('usuarios', UsuarioController::class);
 });
 
 // =======================================
