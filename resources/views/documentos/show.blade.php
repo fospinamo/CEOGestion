@@ -54,7 +54,7 @@
                 <p class="text-sm text-gray-600 mt-2">Cliente: {{ $documento->entidad->cliente?->razon_social ?? 'N/A' }}</p>
             @elseif($documento->entidad_type === 'App\\Models\\Servicio')
                 <p class="text-sm text-gray-600">Servicio</p>
-                <a href="{{ route('servicios.show', $documento->entidad) }}" class="text-lg font-semibold text-blue-600 hover:underline">
+                <a href="{{ route('incidencias.servicios.show', $documento->entidad) }}" class="text-lg font-semibold text-blue-600 hover:underline">
                     Servicio #{{ $documento->entidad->id }}
                 </a>
                 <p class="text-sm text-gray-600 mt-2">Equipo: {{ $documento->entidad->equipo->codigo_interno }}</p>

@@ -90,7 +90,7 @@ class DocumentoAdjuntoController extends Controller
 
         $returnUrl = $validated['entidad_type'] === 'App\Models\Contrato'
             ? route('contratos.show', $validated['entidad_id'])
-            : route('servicios.show', $validated['entidad_id']);
+            : route('incidencias.servicios.show', $validated['entidad_id']);
 
         return redirect($returnUrl)
             ->with('success', 'Documento cargado exitosamente');
@@ -137,7 +137,7 @@ class DocumentoAdjuntoController extends Controller
 
         $returnUrl = $entidad_type === 'App\Models\Contrato'
             ? route('contratos.show', $entidad_id)
-            : route('servicios.show', $entidad_id);
+            : route('incidencias.servicios.show', $entidad_id);
 
         return redirect($returnUrl)
             ->with('success', 'Documento eliminado exitosamente');

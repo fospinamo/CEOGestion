@@ -41,7 +41,7 @@
                                     {{ $documento->entidad->numero_contrato }}
                                 </a>
                             @elseif($documento->entidad_type === 'App\\Models\\Servicio')
-                                <a href="{{ route('servicios.show', $documento->entidad) }}" class="text-blue-600 hover:underline">
+                                <a href="{{ route('incidencias.servicios.show', $documento->entidad) }}" class="text-blue-600 hover:underline">
                                     Servicio #{{ $documento->entidad->id }}
                                 </a>
                             @else

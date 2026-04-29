@@ -14,7 +14,7 @@
                 <h2 class="text-2xl font-bold mb-2">👨‍🔧 Mis Servicios Asignados</h2>
                 <p class="text-green-100">Accede rápidamente a tus servicios pendientes de atender</p>
             </div>
-            <a href="{{ route('servicios.technician-panel') }}" 
+            <a href="{{ route('incidencias.servicios.technician-panel') }}" 
                 class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-green-50 transition transform hover:scale-105">
                 Ir a Mi Panel →
             </a>
@@ -78,10 +78,10 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Gestión Rápida</h3>
             <div class="space-y-2">
-                <a href="{{ route('empresas.create') }}" class="block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2">
+                <a href="{{ route('parametros.empresas.create') }}" class="block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2">
                     <i class="fas fa-plus"></i> Nueva Empresa
                 </a>
-                <a href="{{ route('sedes.create') }}" class="block px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center gap-2">
+                <a href="{{ route('parametros.sedes.create') }}" class="block px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center gap-2">
                     <i class="fas fa-plus"></i> Nueva Sede
                 </a>
                 <a href="{{ route('usuarios.create') }}" class="block px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition flex items-center gap-2">
@@ -93,11 +93,11 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Accesos Directos</h3>
             <div class="space-y-2">
-                <a href="{{ route('empresas.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
+                <a href="{{ route('parametros.empresas.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
                     <span>Ver Empresas</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="{{ route('sedes.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
+                <a href="{{ route('parametros.sedes.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
                     <span>Ver Sedes</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>

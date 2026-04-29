@@ -74,7 +74,7 @@
                                 <p class="font-semibold text-gray-900">{{ $tipo->nombre }}</p>
                                 <p class="text-sm text-gray-500">{{ $tipo->descripcion ?? 'Sin descripción' }}</p>
                             </div>
-                            <a href="{{ route('tipos-equipos.show', $tipo) }}" class="text-blue-600 hover:text-blue-900">
+                            <a href="{{ route('parametros.tipos-equipos.show', $tipo) }}" class="text-blue-600 hover:text-blue-900">
                                 <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>

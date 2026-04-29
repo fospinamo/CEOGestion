@@ -108,7 +108,7 @@
                 @if($contrato->servicios->count() > 0)
                     <div class="space-y-2">
                         @foreach($contrato->servicios->take(10) as $servicio)
-                            <a href="{{ route('servicios.show', $servicio) }}" class="block p-3 hover:bg-gray-100 rounded-lg transition border">
+                            <a href="{{ route('incidencias.servicios.show', $servicio) }}" class="block p-3 hover:bg-gray-100 rounded-lg transition border">
                                 <p class="font-semibold text-blue-600">{{ $servicio->descripcion_problema }}</p>
                                 <p class="text-xs text-gray-600">{{ $servicio->estado }}</p>
                             </a>
