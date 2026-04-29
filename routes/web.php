@@ -12,6 +12,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\TipoEquipoController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DocumentoAdjuntoController;
 use App\Http\Controllers\AuthController;
 
@@ -19,9 +20,12 @@ use App\Http\Controllers\AuthController;
 // RUTAS PÚBLICAS
 // =======================================
 
-// Home
+// Home - Redirige a dashboard si está autenticado, sino a login
 Route::get('/', function () {
-    return view('home');
+    if (auth()->check()) {
+        return view('home');
+    }
+    return redirect()->route('login');
 })->name('home');
 
 // =======================================
@@ -98,12 +102,26 @@ Route::middleware(['auth'])->group(function () {
 
     // Equipos TI
     Route::resource('equipos', EquipoController::class);
+    Route::get('/equipos/exportar/excel', [EquipoController::class, 'exportarExcel'])->name('equipos.exportar.excel');
+    Route::get('/equipos/exportar/pdf', [EquipoController::class, 'exportarPDF'])->name('equipos.exportar.pdf');
 
     // Servicios/Atenciones TI
     Route::resource('servicios', ServicioController::class);
 
+    // Panel del técnico
+    Route::get('/servicios-panel/tecnico', [ServicioController::class, 'technicianPanel'])
+        ->name('servicios.technician-panel');
+
+    // Panel de admin para servicios asignados
+    Route::get('/servicios-panel/admin', [ServicioController::class, 'adminAssignedPanel'])
+        ->name('servicios.admin-panel')
+        ->middleware('auth');
+
     // Catálogo de Tipos de Equipos
     Route::resource('tipos-equipos', TipoEquipoController::class);
+
+    // Categorías de Equipos (Parametrizable)
+    Route::resource('categorias', CategoriaController::class);
 
     // Documentos Adjuntos (polimórficos)
     Route::resource('documentos', DocumentoAdjuntoController::class);
@@ -139,15 +157,66 @@ Route::middleware(['auth'])->group(function () {
             ->get(['id', 'nombre']);
     });
 
+    // ========== API PARA SEDES DINÁMICAS ==========
+    Route::get('/api/sedes-por-empresa', function () {
+        $empresa_id = request()->query('empresa_id');
+        
+        if (!$empresa_id) {
+            return [];
+        }
+        
+        return \App\Models\Sede::where('empresa_id', $empresa_id)
+            ->where('estado', 'ACTIVA')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    });
+
+    Route::get('/api/sedes-por-cliente', function () {
+        $cliente_id = request()->query('cliente_id');
+        
+        if (!$cliente_id) {
+            return [];
+        }
+        
+        return \App\Models\Sede::where('cliente_id', $cliente_id)
+            ->where('estado', 'ACTIVA')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+    });
+
     // ========== RUTAS AJAX PARA SERVICIOS ==========
     Route::get('/servicios/equipos/{cliente_id}', [ServicioController::class, 'getEquiposByCliente'])
         ->name('servicios.equipos');
+    Route::get('/servicios/equipos-area/{area_id}', [ServicioController::class, 'getEquiposByArea'])
+        ->name('servicios.equipos-area');
     Route::get('/servicios/contrato-activo/{cliente_id}', [ServicioController::class, 'getContratoActivo'])
         ->name('servicios.contrato');
     Route::post('/servicios/{id}/asignar-tecnico', [ServicioController::class, 'asignarTecnico'])
         ->name('servicios.asignar-tecnico');
     Route::post('/servicios/{id}/cambiar-estado', [ServicioController::class, 'cambiarEstado'])
         ->name('servicios.cambiar-estado');
+    
+    // ========== RUTAS PARA ATENDER SERVICIOS CON FIRMA ==========
+    Route::get('/servicios/{servicio}/atender', [ServicioController::class, 'attend'])
+        ->name('servicios.attend');
+    Route::post('/servicios/{servicio}/atender', [ServicioController::class, 'storeAttendance'])
+        ->name('servicios.storeAttendance');
+
+    // ========== RUTAS PARA ASIGNAR TÉCNICO ==========
+    Route::get('/servicios/{servicio}/asignar', [ServicioController::class, 'assign'])
+        ->name('servicios.assign');
+    Route::post('/servicios/{servicio}/asignar', [ServicioController::class, 'storeAssignment'])
+        ->name('servicios.store-assignment');
+
+    // ========== RUTAS PARA INFORME TÉCNICO ==========
+    Route::get('/servicios/{servicio}/informe-tecnico', [ServicioController::class, 'reportTechnician'])
+        ->name('servicios.report-technician');
+    Route::post('/servicios/{servicio}/informe-tecnico', [ServicioController::class, 'storeReport'])
+        ->name('servicios.store-report');
+    Route::get('/servicios/{servicio}/informe-pdf/descargar', [ServicioController::class, 'downloadInformePDF'])
+        ->name('servicios.download-informe-pdf');
+    Route::get('/servicios/{servicio}/informe-pdf/ver', [ServicioController::class, 'viewInformePDF'])
+        ->name('servicios.view-informe-pdf');
 });
 
 // =======================================

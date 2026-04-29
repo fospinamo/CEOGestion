@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Categoria;
 use App\Models\TipoEquipo;
 use Illuminate\Database\Seeder;
 
@@ -9,6 +10,7 @@ use Illuminate\Database\Seeder;
  * Seeder para tipos de equipos
  * 
  * Popula la tabla tipos_equipos con los tipos estándar.
+ * Ahora vinculado a categorías parametrizables.
  */
 class TipoEquipoSeeder extends Seeder
 {
@@ -111,12 +113,30 @@ class TipoEquipoSeeder extends Seeder
         ];
 
         foreach ($tipos as $tipo) {
+            // Obtener el categoria_id desde la tabla de categorías
+            $categoriaNombre = $tipo['categoria'];
+            $categoria = Categoria::where('nombre', $categoriaNombre)->first();
+
+            // Preparar datos del tipo
+            $dataTipo = [
+                'nombre' => $tipo['nombre'],
+                'descripcion' => $tipo['descripcion'],
+                'icono' => $tipo['icono'],
+                'categoria' => $tipo['categoria'], // Legacy field
+            ];
+
+            // Agregar categoria_id si existe
+            if ($categoria) {
+                $dataTipo['categoria_id'] = $categoria->id;
+            }
+
             TipoEquipo::firstOrCreate(
                 ['nombre' => $tipo['nombre']],
-                $tipo
+                $dataTipo
             );
         }
 
         $this->command->info('✓ Tipos de equipos creados exitosamente');
     }
 }
+

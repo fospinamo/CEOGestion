@@ -122,7 +122,7 @@ class User extends Authenticatable
      */
     public function servicios(): HasMany
     {
-        return $this->hasMany(Servicio::class, 'tecnico_asignado_id');
+        return $this->hasMany(Servicio::class, 'tecnico_id');
     }
 
     /**

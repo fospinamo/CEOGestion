@@ -25,6 +25,13 @@
             </div>
         </div>
 
+        @if($equipo->descripcion)
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Descripción</h3>
+                <p class="text-gray-700 whitespace-pre-wrap">{{ $equipo->descripcion }}</p>
+            </div>
+        @endif
+
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Especificaciones Técnicas</h3>
             @if($equipo->especificaciones_tecnicas)

@@ -11,35 +11,63 @@
             @csrf
             @method('PUT')
 
-            <!-- Row 1: Empresa y Nombre -->
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Empresa <span class="text-red-600">*</span>
-                    </label>
-                    <select name="empresa_id" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('empresa_id') border-red-500 @enderror">
-                        @foreach($empresas as $empresa)
-                            <option value="{{ $empresa->id }}" {{ old('empresa_id', $sede->empresa_id) == $empresa->id ? 'selected' : '' }}>
-                                {{ $empresa->nombre }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('empresa_id')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+            <!-- Row 1: Propietario (Empresa o Cliente) -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-blue-700 font-semibold mb-4">
+                    <i class="fas fa-info-circle"></i> Propietario: empresa O cliente (pero no ambos)
+                </p>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Empresa <span class="text-red-600">*</span>
+                        </label>
+                        <select name="empresa_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('empresa_id') border-red-500 @enderror">
+                            <option value="">Selecciona una empresa (deja vacío si es sede de cliente)</option>
+                            @foreach($empresas as $empresa)
+                                <option value="{{ $empresa->id }}" {{ old('empresa_id', $sede->empresa_id) == $empresa->id ? 'selected' : '' }}>
+                                    {{ $empresa->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('empresa_id')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Nombre de la Sede <span class="text-red-600">*</span>
-                    </label>
-                    <input type="text" name="nombre" value="{{ old('nombre', $sede->nombre) }}" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nombre') border-red-500 @enderror">
-                    @error('nombre')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Cliente <span class="text-red-600">*</span>
+                        </label>
+                        <select name="cliente_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('cliente_id') border-red-500 @enderror">
+                            <option value="">Selecciona un cliente (deja vacío si es sede de empresa)</option>
+                            @foreach($clientes as $cliente)
+                                <option value="{{ $cliente->id }}" {{ old('cliente_id', $sede->cliente_id) == $cliente->id ? 'selected' : '' }}>
+                                    {{ $cliente->razon_social }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('cliente_id')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
+                @error('propietario')
+                    <p class="text-red-600 text-sm mt-3 font-semibold"><i class="fas fa-exclamation-circle"></i> {{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Row 2: Nombre -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Nombre de la Sede <span class="text-red-600">*</span>
+                </label>
+                <input type="text" name="nombre" value="{{ old('nombre', $sede->nombre) }}" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nombre') border-red-500 @enderror">
+                @error('nombre')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Row 2: Código -->

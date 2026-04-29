@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $ip_asignada IP asignada
  * @property string|null $mac_address MAC address
  * @property string|null $usuario_asignado Usuario final
+ * @property string|null $descripcion Descripción detallada
  * @property string|null $observaciones Notas
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon $created_at
@@ -41,6 +42,8 @@ class Equipo extends Model
      * Atributos asignables en masa
      */
     protected $fillable = [
+        'cliente_id',
+        'sede_id',
         'area_id',
         'tipo_equipo_id',
         'codigo_interno',
@@ -56,6 +59,7 @@ class Equipo extends Model
         'ip_asignada',
         'mac_address',
         'usuario_asignado',
+        'descripcion',
         'observaciones',
     ];
 
@@ -77,6 +81,22 @@ class Equipo extends Model
      * Relaciones
      * ============================================
      */
+
+    /**
+     * Cliente propietario del equipo
+     */
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
+    }
+
+    /**
+     * Sede donde se ubica el equipo
+     */
+    public function sede()
+    {
+        return $this->belongsTo(Sede::class);
+    }
 
     /**
      * Área a la que pertenece

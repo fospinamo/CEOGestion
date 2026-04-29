@@ -6,6 +6,22 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Panel rápido del técnico -->
+    @if(auth()->check() && auth()->user()->tipo_rol === 'tecnico')
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-8 text-white">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">👨‍🔧 Mis Servicios Asignados</h2>
+                <p class="text-green-100">Accede rápidamente a tus servicios pendientes de atender</p>
+            </div>
+            <a href="{{ route('servicios.technician-panel') }}" 
+                class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-green-50 transition transform hover:scale-105">
+                Ir a Mi Panel →
+            </a>
+        </div>
+    </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-4 gap-6">
         <div class="bg-white rounded-lg shadow p-6">

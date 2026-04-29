@@ -2,7 +2,7 @@
 
 @section('title', 'Sedes')
 @section('page-title', 'Gestión de Sedes')
-@section('page-description', 'Administra todas las sedes de las empresas')
+@section('page-description', 'Administra todas las sedes de la empresa y clientes')
 
 @section('content')
 <div class="space-y-6">
@@ -23,7 +23,8 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Nombre</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Código</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Empresa</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Propietario</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Tipo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Municipio</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
                     <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
@@ -36,7 +37,20 @@
                             <div class="font-semibold text-gray-900">{{ $sede->nombre }}</div>
                         </td>
                         <td class="px-6 py-4 text-gray-700">{{ $sede->codigo }}</td>
-                        <td class="px-6 py-4 text-gray-700">{{ $sede->empresa->nombre }}</td>
+                        <td class="px-6 py-4 text-gray-700">
+                            @if($sede->esDeEmpresa())
+                                <span class="font-semibold text-blue-600">{{ $sede->empresa->nombre }}</span>
+                            @else
+                                <span class="font-semibold text-green-600">{{ $sede->cliente->razon_social }}</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-gray-700">
+                            @if($sede->esDeEmpresa())
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">Empresa</span>
+                            @else
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-semibold">Cliente</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-gray-700">{{ $sede->municipio->nombre }}</td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $sede->estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

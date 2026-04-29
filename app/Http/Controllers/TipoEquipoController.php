@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Categoria;
 use App\Models\TipoEquipo;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -11,7 +12,7 @@ use Illuminate\Http\RedirectResponse;
  * TipoEquipoController
  * 
  * Gestiona el catálogo de tipos de equipos disponibles en el sistema.
- * Permite categorizar y clasificar equipos por tipo.
+ * Permite categorizar y clasificar equipos por tipo usando categorías parametrizables.
  */
 class TipoEquipoController extends Controller
 {
@@ -20,8 +21,9 @@ class TipoEquipoController extends Controller
      */
     public function index(): View
     {
-        $tipos = TipoEquipo::withCount('equipos')
-            ->orderBy('categoria')
+        $tipos = TipoEquipo::with('categoriaObj')
+            ->withCount('equipos')
+            ->orderBy('nombre')
             ->get();
 
         return view('tipos-equipos.index', compact('tipos'));
@@ -32,8 +34,9 @@ class TipoEquipoController extends Controller
      */
     public function create(): View
     {
+        $categorias = Categoria::activas()->orderBy('nombre')->get();
         $tipoEquipo = null;
-        return view('tipos-equipos.create', compact('tipoEquipo'));
+        return view('tipos-equipos.create', compact('tipoEquipo', 'categorias'));
     }
 
     /**
@@ -44,8 +47,10 @@ class TipoEquipoController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|unique:tipos_equipos,nombre',
             'descripcion' => 'nullable|string|max:500',
-            'categoria' => 'required|in:HARDWARE,SOFTWARE,RED,PERIFERICO,OTRO',
+            'categoria_id' => 'required|exists:categorias,id',
             'icono' => 'nullable|string|max:50',
+        ], [
+            'categoria_id.exists' => 'La categoría seleccionada no existe',
         ]);
 
         TipoEquipo::create($validated);
@@ -59,7 +64,7 @@ class TipoEquipoController extends Controller
      */
     public function show(TipoEquipo $tipoEquipo): View
     {
-        $tipoEquipo->load('equipos');
+        $tipoEquipo->load('categoriaObj', 'equipos');
 
         return view('tipos-equipos.show', compact('tipoEquipo'));
     }
@@ -69,7 +74,8 @@ class TipoEquipoController extends Controller
      */
     public function edit(TipoEquipo $tipoEquipo): View
     {
-        return view('tipos-equipos.edit', compact('tipoEquipo'));
+        $categorias = Categoria::activas()->orderBy('nombre')->get();
+        return view('tipos-equipos.edit', compact('tipoEquipo', 'categorias'));
     }
 
     /**
@@ -80,8 +86,10 @@ class TipoEquipoController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|unique:tipos_equipos,nombre,' . $tipoEquipo->id,
             'descripcion' => 'nullable|string|max:500',
-            'categoria' => 'required|in:HARDWARE,SOFTWARE,RED,PERIFERICO,OTRO',
+            'categoria_id' => 'required|exists:categorias,id',
             'icono' => 'nullable|string|max:50',
+        ], [
+            'categoria_id.exists' => 'La categoría seleccionada no existe',
         ]);
 
         $tipoEquipo->update($validated);
@@ -106,3 +114,4 @@ class TipoEquipoController extends Controller
             ->with('success', 'Tipo de equipo eliminado exitosamente');
     }
 }
+

@@ -17,14 +17,47 @@ use Illuminate\Http\RedirectResponse;
 class AreaController extends Controller
 {
     /**
-     * Listar todas las áreas con paginación
+     * Listar todas las áreas con filtro por empresa o cliente
+     * 
+     * Filtros disponibles:
+     * - empresa_id: Mostrar áreas de sedes de una empresa
+     * - cliente_id: Mostrar áreas de sedes de un cliente
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $areas = Area::with(['sede.cliente.empresa', 'equipos'])
+        // Obtener parámetros de filtro
+        $empresaId = $request->query('empresa_id');
+        $clienteId = $request->query('cliente_id');
+
+        // Construir query con filtros
+        $query = Area::with(['sede.cliente.empresa', 'equipos']);
+
+        if ($empresaId) {
+            // Filtrar por sedes de empresa
+            $query->whereHas('sede', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId)
+                  ->whereNull('cliente_id');
+            });
+        } elseif ($clienteId) {
+            // Filtrar por sedes de cliente
+            $query->whereHas('sede', function ($q) use ($clienteId) {
+                $q->where('cliente_id', $clienteId)
+                  ->whereNull('empresa_id');
+            });
+        }
+
+        $areas = $query->orderBy('nombre')->get();
+
+        // Obtener empresas y clientes para los filtros
+        $empresas = \App\Models\Empresa::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        
+        $clientes = \App\Models\Cliente::where('estado', true)
+            ->orderBy('razon_social')
             ->get();
 
-        return view('areas.index', compact('areas'));
+        return view('areas.index', compact('areas', 'empresas', 'clientes', 'empresaId', 'clienteId'));
     }
 
     /**
@@ -38,7 +71,15 @@ class AreaController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('areas.create', compact('area', 'sedes'));
+        $empresas = \App\Models\Empresa::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        
+        $clientes = \App\Models\Cliente::where('estado', true)
+            ->orderBy('razon_social')
+            ->get();
+
+        return view('areas.create', compact('area', 'sedes', 'empresas', 'clientes'));
     }
 
     /**
@@ -86,7 +127,15 @@ class AreaController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('areas.edit', compact('area', 'sedes'));
+        $empresas = \App\Models\Empresa::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        
+        $clientes = \App\Models\Cliente::where('estado', true)
+            ->orderBy('razon_social')
+            ->get();
+
+        return view('areas.edit', compact('area', 'sedes', 'empresas', 'clientes'));
     }
 
     /**

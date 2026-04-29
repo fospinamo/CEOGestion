@@ -185,12 +185,13 @@
                     "language": {
                         "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                     },
-                    "responsive": true,
                     "columnDefs": [
                         { "orderable": false, "targets": 7 }
                     ],
                     "order": [[5, "desc"]],
-                    "pageLength": 10
+                    "pageLength": 10,
+                    "autoWidth": false,
+                    "fixedHeader": false
                 });
             });
 

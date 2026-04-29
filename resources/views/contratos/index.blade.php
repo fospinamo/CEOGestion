@@ -38,8 +38,8 @@
                             <p class="font-semibold text-gray-900">{{ $contrato->numero_contrato }}</p>
                         </td>
                         <td class="px-6 py-3">
-                            <p class="text-sm text-gray-900">{{ $contrato->cliente->razon_social }}</p>
-                            <p class="text-xs text-gray-500">{{ $contrato->cliente->empresa->nombre }}</p>
+                            <p class="text-sm text-gray-900">{{ $contrato->cliente?->razon_social ?? 'N/A' }}</p>
+                            <p class="text-xs text-gray-500">{{ $contrato->cliente?->empresa?->nombre ?? 'N/A' }}</p>
                         </td>
                         <td class="px-6 py-3">
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">

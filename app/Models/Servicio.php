@@ -47,14 +47,22 @@ class Servicio extends Model
         'equipo_id',
         'contrato_id',
         'tipo_servicio',
+        'tipo_servicio_informe',
         'prioridad',
         'fecha_solicitud',
         'fecha_atencion',
+        'hora_inicio_atencion',
+        'hora_fin_atencion',
         'fecha_cierre',
         'solicitado_por',
         'contacto_solicitante',
         'descripcion_problema',
+        'descripcion_solicitud',
+        'observaciones',
+        'observaciones_informe',
         'diagnostico',
+        'diagnostico_validacion',
+        'pendientes',
         'solucion_aplicada',
         'repuestos_utilizados',
         'horas_trabajadas',
@@ -74,6 +82,20 @@ class Servicio extends Model
         'fecha_inicio_atencion',
         'fecha_resolucion',
         'fecha_cierre_real',
+        // Nuevos campos para atención
+        'persona_receptora_nombre',
+        'persona_receptora_apellido',
+        'persona_receptora_documento',
+        'firma_persona_receptora',
+        'descripcion_atencion',
+        'equipos_adicionales_atendidos',
+        'fecha_firma',
+        // Nuevos campos para técnico y facturación
+        'tecnico_id',
+        'estado_servicio_id',
+        'puede_facturarse',
+        'es_soporte_contrato',
+        'imagenes_servicio',
     ];
 
     /**
@@ -81,7 +103,7 @@ class Servicio extends Model
      */
     protected $casts = [
         'fecha_solicitud' => 'datetime',
-        'fecha_atencion' => 'datetime',
+        'fecha_atencion' => 'date',
         'fecha_cierre' => 'datetime',
         'sla_fecha_limite_respuesta' => 'datetime',
         'sla_fecha_limite_solucion' => 'datetime',
@@ -89,11 +111,16 @@ class Servicio extends Model
         'fecha_inicio_atencion' => 'datetime',
         'fecha_resolucion' => 'datetime',
         'fecha_cierre_real' => 'datetime',
+        'fecha_firma' => 'datetime',
         'repuestos_utilizados' => 'array',
+        'equipos_adicionales_atendidos' => 'array',
+        'imagenes_servicio' => 'array',
         'horas_trabajadas' => 'float',
         'calificacion_cliente' => 'integer',
         'alerta_enviada_respuesta' => 'boolean',
         'alerta_enviada_solucion' => 'boolean',
+        'puede_facturarse' => 'boolean',
+        'es_soporte_contrato' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -121,11 +148,27 @@ class Servicio extends Model
     }
 
     /**
-     * Técnico asignado
+     * Técnico asignado (relación antigua)
      */
     public function tecnico()
     {
         return $this->belongsTo(User::class, 'tecnico_asignado_id');
+    }
+
+    /**
+     * Técnico responsable (nueva relación)
+     */
+    public function tecnicoResponsable()
+    {
+        return $this->belongsTo(User::class, 'tecnico_id');
+    }
+
+    /**
+     * Estado del servicio
+     */
+    public function estadoServicio()
+    {
+        return $this->belongsTo(EstadoServicio::class, 'estado_servicio_id');
     }
 
     /**
@@ -139,7 +182,7 @@ class Servicio extends Model
     /**
      * Documentos adjuntos (polimórficos)
      */
-    public function documentos()
+    public function documentosAdjuntos()
     {
         return $this->morphMany(DocumentoAdjunto::class, 'entidad');
     }
@@ -333,5 +376,34 @@ class Servicio extends Model
             'sin_atender' => self::sinAtender()->count(),
             'promedio_calificacion' => self::promedioCalificacion(),
         ];
+    }
+
+    /**
+     * Obtener equipos adicionales disponibles en la misma área
+     * Exclusión: El equipo principal del servicio
+     */
+    public function equiposAdicionalesDisponibles()
+    {
+        if (!$this->equipo || !$this->equipo->area_id) {
+            return collect([]);
+        }
+
+        return Equipo::where('area_id', $this->equipo->area_id)
+            ->where('id', '!=', $this->equipo_id)
+            ->where('estado_operativo', 'OPERATIVO')
+            ->orderBy('codigo_interno')
+            ->get();
+    }
+
+    /**
+     * Obtener equipos adicionales que fueron atendidos
+     */
+    public function getEquiposAtendidosRelacion()
+    {
+        if (!$this->equipos_adicionales_atendidos || empty($this->equipos_adicionales_atendidos)) {
+            return collect([]);
+        }
+
+        return Equipo::whereIn('id', $this->equipos_adicionales_atendidos)->get();
     }
 }

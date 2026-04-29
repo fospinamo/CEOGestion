@@ -6,13 +6,18 @@ use App\Models\Servicio;
 use App\Models\Equipo;
 use App\Models\Contrato;
 use App\Models\Cliente;
+use App\Models\Sede;
+use App\Models\Area;
+use App\Models\EstadoServicio;
 use App\Models\ContratoServicio;
 use App\Models\SeguimientoServicio;
+use App\Models\DocumentoAdjunto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
  * ServicioController
@@ -23,17 +28,59 @@ use Illuminate\Http\JsonResponse;
 class ServicioController extends Controller
 {
     /**
-     * Listar todos los servicios con paginación
+     * Listar todos los servicios con paginación y filtros
      */
     public function index(): View
     {
-        $servicios = Servicio::with([
-            'equipo.area.sede.cliente',
-            'contrato.cliente'
-        ])
-        ->get();
+        // Obtener parámetros de filtro
+        $clienteFilter = request('cliente_id');
+        $fechaDesde = request('fecha_desde');
+        $fechaHasta = request('fecha_hasta');
+        $estadoFilter = request('estado');
 
-        return view('servicios.index', compact('servicios'));
+        // Base query
+        $query = Servicio::with([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnicoResponsable',
+            'estadoServicio'
+        ]);
+
+        // Aplicar filtros
+        if ($clienteFilter) {
+            $query->whereHas('equipo.area.sede', function($q) use ($clienteFilter) {
+                $q->where('cliente_id', $clienteFilter);
+            });
+        }
+
+        if ($fechaDesde) {
+            $query->whereDate('fecha_solicitud', '>=', $fechaDesde);
+        }
+
+        if ($fechaHasta) {
+            $query->whereDate('fecha_solicitud', '<=', $fechaHasta);
+        }
+
+        if ($estadoFilter) {
+            if ($estadoFilter === 'SIN_ASIGNAR') {
+                $query->whereNull('tecnico_id');
+            } else if ($estadoFilter === 'ASIGNADO') {
+                $query->whereNotNull('tecnico_id')->whereNull('estado_servicio_id');
+            } else {
+                // Buscar por nombre de estado en la tabla estado_servicios
+                $query->whereHas('estadoServicio', function($q) use ($estadoFilter) {
+                    $q->where('nombre', $estadoFilter);
+                });
+            }
+        }
+
+        $servicios = $query->orderByDesc('fecha_solicitud')->get();
+
+        // Obtener datos para los filtros
+        $clientes = Cliente::where('estado', true)->orderBy('razon_social')->get();
+        $estados = EstadoServicio::activos()->get();
+
+        return view('servicios.index', compact('servicios', 'clientes', 'estados', 'clienteFilter', 'fechaDesde', 'fechaHasta', 'estadoFilter'));
     }
 
     /**
@@ -41,12 +88,32 @@ class ServicioController extends Controller
      */
     public function create(): View
     {
-        $servicio = null;
-        $clientes = Cliente::where('estado', true)
-            ->orderBy('razon_social')
-            ->get();
+        try {
+            $servicio = null;
+            $clientes = Cliente::where('estado', true)
+                ->orderBy('razon_social')
+                ->get();
+            
+            $sedes = \App\Models\Sede::with('cliente', 'empresa')
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get();
+            
+            $areas = \App\Models\Area::with('sede')
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get();
 
-        return view('servicios.create', compact('servicio', 'clientes'));
+            return view('servicios.create', compact('servicio', 'clientes', 'sedes', 'areas'));
+        } catch (\Exception $e) {
+            // En caso de error, retornar con datos por defecto
+            return view('servicios.create', [
+                'servicio' => null,
+                'clientes' => Cliente::where('estado', true)->orderBy('razon_social')->get(),
+                'sedes' => \App\Models\Sede::where('estado', true)->orderBy('nombre')->get(),
+                'areas' => \App\Models\Area::where('estado', true)->orderBy('nombre')->get(),
+            ])->withErrors(['error' => 'Error al cargar los datos']);
+        }
     }
 
     /**
@@ -57,6 +124,8 @@ class ServicioController extends Controller
         // Validaciones básicas
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
+            'sede_id' => 'required|exists:sedes,id',
+            'area_id' => 'required|exists:areas,id',
             'equipo_id' => 'required|exists:equipos,id',
             'tipo_servicio' => 'required|in:PREVENTIVO,CORRECTIVO,INSTALACION,CONFIGURACION,CAPACITACION,CONSULTA',
             'prioridad' => 'required|in:BAJA,MEDIA,ALTA,CRITICA',
@@ -64,20 +133,45 @@ class ServicioController extends Controller
             'telefono_contacto' => 'required|string|max:20',
             'email_contacto' => 'nullable|email',
             'descripcion_problema' => 'required|string|min:10',
+            'observaciones' => 'nullable|string',
+            'documentos_adjuntos.*' => 'nullable|file|max:5120', // 5MB por archivo
         ]);
 
-        // VALIDACIÓN 1: El equipo pertenece al cliente
-        $equipo = Equipo::where('id', $request->equipo_id)
+        // VALIDACIÓN 1: La sede pertenece al cliente
+        $sede = Sede::where('id', $request->sede_id)
             ->where('cliente_id', $request->cliente_id)
+            ->first();
+        
+        if (!$sede) {
+            return back()
+                ->withErrors(['sede_id' => 'La sede seleccionada no pertenece al cliente'])
+                ->withInput();
+        }
+
+        // VALIDACIÓN 2: El área pertenece a la sede
+        $area = Area::where('id', $request->area_id)
+            ->where('sede_id', $request->sede_id)
+            ->first();
+        
+        if (!$area) {
+            return back()
+                ->withErrors(['area_id' => 'El área seleccionada no pertenece a la sede'])
+                ->withInput();
+        }
+
+        // VALIDACIÓN 3: El equipo pertenece al área y está operativo
+        $equipo = Equipo::where('id', $request->equipo_id)
+            ->where('area_id', $request->area_id)
+            ->where('estado_operativo', 'OPERATIVO')
             ->first();
         
         if (!$equipo) {
             return back()
-                ->withErrors(['equipo_id' => 'El equipo seleccionado no pertenece al cliente'])
+                ->withErrors(['equipo_id' => 'El equipo seleccionado no pertenece al área o no está operativo'])
                 ->withInput();
         }
 
-        // VALIDACIÓN 2: Cliente tiene contrato activo
+        // VALIDACIÓN 4: Cliente tiene contrato activo
         $contrato = Contrato::where('cliente_id', $request->cliente_id)
             ->where('estado', 'ACTIVO')
             ->where('fecha_inicio', '<=', now())
@@ -90,21 +184,29 @@ class ServicioController extends Controller
                 ->withInput();
         }
 
-        // VALIDACIÓN 3: Contrato cubre este tipo de servicio
+        // VALIDACIÓN 5: Contrato cubre este tipo de servicio
         $cobertura = ContratoServicio::where('contrato_id', $contrato->id)
             ->where('tipo_servicio', $request->tipo_servicio)
             ->where('incluido', true)
             ->first();
         
-        if (!$cobertura) {
+        // Si hay servicios específicos pero este no está incluido, error
+        $tieneServicios = ContratoServicio::where('contrato_id', $contrato->id)->exists();
+        
+        if ($tieneServicios && !$cobertura) {
             return back()
                 ->withErrors(['tipo_servicio' => 'Este tipo de servicio no está cubierto por el contrato del cliente'])
                 ->withInput();
         }
 
         // Calcular SLAs
-        $slaRespuesta = $cobertura->sla_horas_respuesta ?? $contrato->sla_default_horas_respuesta;
-        $slaSolucion = $cobertura->sla_horas_solucion ?? $contrato->sla_default_horas_solucion;
+        if ($cobertura) {
+            $slaRespuesta = $cobertura->sla_horas_respuesta ?? $contrato->sla_default_horas_respuesta;
+            $slaSolucion = $cobertura->sla_horas_solucion ?? $contrato->sla_default_horas_solucion;
+        } else {
+            $slaRespuesta = $contrato->sla_default_horas_respuesta ?? 4;
+            $slaSolucion = $contrato->sla_default_horas_solucion ?? 24;
+        }
 
         // Crear servicio
         $servicio = Servicio::create([
@@ -117,6 +219,7 @@ class ServicioController extends Controller
             'solicitado_por' => $request->reportado_por,
             'contacto_solicitante' => $request->telefono_contacto,
             'descripcion_problema' => $request->descripcion_problema,
+            'observaciones' => $request->observaciones,
             'estado' => 'PENDIENTE',
             'tecnico_asignado' => 'SIN ASIGNAR',
             'sla_horas_respuesta' => $slaRespuesta,
@@ -124,6 +227,27 @@ class ServicioController extends Controller
             'sla_fecha_limite_respuesta' => now()->addHours($slaRespuesta),
             'sla_fecha_limite_solucion' => now()->addHours($slaSolucion),
         ]);
+
+        // Procesar archivos adjuntos si existen
+        if ($request->hasFile('documentos_adjuntos')) {
+            foreach ($request->file('documentos_adjuntos') as $archivo) {
+                if ($archivo->isValid()) {
+                    $ruta = $archivo->store('servicios/' . $servicio->id, 'private');
+                    
+                    \App\Models\DocumentoAdjunto::create([
+                        'entidad_type' => Servicio::class,
+                        'entidad_id' => $servicio->id,
+                        'nombre_archivo' => $archivo->getClientOriginalName(),
+                        'ruta_archivo' => $ruta,
+                        'tipo_documento' => 'OTRO', // Clasificar como OTRO para documentos adjuntos en servicios
+                        'mime_type' => $archivo->getMimeType(),
+                        'tamaño_bytes' => $archivo->getSize(),
+                        'descripcion' => 'Documento adjunto al servicio durante registro',
+                        'subido_por' => auth()->id(),
+                    ]);
+                }
+            }
+        }
 
         // Crear seguimiento inicial
         SeguimientoServicio::create([
@@ -162,17 +286,27 @@ class ServicioController extends Controller
      */
     public function edit(Servicio $servicio): View
     {
-        $equipos = Equipo::with('area.sede.cliente')
-            ->where('estado_operativo', '!=', 'BAJA')
-            ->orderBy('codigo_interno')
-            ->get();
+        try {
+            $clientes = Cliente::where('estado', true)
+                ->orderBy('razon_social')
+                ->get();
+            
+            $sedes = \App\Models\Sede::with('cliente', 'empresa')
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get();
+            
+            $areas = \App\Models\Area::with('sede')
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get();
 
-        $contratos = Contrato::with('cliente')
-            ->where('estado', 'ACTIVO')
-            ->orderBy('numero_contrato')
-            ->get();
+            $isEdit = true;
 
-        return view('servicios.edit', compact('servicio', 'equipos', 'contratos'));
+            return view('servicios.create', compact('servicio', 'clientes', 'sedes', 'areas', 'isEdit'));
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al cargar los datos']);
+        }
     }
 
     /**
@@ -233,6 +367,19 @@ class ServicioController extends Controller
             ->where('estado_operativo', 'OPERATIVO')
             ->orderBy('codigo_interno')
             ->get(['id', 'codigo_interno', 'marca', 'modelo', 'serial']);
+        
+        return response()->json($equipos);
+    }
+
+    /**
+     * MÉTODO 1B: Obtener equipos por área (AJAX)
+     */
+    public function getEquiposByArea($area_id): JsonResponse
+    {
+        $equipos = Equipo::where('area_id', $area_id)
+            ->where('estado_operativo', 'OPERATIVO')
+            ->orderBy('codigo_interno')
+            ->get(['id', 'codigo_interno', 'marca', 'modelo', 'serial', 'estado_operativo']);
         
         return response()->json($equipos);
     }
@@ -353,4 +500,592 @@ class ServicioController extends Controller
         return redirect()->route('servicios.show', $servicio)
             ->with('success', 'Estado actualizado correctamente');
     }
+
+    /**
+     * Formulario para atender/resolver servicio con firma
+     */
+    public function attend(Servicio $servicio): View
+    {
+        // Cargar equipos adicionales disponibles en la misma área
+        $equiposAdicionalesDisponibles = $servicio->equiposAdicionalesDisponibles();
+        
+        // Cargar relaciones necesarias
+        $servicio->load([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnico'
+        ]);
+
+        return view('servicios.attend', compact('servicio', 'equiposAdicionalesDisponibles'));
+    }
+
+    /**
+     * Guardar atención del servicio con firma
+     */
+    public function storeAttendance(Request $request, Servicio $servicio): RedirectResponse
+    {
+        $validated = $request->validate([
+            'descripcion_atencion' => 'required|string|min:20|max:5000',
+            'persona_receptora_completa' => 'required|string|max:200',
+            'persona_receptora_nombre' => 'nullable|string|max:100',
+            'persona_receptora_apellido' => 'nullable|string|max:100',
+            'persona_receptora_documento' => 'required|string|max:50',
+            'firma_persona_receptora' => 'required|string',
+            'equipos_adicionales' => 'nullable|array',
+            'equipos_adicionales.*' => 'exists:equipos,id',
+        ], [
+            'descripcion_atencion.required' => 'Debe describir lo realizado',
+            'descripcion_atencion.min' => 'La descripción debe tener al menos 20 caracteres',
+            'persona_receptora_completa.required' => 'Debe ingresar nombre y apellido',
+            'persona_receptora_documento.required' => 'Debe ingresar el documento del receptor',
+            'firma_persona_receptora.required' => 'Debe capturar la firma',
+        ]);
+
+        // Procesar nombre y apellido desde persona_receptora_completa
+        $partes = explode(' ', trim($validated['persona_receptora_completa']), 2);
+        $validated['persona_receptora_nombre'] = $partes[0];
+        $validated['persona_receptora_apellido'] = $partes[1] ?? '';
+
+        // Validar que la firma no esté vacía
+        if ($validated['firma_persona_receptora'] === 'data:image/png;base64,' || empty($validated['firma_persona_receptora'])) {
+            return back()->withErrors(['firma_persona_receptora' => 'La firma no debe estar vacía']);
+        }
+
+        // Procesar firma base64 si es necesario (guardar como archivo o base64)
+        $firmaData = $validated['firma_persona_receptora'];
+        
+        // Si la firma es base64 de canvas, convertir a archivo
+        if (str_starts_with($firmaData, 'data:image')) {
+            // Extraer base64 puro
+            $firmaData = str_replace('data:image/png;base64,', '', $firmaData);
+            
+            // Generar nombre único para la firma
+            $firmaPath = 'firmas/servicio_' . $servicio->id . '_' . time() . '.png';
+            
+            // Guardar archivo en storage
+            \Storage::disk('public')->put($firmaPath, base64_decode($firmaData));
+            
+            $validated['firma_persona_receptora'] = $firmaPath;
+        }
+
+        // Actualizar servicio con datos de atención
+        $servicio->update([
+            'persona_receptora_nombre' => $validated['persona_receptora_nombre'],
+            'persona_receptora_apellido' => $validated['persona_receptora_apellido'],
+            'persona_receptora_documento' => $validated['persona_receptora_documento'],
+            'firma_persona_receptora' => $validated['firma_persona_receptora'],
+            'descripcion_atencion' => $validated['descripcion_atencion'],
+            'equipos_adicionales_atendidos' => $validated['equipos_adicionales'] ?? [],
+            'fecha_firma' => now(),
+            'estado' => 'CERRADO',
+            'fecha_cierre_real' => now(),
+        ]);
+
+        // Registrar seguimiento
+        SeguimientoServicio::create([
+            'servicio_id' => $servicio->id,
+            'user_id' => auth()->id(),
+            'accion' => 'CIERRE',
+            'observacion' => 'Servicio cerrado por: ' . $validated['persona_receptora_nombre'] . ' ' . $validated['persona_receptora_apellido'],
+            'metadata' => [
+                'equipos_atendidos' => count($validated['equipos_adicionales'] ?? []),
+                'documento_receptor' => $validated['persona_receptora_documento'],
+            ]
+        ]);
+
+        return redirect()->route('servicios.show', $servicio)
+            ->with('success', 'Servicio atendido y cerrado correctamente. Firma capturada.');
+    }
+
+    /**
+     * Panel del técnico - Lista sus servicios asignados
+     */
+    public function technicianPanel(): View
+    {
+        $tecnicoId = auth()->id();
+        
+        // Obtener servicios por estado
+        $serviciosPendientes = Servicio::where('tecnico_id', $tecnicoId)
+            ->whereHas('estadoServicio', function($q) {
+                $q->where('nombre', 'Asignado');
+            })
+            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->orderByDesc('fecha_asignacion')
+            ->get();
+
+        $serviciosEnProceso = Servicio::where('tecnico_id', $tecnicoId)
+            ->whereHas('estadoServicio', function($q) {
+                $q->where('es_en_proceso', true);
+            })
+            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->orderByDesc('fecha_asignacion')
+            ->get();
+
+        $serviciosPendienteRepuesto = Servicio::where('tecnico_id', $tecnicoId)
+            ->whereHas('estadoServicio', function($q) {
+                $q->where('es_pendiente_repuesto', true);
+            })
+            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->orderByDesc('fecha_asignacion')
+            ->get();
+
+        $serviciosCompletados = Servicio::where('tecnico_id', $tecnicoId)
+            ->whereHas('estadoServicio', function($q) {
+                $q->where('es_cierre', true);
+            })
+            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->orderByDesc('fecha_firma')
+            ->get();
+
+        return view('servicios.technician-panel', compact(
+            'serviciosPendientes',
+            'serviciosEnProceso',
+            'serviciosPendienteRepuesto',
+            'serviciosCompletados'
+        ));
+    }
+
+    /**
+     * Panel de admin para ver todos los servicios asignados
+     */
+    public function adminAssignedPanel(): View
+    {
+        // Verificar que el usuario sea admin o coordinador
+        abort_if(
+            auth()->user()->tipo_rol !== 'admin' && auth()->user()->tipo_rol !== 'coordinador',
+            403,
+            'No tienes permisos para acceder a este panel'
+        );
+
+        // Obtener todos los técnicos con servicios asignados
+        $tecnicos = User::where('tipo_rol', 'tecnico')
+            ->with([
+                'servicios' => function($q) {
+                    $q->whereNotNull('tecnico_id')
+                        ->with(['equipo.area.sede.cliente', 'estadoServicio'])
+                        ->orderByDesc('fecha_solicitud');
+                }
+            ])
+            ->where('estado', true)
+            ->orderBy('name')
+            ->get();
+
+        // Contar servicios por estado
+        $totalAsignados = Servicio::whereNotNull('tecnico_id')->count();
+        $pendientes = Servicio::whereNotNull('tecnico_id')
+            ->whereHas('estadoServicio', function($q) {
+                $q->where('nombre', 'Asignado');
+            })->count();
+        $enProceso = Servicio::whereNotNull('tecnico_id')
+            ->whereHas('estadoServicio', function($q) {
+            $q->where('es_en_proceso', true);
+        })->count();
+        $completados = Servicio::whereNotNull('tecnico_id')
+            ->whereHas('estadoServicio', function($q) {
+            $q->where('es_cierre', true);
+        })->count();
+
+        return view('servicios.admin-panel', compact(
+            'tecnicos',
+            'totalAsignados',
+            'pendientes',
+            'enProceso',
+            'completados'
+        ));
+    }
+
+    /**
+     * Formulario para asignar técnico a servicio
+     */
+    public function assign(Servicio $servicio): View
+    {
+        $servicio->load([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnicoResponsable'
+        ]);
+
+        // Obtener todos los técnicos activos
+        $tecnicos = User::where('tipo_rol', 'tecnico')
+            ->where('estado', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('servicios.assign', compact('servicio', 'tecnicos'));
+    }
+
+    /**
+     * Guardar asignación de técnico
+     */
+    public function storeAssignment(Request $request, Servicio $servicio): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tecnico_id' => 'required|exists:users,id',
+            'fecha_asignacion' => 'required|date',
+        ], [
+            'tecnico_id.required' => 'Debe seleccionar un técnico',
+            'fecha_asignacion.required' => 'Debe ingresar la fecha de asignación',
+        ]);
+
+        $tecnico = User::findOrFail($validated['tecnico_id']);
+
+        // Validar que sea técnico
+        if ($tecnico->tipo_rol !== 'tecnico') {
+            return back()->withErrors(['tecnico_id' => 'El usuario seleccionado no es un técnico']);
+        }
+
+        // Obtener o crear estado "ASIGNADO"
+        $estadoAsignado = EstadoServicio::where('nombre', 'ASIGNADO')->first();
+
+        // Actualizar servicio
+        $updateData = [
+            'tecnico_id' => $validated['tecnico_id'],
+            'tecnico_asignado' => $tecnico->name, // Mantener compatibilidad
+            'fecha_asignacion' => $validated['fecha_asignacion'],
+            'estado' => 'PENDIENTE', // Mantener estado ENUM válido
+        ];
+
+        // Si existe estado ASIGNADO, actualizar referencia
+        if ($estadoAsignado) {
+            $updateData['estado_servicio_id'] = $estadoAsignado->id;
+        }
+
+        $servicio->update($updateData);
+
+        // Registrar seguimiento
+        SeguimientoServicio::create([
+            'servicio_id' => $servicio->id,
+            'user_id' => auth()->id(),
+            'accion' => 'ASIGNACION',
+            'observacion' => "Servicio asignado al técnico: {$tecnico->name}",
+            'estado_nuevo' => 'ASIGNADO',
+            'metadata' => [
+                'tecnico_id' => $tecnico->id,
+                'tecnico_nombre' => $tecnico->name,
+                'tecnico_email' => $tecnico->email,
+                'tecnico_telefono' => $tecnico->telefono,
+            ]
+        ]);
+
+        return redirect()->route('servicios.show', $servicio)
+            ->with('success', "Servicio asignado a {$tecnico->name} exitosamente");
+    }
+
+    /**
+     * Formulario de informe técnico (para técnico)
+     */
+    public function reportTechnician(Servicio $servicio): View
+    {
+        // Validar que el servicio esté asignado
+        if ($servicio->tecnico_id === null) {
+            return redirect()->route('servicios.index')
+                ->withErrors(['error' => 'Este servicio no está asignado a un técnico']);
+        }
+
+        $servicio->load([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnicoResponsable',
+            'estadoServicio'
+        ]);
+
+        // Obtener equipos adicionales disponibles en la misma área
+        $equiposAdicionales = Equipo::where('area_id', $servicio->equipo->area_id)
+            ->where('id', '!=', $servicio->equipo_id)
+            ->where('estado_operativo', 'OPERATIVO')
+            ->get();
+
+        // Obtener estados disponibles
+        $estadosDisponibles = EstadoServicio::activos()->get();
+
+        return view('servicios.report-technician-v2', compact('servicio', 'equiposAdicionales', 'estadosDisponibles'));
+    }
+
+    /**
+     * Guardar informe técnico
+     */
+    public function storeReport(Request $request, Servicio $servicio): RedirectResponse
+    {
+        $validated = $request->validate([
+            // Fechas y tiempos
+            'fecha_atencion' => 'required|date',
+            'hora_inicio_atencion' => 'required|date_format:H:i',
+            'hora_fin_atencion' => 'required|date_format:H:i',
+            // Tipo de servicio
+            'tipo_servicio_informe' => 'required|in:INSTALACION,MANTENIMIENTO_PREVENTIVO,MANTENIMIENTO_CORRECTIVO,SOPORTE',
+            // Descripción de la solicitud
+            'descripcion_solicitud' => 'required|string|min:10|max:5000',
+            // Diagnóstico
+            'diagnostico_validacion' => 'required|string|min:10|max:5000',
+            // Pendientes
+            'pendientes' => 'nullable|string|max:2000',
+            // Observaciones
+            'observaciones_informe' => 'nullable|string|max:2000',
+            // Repuestos
+            'repuestos_codigo' => 'nullable|array',
+            'repuestos_descripcion' => 'nullable|array',
+            'repuestos_marca' => 'nullable|array',
+            'repuestos_modelo' => 'nullable|array',
+            'repuestos_serie' => 'nullable|array',
+            'repuestos_cantidad' => 'nullable|array',
+            // Equipos atendidos
+            'equipos_adicionales_atendidos' => 'nullable|array',
+            'equipos_adicionales_atendidos.*' => 'exists:equipos,id',
+            // Persona receptora
+            'persona_receptora_nombre' => 'required|string|max:100',
+            'persona_receptora_apellido' => 'required|string|max:100',
+            'persona_receptora_documento' => 'required|string|max:50',
+            // Firma y estado
+            'firma_persona_receptora' => 'required|string',
+            'estado_servicio_id' => 'required|exists:estado_servicios,id',
+            // Imágenes y facturación
+            'imagenes' => 'nullable|array|max:10',
+            'imagenes.*' => 'image|max:5120',
+            'puede_facturarse' => 'boolean',
+            'es_soporte_contrato' => 'boolean',
+        ], [
+            'fecha_atencion.required' => 'Debe ingresar la fecha de atención',
+            'hora_inicio_atencion.required' => 'Debe ingresar la hora de inicio',
+            'hora_fin_atencion.required' => 'Debe ingresar la hora de fin',
+            'tipo_servicio_informe.required' => 'Debe seleccionar el tipo de servicio',
+            'descripcion_solicitud.required' => 'Debe describir la solicitud',
+            'diagnostico_validacion.required' => 'Debe ingresar el diagnóstico/validación',
+            'persona_receptora_nombre.required' => 'Debe ingresar el nombre del receptor',
+            'firma_persona_receptora.required' => 'Debe capturar la firma',
+            'estado_servicio_id.required' => 'Debe seleccionar un estado para el servicio',
+        ]);
+
+        // Validación adicional: hora de fin debe ser mayor que hora de inicio
+        $horaInicio = \DateTime::createFromFormat('H:i', $validated['hora_inicio_atencion']);
+        $horaFin = \DateTime::createFromFormat('H:i', $validated['hora_fin_atencion']);
+        if ($horaFin <= $horaInicio) {
+            return back()->withErrors(['hora_fin_atencion' => 'La hora de fin debe ser posterior a la hora de inicio'])
+                ->withInput();
+        }
+
+        // Validar que la firma no esté vacía
+        $firma = $validated['firma_persona_receptora'] ?? '';
+        if (empty($firma) || strlen($firma) < 50 || $firma === 'data:image/png;base64,') {
+            return back()
+                ->withErrors(['firma_persona_receptora' => 'Debe dibujar la firma del receptor en el recuadro.'])
+                ->withInput();
+        }
+
+        // Procesar firma base64
+        $firmaData = $validated['firma_persona_receptora'];
+        if (str_starts_with($firmaData, 'data:image')) {
+            $firmaData = str_replace('data:image/png;base64,', '', $firmaData);
+            $firmaPath = 'servicios/firmas/servicio_' . $servicio->id . '_' . time() . '.png';
+            \Storage::disk('private')->put($firmaPath, base64_decode($firmaData));
+            $validated['firma_persona_receptora'] = $firmaPath;
+        }
+
+        // Procesar imágenes
+        $imagenesPath = [];
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                $path = $imagen->store('servicios/imagenes/servicio_' . $servicio->id, 'private');
+                $imagenesPath[] = $path;
+            }
+        }
+        $validated['imagenes_servicio'] = $imagenesPath;
+
+        // Procesar repuestos
+        $repuestos = [];
+        if (!empty($validated['repuestos_codigo'])) {
+            foreach ($validated['repuestos_codigo'] as $index => $codigo) {
+                if (!empty($codigo) || !empty($validated['repuestos_descripcion'][$index] ?? '')) {
+                    $repuestos[] = [
+                        'codigo' => $codigo,
+                        'descripcion' => $validated['repuestos_descripcion'][$index] ?? '',
+                        'marca' => $validated['repuestos_marca'][$index] ?? '',
+                        'modelo' => $validated['repuestos_modelo'][$index] ?? '',
+                        'serie' => $validated['repuestos_serie'][$index] ?? '',
+                        'cantidad' => $validated['repuestos_cantidad'][$index] ?? 1,
+                    ];
+                }
+            }
+        }
+
+        // Actualizar servicio
+        $servicio->update([
+            // Fechas y tiempos
+            'fecha_atencion' => $validated['fecha_atencion'],
+            'hora_inicio_atencion' => $validated['hora_inicio_atencion'],
+            'hora_fin_atencion' => $validated['hora_fin_atencion'],
+            // Tipo de servicio
+            'tipo_servicio_informe' => $validated['tipo_servicio_informe'],
+            // Descripciones
+            'descripcion_solicitud' => $validated['descripcion_solicitud'],
+            'diagnostico_validacion' => $validated['diagnostico_validacion'],
+            'pendientes' => $validated['pendientes'],
+            'observaciones_informe' => $validated['observaciones_informe'],
+            // Repuestos y equipos
+            'repuestos_utilizados' => $repuestos,
+            'equipos_adicionales_atendidos' => $validated['equipos_adicionales_atendidos'] ?? [],
+            // Persona receptora
+            'persona_receptora_nombre' => $validated['persona_receptora_nombre'],
+            'persona_receptora_apellido' => $validated['persona_receptora_apellido'],
+            'persona_receptora_documento' => $validated['persona_receptora_documento'],
+            'firma_persona_receptora' => $validated['firma_persona_receptora'],
+            // Estado y facturación
+            'estado_servicio_id' => $validated['estado_servicio_id'],
+            'puede_facturarse' => $validated['puede_facturarse'] ?? true,
+            'es_soporte_contrato' => $validated['es_soporte_contrato'] ?? false,
+            'imagenes_servicio' => $imagenesPath,
+            'fecha_firma' => now(),
+        ]);
+
+        // Registrar seguimiento
+        $estadoServicio = EstadoServicio::find($validated['estado_servicio_id']);
+        SeguimientoServicio::create([
+            'servicio_id' => $servicio->id,
+            'user_id' => auth()->id(),
+            'accion' => 'INFORME_TECNICO',
+            'observacion' => "Informe técnico completado. Tipo: {$validated['tipo_servicio_informe']}. Estado: {$estadoServicio->nombre}",
+            'estado_nuevo' => $estadoServicio->nombre,
+            'metadata' => [
+                'tipo_servicio' => $validated['tipo_servicio_informe'],
+                'equipos_adicionales' => count($validated['equipos_adicionales_atendidos'] ?? []),
+                'repuestos_instalados' => count($repuestos),
+                'imagenes' => count($imagenesPath),
+                'puede_facturarse' => $validated['puede_facturarse'] ?? true,
+                'es_soporte_contrato' => $validated['es_soporte_contrato'] ?? false,
+            ]
+        ]);
+
+        return redirect()->route('servicios.show', $servicio)
+            ->with('success', 'Informe técnico registrado exitosamente');
+    }
+
+    /**
+     * Descargar informe técnico en PDF
+     */
+    public function downloadInformePDF(Servicio $servicio)
+    {
+        // Verificar que el servicio tenga informe registrado
+        if (!$servicio->persona_receptora_nombre) {
+            return redirect()->route('servicios.show', $servicio)
+                ->withErrors(['error' => 'Este servicio aún no tiene informe técnico registrado']);
+        }
+
+        // Cargar relaciones necesarias
+        $servicio->load([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnicoResponsable',
+            'estadoServicio'
+        ]);
+
+        // Procesar imágenes a base64 para evitar problemas con GD
+        $imagenesBase64 = [];
+        if ($servicio->imagenes_servicio && is_array($servicio->imagenes_servicio)) {
+            foreach ($servicio->imagenes_servicio as $imagen) {
+                $ruta = storage_path('app/' . $imagen);
+                if (file_exists($ruta)) {
+                    $tipo = mime_content_type($ruta);
+                    $datos = file_get_contents($ruta);
+                    $imagenesBase64[] = 'data:' . $tipo . ';base64,' . base64_encode($datos);
+                }
+            }
+        }
+
+        // Procesar firma a base64
+        $firmaBase64 = null;
+        if ($servicio->firma_persona_receptora) {
+            $rutaFirma = storage_path('app/' . $servicio->firma_persona_receptora);
+            if (file_exists($rutaFirma)) {
+                $tipo = mime_content_type($rutaFirma);
+                $datos = file_get_contents($rutaFirma);
+                $firmaBase64 = 'data:' . $tipo . ';base64,' . base64_encode($datos);
+            }
+        }
+
+        // Generar PDF con datos de imágenes procesados
+        $pdf = Pdf::loadView('servicios.pdf.informe-tecnico-new', [
+            'servicio' => $servicio,
+            'imagenesBase64' => $imagenesBase64,
+            'firmaBase64' => $firmaBase64
+        ]);
+
+        // Configurar opciones de DomPDF
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'isFontSubsettingEnabled' => true,
+            'defaultFont' => 'Arial',
+        ]);
+
+        // Configurar opciones de papel y tamaño
+        $pdf->setPaper('A4', 'portrait');
+
+        // Descargar PDF
+        return $pdf->download('Informe-Tecnico-Servicio-' . $servicio->id . '.pdf');
+    }
+
+    /**
+     * Ver informe técnico en PDF en el navegador
+     */
+    public function viewInformePDF(Servicio $servicio)
+    {
+        // Verificar que el servicio tenga informe registrado
+        if (!$servicio->persona_receptora_nombre) {
+            return redirect()->route('servicios.show', $servicio)
+                ->withErrors(['error' => 'Este servicio aún no tiene informe técnico registrado']);
+        }
+
+        // Cargar relaciones necesarias
+        $servicio->load([
+            'equipo.area.sede.cliente',
+            'contrato.cliente',
+            'tecnicoResponsable',
+            'estadoServicio'
+        ]);
+
+        // Procesar imágenes a base64 para evitar problemas con GD
+        $imagenesBase64 = [];
+        if ($servicio->imagenes_servicio && is_array($servicio->imagenes_servicio)) {
+            foreach ($servicio->imagenes_servicio as $imagen) {
+                $ruta = storage_path('app/' . $imagen);
+                if (file_exists($ruta)) {
+                    $tipo = mime_content_type($ruta);
+                    $datos = file_get_contents($ruta);
+                    $imagenesBase64[] = 'data:' . $tipo . ';base64,' . base64_encode($datos);
+                }
+            }
+        }
+
+        // Procesar firma a base64
+        $firmaBase64 = null;
+        if ($servicio->firma_persona_receptora) {
+            $rutaFirma = storage_path('app/' . $servicio->firma_persona_receptora);
+            if (file_exists($rutaFirma)) {
+                $tipo = mime_content_type($rutaFirma);
+                $datos = file_get_contents($rutaFirma);
+                $firmaBase64 = 'data:' . $tipo . ';base64,' . base64_encode($datos);
+            }
+        }
+
+        // Generar PDF con datos de imágenes procesados
+        $pdf = Pdf::loadView('servicios.pdf.informe-tecnico-new', [
+            'servicio' => $servicio,
+            'imagenesBase64' => $imagenesBase64,
+            'firmaBase64' => $firmaBase64
+        ]);
+
+        // Configurar opciones de DomPDF
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'isFontSubsettingEnabled' => true,
+            'defaultFont' => 'Arial',
+        ]);
+
+        // Configurar opciones de papel y tamaño
+        $pdf->setPaper('A4', 'portrait');
+
+        // Mostrar en el navegador
+        return $pdf->stream('Informe-Tecnico-Servicio-' . $servicio->id . '.pdf');
+    }
 }
+

@@ -121,7 +121,7 @@ class Contrato extends Model
     /**
      * Documentos adjuntos (polimórficos)
      */
-    public function documentos()
+    public function documentosAdjuntos()
     {
         return $this->morphMany(DocumentoAdjunto::class, 'entidad');
     }

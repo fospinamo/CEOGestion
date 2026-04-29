@@ -50,7 +50,7 @@ class ServicioSeeder extends Seeder
             // Servicio en proceso
             Servicio::create([
                 'equipo_id' => $equipo->id,
-                'tipo_servicio' => 'MANTENIMIENTO',
+                'tipo_servicio' => 'PREVENTIVO',
                 'prioridad' => 'MEDIA',
                 'fecha_solicitud' => now()->subDay(),
                 'fecha_atencion' => now()->subHours(12),

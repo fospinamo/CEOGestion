@@ -38,13 +38,16 @@ class UsuarioController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users|max:255',
             'password' => 'required|string|min:8|confirmed',
-            'empresa_id' => 'required|exists:empresas,id',
+            'empresa_id' => 'nullable|exists:empresas,id',
             'sede_id' => 'nullable|exists:sedes,id',
-            'rol' => 'required|in:admin,gerente,coordinador,empleado',
+            'tipo_rol' => 'required|in:admin,tecnico,coordinador,operario,cliente',
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'telefono' => 'nullable|string|max:20',
             'estado' => 'boolean',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['estado'] = $validated['estado'] ?? true;
 
         User::create($validated);
 
@@ -79,9 +82,11 @@ class UsuarioController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users,email,' . $usuario->id . '|max:255',
             'password' => 'nullable|string|min:8|confirmed',
-            'empresa_id' => 'required|exists:empresas,id',
+            'empresa_id' => 'nullable|exists:empresas,id',
             'sede_id' => 'nullable|exists:sedes,id',
-            'rol' => 'required|in:admin,gerente,coordinador,empleado',
+            'tipo_rol' => 'required|in:admin,tecnico,coordinador,operario,cliente',
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'telefono' => 'nullable|string|max:20',
             'estado' => 'boolean',
         ]);
 

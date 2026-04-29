@@ -275,7 +275,7 @@
             </a>
             
             <div class="navbar-user">
-                <span>{{ session('portal_user') ? \App\Models\User::find(session('portal_user_id'))->cliente->razon_social : 'Cliente' }}</span>
+                <span>{{ session('portal_user') ? \App\Models\User::find(session('portal_user_id'))?->cliente?->razon_social : 'Cliente' }}</span>
                 <a href="{{ route('portal.logout') }}" class="btn btn-danger" style="padding: 8px 12px; font-size: 14px;">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </a>

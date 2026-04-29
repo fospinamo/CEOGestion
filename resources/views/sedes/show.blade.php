@@ -23,8 +23,18 @@
                     <p class="text-lg font-semibold text-gray-900">{{ $sede->codigo }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Empresa</p>
-                    <p class="text-lg font-semibold text-gray-900">{{ $sede->empresa->nombre }}</p>
+                    <p class="text-sm text-gray-600">Propietario</p>
+                    @if($sede->esDeEmpresa())
+                        <p class="text-lg font-semibold text-blue-600">
+                            <i class="fas fa-building"></i> {{ $sede->empresa->nombre }}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">Sede de la empresa</p>
+                    @else
+                        <p class="text-lg font-semibold text-green-600">
+                            <i class="fas fa-user"></i> {{ $sede->cliente->razon_social }}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">Sede del cliente</p>
+                    @endif
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Estado</p>

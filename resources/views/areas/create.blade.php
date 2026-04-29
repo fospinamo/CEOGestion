@@ -8,17 +8,51 @@
         @csrf
         @if($area) @method('PUT') @endif
 
+        <!-- Selector Cliente/Empresa -->
+        <div class="border-b pb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Propietario</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Empresa</label>
+                    <select id="empresa_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">-- Selecciona una empresa --</option>
+                        @foreach($empresas as $empresa)
+                            <option value="{{ $empresa->id }}" {{ $area && $area->sede->empresa_id == $empresa->id ? 'selected' : '' }}>
+                                {{ $empresa->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cliente</label>
+                    <select id="cliente_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">-- Selecciona un cliente --</option>
+                        @foreach($clientes as $cliente)
+                            <option value="{{ $cliente->id }}" {{ $area && $area->sede->cliente_id == $cliente->id ? 'selected' : '' }}>
+                                {{ $cliente->razon_social }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Sede *</label>
-                <select name="sede_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('sede_id') border-red-500 @enderror" required>
+                <select name="sede_id" id="sede_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('sede_id') border-red-500 @enderror" required>
                     <option value="">Seleccione sede</option>
                     @foreach($sedes as $sede)
-                        <option value="{{ $sede->id }}" {{ old('sede_id', $area->sede_id ?? '') == $sede->id ? 'selected' : '' }}>
-                            {{ $sede->nombre }} - {{ $sede->cliente?->empresa?->nombre ?? 'Sin empresa' }}
+                        <option value="{{ $sede->id }}" 
+                            data-empresa-id="{{ $sede->empresa_id }}"
+                            data-cliente-id="{{ $sede->cliente_id }}"
+                            {{ old('sede_id', $area->sede_id ?? '') == $sede->id ? 'selected' : '' }}>
+                            {{ $sede->nombre }} - {{ $sede->cliente?->razon_social ?? $sede->empresa?->nombre ?? 'Sin propietario' }}
                         </option>
                     @endforeach
                 </select>
+                @error('sede_id')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
             </div>
 
             <div>
@@ -69,4 +103,77 @@
         </div>
     </form>
 </div>
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Almacenar opciones originales de sede
+    const sedeOptions = $('#sede_id').html();
+    
+    // Función para filtrar sedes
+    function filterSedes() {
+        const empresaId = $('#empresa_id').val();
+        const clienteId = $('#cliente_id').val();
+        const sedeSelect = $('#sede_id');
+        
+        // Restaurar opciones originales
+        sedeSelect.html(sedeOptions);
+        
+        // Obtener la opción vacía
+        let options = sedeSelect.find('option:first');
+        
+        // Filtrar opciones
+        sedeSelect.find('option').each(function() {
+            const optEmpresaId = $(this).data('empresa-id');
+            const optClienteId = $(this).data('cliente-id');
+            
+            if ($(this).val() === '') {
+                return; // Mantener opción vacía
+            }
+            
+            // Mostrar solo si coincide con empresa o cliente seleccionado
+            if (empresaId && optEmpresaId == empresaId) {
+                // Coincide con empresa seleccionada
+            } else if (clienteId && optClienteId == clienteId) {
+                // Coincide con cliente seleccionado
+            } else if (!empresaId && !clienteId) {
+                // Sin filtro, mostrar todas
+            } else {
+                // Ocultar esta opción
+                $(this).hide();
+            }
+        });
+        
+        // Limpiar selección si la sede actual no es válida
+        const selectedSede = sedeSelect.val();
+        if (selectedSede) {
+            const selectedOption = sedeSelect.find('option[value="' + selectedSede + '"]');
+            if (selectedOption.is(':hidden')) {
+                sedeSelect.val('');
+            }
+        }
+    }
+    
+    // Evento para cambio de empresa
+    $('#empresa_id').on('change', function() {
+        if ($(this).val()) {
+            $('#cliente_id').val('');
+        }
+        filterSedes();
+    });
+    
+    // Evento para cambio de cliente
+    $('#cliente_id').on('change', function() {
+        if ($(this).val()) {
+            $('#empresa_id').val('');
+        }
+        filterSedes();
+    });
+    
+    // Filtrar al cargar si hay sede preseleccionada
+    filterSedes();
+});
+</script>
+@endsection
+
 @endsection

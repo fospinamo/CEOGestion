@@ -61,7 +61,7 @@
                     <div class="p-4 hover:bg-gray-50 transition flex justify-between items-center">
                         <div>
                             <p class="font-semibold text-gray-900">{{ $sede->nombre }}</p>
-                            <p class="text-sm text-gray-600">{{ $sede->empresa->nombre }}</p>
+                            <p class="text-sm text-gray-600">{{ $sede->cliente?->razon_social ?? ($sede->empresa?->nombre ?? 'N/A') }}</p>
                         </div>
                         <a href="{{ route('sedes.show', $sede) }}" class="text-blue-600 hover:text-blue-900 transition">
                             <i class="fas fa-arrow-right"></i>

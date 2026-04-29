@@ -43,12 +43,22 @@
                         <td class="px-6 py-4 text-gray-700">{{ $usuario->email }}</td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                {{ $usuario->rol === 'admin' ? 'bg-red-100 text-red-800' : '' }}
-                                {{ $usuario->rol === 'gerente' ? 'bg-blue-100 text-blue-800' : '' }}
-                                {{ $usuario->rol === 'coordinador' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $usuario->rol === 'empleado' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                {{ $usuario->tipo_rol === 'admin' ? 'bg-red-100 text-red-800' : '' }}
+                                {{ $usuario->tipo_rol === 'tecnico' ? 'bg-orange-100 text-orange-800' : '' }}
+                                {{ $usuario->tipo_rol === 'coordinador' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $usuario->tipo_rol === 'operario' ? 'bg-blue-100 text-blue-800' : '' }}
+                                {{ $usuario->tipo_rol === 'cliente' ? 'bg-purple-100 text-purple-800' : '' }}
                             ">
-                                {{ ucfirst($usuario->rol) }}
+                                @php
+                                    $rolesMap = [
+                                        'admin' => '👨‍💼 Administrador',
+                                        'tecnico' => '🔧 Técnico',
+                                        'coordinador' => '📋 Coordinador',
+                                        'operario' => '👤 Operario',
+                                        'cliente' => '🏢 Cliente',
+                                    ];
+                                @endphp
+                                {{ $rolesMap[$usuario->tipo_rol] ?? ucfirst($usuario->tipo_rol) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-gray-700">{{ $usuario->empresa?->nombre ?? '-' }}</td>

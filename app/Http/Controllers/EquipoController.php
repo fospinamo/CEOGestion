@@ -18,14 +18,45 @@ use Illuminate\Http\RedirectResponse;
 class EquipoController extends Controller
 {
     /**
-     * Listar todos los equipos con paginación
+     * Listar todos los equipos con paginación y filtros
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $equipos = Equipo::with(['area.sede.cliente', 'tipoEquipo', 'servicios'])
-            ->get();
+        $query = Equipo::with(['area.sede.cliente.empresa', 'area.sede.empresa', 'tipoEquipo', 'servicios']);
 
-        return view('equipos.index', compact('equipos'));
+        // Filtro por cliente
+        if ($request->filled('cliente_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('cliente_id', request('cliente_id'));
+            });
+        }
+
+        // Filtro por empresa
+        if ($request->filled('empresa_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('empresa_id', request('empresa_id'));
+            });
+        }
+
+        // Filtro por estado operativo
+        if ($request->filled('estado_operativo')) {
+            $query->where('estado_operativo', $request->estado_operativo);
+        }
+
+        // Filtro por tipo de equipo
+        if ($request->filled('tipo_equipo_id')) {
+            $query->where('tipo_equipo_id', $request->tipo_equipo_id);
+        }
+
+        $equipos = $query->get();
+
+        // Obtener datos para filtros
+        $clientes = \App\Models\Cliente::orderBy('razon_social')->get();
+        $empresas = \App\Models\Empresa::orderBy('nombre')->get();
+        $tipos = TipoEquipo::orderBy('nombre')->get();
+        $estados = ['OPERATIVO', 'MANTENIMIENTO', 'REPARACION', 'BAJA', 'OBSOLETO'];
+
+        return view('equipos.index', compact('equipos', 'clientes', 'empresas', 'tipos', 'estados'));
     }
 
     /**
@@ -40,8 +71,21 @@ class EquipoController extends Controller
             ->get();
 
         $tipos = TipoEquipo::orderBy('nombre')->get();
+        
+        $empresas = \App\Models\Empresa::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        
+        $clientes = \App\Models\Cliente::where('estado', true)
+            ->orderBy('razon_social')
+            ->get();
+        
+        $sedes = \App\Models\Sede::with('cliente.empresa')
+            ->where('estado', true)
+            ->orderBy('nombre')
+            ->get();
 
-        return view('equipos.create', compact('equipo', 'areas', 'tipos'));
+        return view('equipos.create', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes'));
     }
 
     /**
@@ -104,8 +148,21 @@ class EquipoController extends Controller
             ->get();
 
         $tipos = TipoEquipo::orderBy('nombre')->get();
+        
+        $empresas = \App\Models\Empresa::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+        
+        $clientes = \App\Models\Cliente::where('estado', true)
+            ->orderBy('razon_social')
+            ->get();
+        
+        $sedes = \App\Models\Sede::with('cliente.empresa')
+            ->where('estado', true)
+            ->orderBy('nombre')
+            ->get();
 
-        return view('equipos.edit', compact('equipo', 'areas', 'tipos'));
+        return view('equipos.create', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes'));
     }
 
     /**
@@ -152,5 +209,112 @@ class EquipoController extends Controller
 
         return redirect()->route('equipos.index')
             ->with('success', 'Equipo eliminado exitosamente');
+    }
+
+    /**
+     * Exportar equipos a Excel
+     */
+    public function exportarExcel(Request $request)
+    {
+        // Aplicar mismos filtros que en index
+        $query = Equipo::with(['area.sede.cliente.empresa', 'area.sede.empresa', 'tipoEquipo']);
+
+        if ($request->filled('cliente_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('cliente_id', request('cliente_id'));
+            });
+        }
+
+        if ($request->filled('empresa_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('empresa_id', request('empresa_id'));
+            });
+        }
+
+        if ($request->filled('estado_operativo')) {
+            $query->where('estado_operativo', $request->estado_operativo);
+        }
+
+        if ($request->filled('tipo_equipo_id')) {
+            $query->where('tipo_equipo_id', $request->tipo_equipo_id);
+        }
+
+        $equipos = $query->get();
+
+        // Preparar datos para exportar
+        $data = [];
+        $data[] = ['CÓDIGO', 'TIPO', 'MARCA', 'MODELO', 'SERIAL', 'UBICACIÓN', 'EMPRESA/CLIENTE', 'ESTADO', 'FECHA COMPRA', 'USUARIO ASIGNADO'];
+
+        foreach ($equipos as $equipo) {
+            $propietario = $equipo->area?->sede?->cliente?->razon_social ?? 
+                          $equipo->area?->sede?->empresa?->nombre ?? 'N/A';
+            
+            $data[] = [
+                $equipo->codigo_interno,
+                $equipo->tipoEquipo?->nombre ?? 'N/A',
+                $equipo->marca,
+                $equipo->modelo,
+                $equipo->serial,
+                ($equipo->area?->nombre ?? 'N/A') . ' - ' . ($equipo->area?->sede?->nombre ?? 'N/A'),
+                $propietario,
+                $equipo->estado_operativo,
+                $equipo->fecha_compra?->format('d/m/Y') ?? 'N/A',
+                $equipo->usuario_asignado ?? 'N/A'
+            ];
+        }
+
+        // Generar respuesta CSV que Excel puede abrir
+        $fileName = 'equipos_' . date('Y-m-d_His') . '.csv';
+        
+        $response = response()->streamDownload(function () use ($data) {
+            $handle = fopen('php://output', 'w');
+            
+            // Encoding UTF-8 para Excel
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            foreach ($data as $row) {
+                fputcsv($handle, $row, ',', '"');
+            }
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename=' . $fileName,
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Exportar equipos a PDF
+     */
+    public function exportarPDF(Request $request)
+    {
+        // Aplicar mismos filtros que en index
+        $query = Equipo::with(['area.sede.cliente.empresa', 'area.sede.empresa', 'tipoEquipo']);
+
+        if ($request->filled('cliente_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('cliente_id', request('cliente_id'));
+            });
+        }
+
+        if ($request->filled('empresa_id')) {
+            $query->whereHas('area.sede', function ($q) {
+                $q->where('empresa_id', request('empresa_id'));
+            });
+        }
+
+        if ($request->filled('estado_operativo')) {
+            $query->where('estado_operativo', $request->estado_operativo);
+        }
+
+        if ($request->filled('tipo_equipo_id')) {
+            $query->where('tipo_equipo_id', $request->tipo_equipo_id);
+        }
+
+        $equipos = $query->get();
+
+        // Retornar vista con datos para PDF
+        return view('equipos.export-pdf', compact('equipos'));
     }
 }

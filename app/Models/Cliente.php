@@ -87,7 +87,12 @@ class Cliente extends Model
      */
 
     /**
-     * Empresa a la que pertenece
+     * Empresa a la que pertenece este cliente
+     * 
+     * Un cliente contrata servicios a través de una empresa
+     * proveedora (CEOGestion).
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function empresa()
     {
@@ -95,7 +100,12 @@ class Cliente extends Model
     }
 
     /**
-     * Contratos del cliente
+     * Contratos asociados al cliente
+     * 
+     * Un cliente puede tener múltiples contratos de servicios
+     * con la empresa
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function contratos()
     {
@@ -103,7 +113,12 @@ class Cliente extends Model
     }
 
     /**
-     * Sedes del cliente
+     * Sedes (ubicaciones) del cliente
+     * 
+     * Un cliente puede tener múltiples sedes o sucursales
+     * donde se requieren servicios TI
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function sedes()
     {
@@ -111,7 +126,11 @@ class Cliente extends Model
     }
 
     /**
-     * Ciudad de notificación
+     * Ciudad/Municipio de notificación
+     * 
+     * Ubicación donde se envían notificaciones y documentación
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function ciudadNotificacion()
     {

@@ -64,7 +64,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Empresa <span class="text-red-600">*</span>
                     </label>
-                    <select name="empresa_id" required
+                    <select id="empresa_id" name="empresa_id" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('empresa_id') border-red-500 @enderror">
                         @foreach($empresas as $empresa)
                             <option value="{{ $empresa->id }}" {{ old('empresa_id', $usuario->empresa_id) == $empresa->id ? 'selected' : '' }}>
@@ -79,16 +79,17 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Rol <span class="text-red-600">*</span>
+                        Tipo de Rol <span class="text-red-600">*</span>
                     </label>
-                    <select name="rol" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('rol') border-red-500 @enderror">
-                        <option value="admin" {{ old('rol', $usuario->rol) === 'admin' ? 'selected' : '' }}>Administrador</option>
-                        <option value="gerente" {{ old('rol', $usuario->rol) === 'gerente' ? 'selected' : '' }}>Gerente</option>
-                        <option value="coordinador" {{ old('rol', $usuario->rol) === 'coordinador' ? 'selected' : '' }}>Coordinador</option>
-                        <option value="empleado" {{ old('rol', $usuario->rol) === 'empleado' ? 'selected' : '' }}>Empleado</option>
+                    <select name="tipo_rol" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('tipo_rol') border-red-500 @enderror">
+                        <option value="admin" {{ old('tipo_rol', $usuario->tipo_rol) === 'admin' ? 'selected' : '' }}>👨‍💼 Administrador</option>
+                        <option value="tecnico" {{ old('tipo_rol', $usuario->tipo_rol) === 'tecnico' ? 'selected' : '' }}>🔧 Técnico</option>
+                        <option value="coordinador" {{ old('tipo_rol', $usuario->tipo_rol) === 'coordinador' ? 'selected' : '' }}>📋 Coordinador</option>
+                        <option value="operario" {{ old('tipo_rol', $usuario->tipo_rol) === 'operario' ? 'selected' : '' }}>👤 Operario</option>
+                        <option value="cliente" {{ old('tipo_rol', $usuario->tipo_rol) === 'cliente' ? 'selected' : '' }}>🏢 Cliente</option>
                     </select>
-                    @error('rol')
+                    @error('tipo_rol')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -97,12 +98,12 @@
             <!-- Row 4: Sede -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Sede (Opcional)</label>
-                <select name="sede_id"
+                <select id="sede_id" name="sede_id"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Selecciona una sede</option>
                     @foreach($sedes as $sede)
-                        <option value="{{ $sede->id }}" {{ old('sede_id', $usuario->sede_id) == $sede->id ? 'selected' : '' }}>
-                            {{ $sede->nombre }} - {{ $sede->empresa->nombre }}
+                        <option value="{{ $sede->id }}" data-empresa-id="{{ $sede->empresa_id }}" {{ old('sede_id', $usuario->sede_id) == $sede->id ? 'selected' : '' }}>
+                            {{ $sede->nombre }} - {{ $sede->cliente?->razon_social }}
                         </option>
                     @endforeach
                 </select>
@@ -129,4 +130,56 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const empresaSelect = document.getElementById('empresa_id');
+    const sedeSelect = document.getElementById('sede_id');
+    
+    // Guardar opciones originales de sede
+    const originalSedeOptions = Array.from(sedeSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        empresaId: opt.dataset.empresaId
+    }));
+    
+    function actualizarSedes() {
+        const empresaId = empresaSelect.value;
+        const sedeIdActual = sedeSelect.dataset.currentValue || '';
+        
+        if (!empresaId) {
+            // Si no hay empresa seleccionada, mostrar todas las sedes
+            sedeSelect.innerHTML = '<option value="">Selecciona una sede</option>';
+            originalSedeOptions.forEach(opt => {
+                if (opt.value) {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.text = opt.text;
+                    option.dataset.empresaId = opt.empresaId;
+                    sedeSelect.appendChild(option);
+                }
+            });
+            return;
+        }
+        
+        // Filtrar opciones por empresa
+        sedeSelect.innerHTML = '<option value="">Selecciona una sede</option>';
+        originalSedeOptions.forEach(opt => {
+            if (opt.value && opt.empresaId == empresaId) {
+                const option = document.createElement('option');
+                option.value = opt.value;
+                option.text = opt.text;
+                option.dataset.empresaId = opt.empresaId;
+                sedeSelect.appendChild(option);
+            }
+        });
+    }
+    
+    // Ejecutar al cambiar empresa
+    empresaSelect.addEventListener('change', actualizarSedes);
+    
+    // Ejecutar al cargar la página para filtrar si hay empresa pre-seleccionada
+    actualizarSedes();
+});
+</script>
 @endsection

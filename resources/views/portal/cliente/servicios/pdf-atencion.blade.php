@@ -167,15 +167,15 @@
                 <table>
                     <tr>
                         <td class="label">Cliente:</td>
-                        <td class="value">{{ $servicio->equipo->area->sede->cliente->razon_social }}</td>
+                        <td class="value">{{ $servicio->equipo?->area?->sede?->cliente?->razon_social ?? 'N/A' }}</td>
                         <td class="label">Documento:</td>
-                        <td class="value">{{ $servicio->equipo->area->sede->cliente->documento }}</td>
+                        <td class="value">{{ $servicio->equipo?->area?->sede?->cliente?->documento ?? 'N/A' }}</td>
                     </tr>
                     <tr>
                         <td class="label">Sede:</td>
-                        <td class="value">{{ $servicio->equipo->area->sede->nombre }}</td>
+                        <td class="value">{{ $servicio->equipo?->area?->sede?->nombre ?? 'N/A' }}</td>
                         <td class="label">Ubicación:</td>
-                        <td class="value">{{ $servicio->equipo->area->sede->municipio->nombre ?? 'N/A' }}</td>
+                        <td class="value">{{ $servicio->equipo?->area?->sede?->municipio?->nombre ?? 'N/A' }}</td>
                     </tr>
                     <tr>
                         <td class="label">Área:</td>

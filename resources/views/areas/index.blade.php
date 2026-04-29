@@ -14,6 +14,66 @@
         </a>
     </div>
 
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+        <form method="GET" action="{{ route('areas.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-building text-blue-600"></i> Filtrar por Empresa
+                </label>
+                <select name="empresa_id" id="empresaFilter"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- Todas las empresas --</option>
+                    @foreach($empresas as $empresa)
+                        <option value="{{ $empresa->id }}" {{ request('empresa_id') == $empresa->id ? 'selected' : '' }}>
+                            {{ $empresa->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-user text-green-600"></i> Filtrar por Cliente
+                </label>
+                <select name="cliente_id" id="clienteFilter"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- Todos los clientes --</option>
+                    @foreach($clientes as $cliente)
+                        <option value="{{ $cliente->id }}" {{ request('cliente_id') == $cliente->id ? 'selected' : '' }}>
+                            {{ $cliente->razon_social }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                <a href="{{ route('areas.index') }}" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+            </div>
+        </form>
+
+        <!-- Indicador de filtro activo -->
+        @if(request('empresa_id') || request('cliente_id'))
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-700">
+                    <i class="fas fa-info-circle"></i>
+                    Filtro activo:
+                    @if(request('empresa_id'))
+                        <span class="font-semibold">Empresa: {{ $empresas->find(request('empresa_id'))->nombre ?? 'N/A' }}</span>
+                    @endif
+                    @if(request('cliente_id'))
+                        <span class="font-semibold">Cliente: {{ $clientes->find(request('cliente_id'))->razon_social ?? 'N/A' }}</span>
+                    @endif
+                </p>
+            </div>
+        @endif
+    </div>
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="w-full" id="tablaAreas">
             <thead class="bg-gray-100 border-b">
@@ -83,6 +143,20 @@
 @section('scripts')
 <script>
 $(document).ready(function() {
+    // Limpiar filtro opuesto cuando se selecciona uno
+    $('#empresaFilter').change(function() {
+        if ($(this).val()) {
+            $('#clienteFilter').val('');
+        }
+    });
+
+    $('#clienteFilter').change(function() {
+        if ($(this).val()) {
+            $('#empresaFilter').val('');
+        }
+    });
+
+    // DataTable
     $('#tablaAreas').DataTable({
         "language": {
             "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"

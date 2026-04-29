@@ -15,13 +15,14 @@ class DatabaseSeeder extends Seeder
      * 
      * Orden de ejecución respetando dependencias de foreign keys:
      * 1. Ubicación DANE (Pais → Departamento → Municipio → Barrio)
-     * 2. Catálogo de tipos (TipoEquipo)
-     * 3. Clientes (depende de Empresa, Municipio)
-     * 4. Contratos (depende de Cliente, User)
-     * 5. Usuarios (si no existen)
-     * 6. Áreas (depende de Sede)
-     * 7. Equipos (depende de Area, TipoEquipo)
-     * 8. Servicios (depende de Equipo, Contrato)
+     * 2. Catálogo de categorías (Categoria) - requerido por TipoEquipo
+     * 3. Catálogo de tipos (TipoEquipo)
+     * 4. Clientes (depende de Empresa, Municipio)
+     * 5. Contratos (depende de Cliente, User)
+     * 6. Usuarios (si no existen)
+     * 7. Áreas (depende de Sede)
+     * 8. Equipos (depende de Area, TipoEquipo)
+     * 9. Servicios (depende de Equipo, Contrato)
      */
     public function run(): void
     {
@@ -36,12 +37,22 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =======================
-        // 2. CATÁLOGO TI
+        // 2. EMPRESA
+        // =======================
+        $this->call(EmpresaSeeder::class);
+
+        // =======================
+        // 3. CATEGORÍAS
+        // =======================
+        $this->call(CategoriaSeeder::class);
+
+        // =======================
+        // 4. CATÁLOGO TI
         // =======================
         $this->call(TipoEquipoSeeder::class);
 
         // =======================
-        // 3. CLIENTES Y CONTRATOS
+        // 5. CLIENTES Y CONTRATOS
         // =======================
         $this->call([
             ClienteSeeder::class,
@@ -50,13 +61,18 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =======================
-        // 4. USUARIOS CON ROLES
+        // 6. USUARIOS CON ROLES
         // =======================
         // Crear después de clientes para que cada cliente tenga su usuario de acceso
         $this->call(UsuariosConRolesSeeder::class);
 
         // =======================
-        // 5. INFRAESTRUCTURA TI
+        // 7. SEDES DE CLIENTES
+        // =======================
+        $this->call(SedeSeeder::class);
+
+        // =======================
+        // 8. INFRAESTRUCTURA TI
         // =======================
         $this->call([
             AreaSeeder::class,

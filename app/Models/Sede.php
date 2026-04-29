@@ -10,9 +10,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Modelo Sede
  * 
- * Representa una sucursal o ubicación de una empresa.
- * Una sede pertenece a una empresa y opcionalmente a un cliente.
- * Contiene áreas y equipos TI.
+ * Representa una ubicación física que puede pertenecer a:
+ * - La empresa (CEOGestion): sedes propias, data centers, oficinas
+ * - Un cliente: sucursales, ubicaciones del cliente donde se instalan equipos
+ * 
+ * Validación: Una sede debe pertenecer a UNA Y SOLO UNA entidad
+ * - Si es sede de empresa: empresa_id NOT NULL, cliente_id NULL
+ * - Si es sede de cliente: cliente_id NOT NULL, empresa_id NULL
+ * 
+ * Una sede:
+ * - Está ubicada en un municipio y opcionalmente en un barrio
+ * - Contiene áreas con equipos TI
+ * - Puede tener múltiples usuarios asignados
+ * - Contiene equipos ubicados en ella
+ * 
+ * Relaciones:
+ * - empresa: La empresa dueña de la sede (BelongsTo) - nullable
+ * - cliente: El cliente dueño de la sede (BelongsTo) - nullable
+ * - municipio: Ubicación del municipio (BelongsTo)
+ * - barrio: Ubicación del barrio - opcional (BelongsTo)
+ * - usuarios: Usuarios asignados a la sede (HasMany)
+ * - areas: Áreas funcionales dentro de la sede (HasMany)
  */
 class Sede extends Model
 {
@@ -44,7 +62,9 @@ class Sede extends Model
      */
 
     /**
-     * Una sede pertenece a una empresa (proveedora de servicios)
+     * Una sede pertenece a una empresa (si es sede de empresa)
+     * 
+     * @return BelongsTo
      */
     public function empresa(): BelongsTo
     {
@@ -52,7 +72,9 @@ class Sede extends Model
     }
 
     /**
-     * Una sede puede pertenecer a un cliente (quien contrata servicios)
+     * Una sede pertenece a un cliente (si es sede de cliente)
+     * 
+     * @return BelongsTo
      */
     public function cliente(): BelongsTo
     {
@@ -92,12 +114,45 @@ class Sede extends Model
     }
 
     /**
+     * Validadores personalizados
+     * ============================================
+     */
+
+    /**
+     * Valida que la sede pertenezca a UNA Y SOLO UNA entidad (empresa o cliente)
+     * 
+     * @return bool
+     * @throws \Exception Si ni empresa_id ni cliente_id están seteados
+     */
+    public function validarPropietario(): bool
+    {
+        $tieneEmpresa = !is_null($this->empresa_id);
+        $tieneCliente = !is_null($this->cliente_id);
+
+        // Ambas null: error
+        if (!$tieneEmpresa && !$tieneCliente) {
+            throw new \Exception('La sede debe pertenecer a una empresa O a un cliente');
+        }
+
+        // Ambas seteadas: error (no permitido)
+        if ($tieneEmpresa && $tieneCliente) {
+            throw new \Exception('La sede no puede pertenecer simultáneamente a empresa y cliente');
+        }
+
+        return true;
+    }
+
+    /**
      * Scopes
      * ============================================
      */
 
     /**
-     * Solo sedes activas
+     * Filtrar sedes activas
+     * 
+     * Retorna solo sedes con estado = true
+     * 
+     * Uso: Sede::activas()->get()
      */
     public function scopeActivas($query)
     {
@@ -105,19 +160,49 @@ class Sede extends Model
     }
 
     /**
-     * Filtrar por empresa
+     * Filtrar sedes de empresa
+     * 
+     * Retorna todas las sedes propias de la empresa (empresa_id NOT NULL)
+     * 
+     * Uso: Sede::deEmpresa()->get()
+     * Uso: Sede::deEmpresa($empresaId)->get()
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int|null $empresaId ID de la empresa (opcional)
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopePorEmpresa($query, $empresaId)
+    public function scopeDeEmpresa($query, $empresaId = null)
     {
-        return $query->where('empresa_id', $empresaId);
+        $query->whereNotNull('empresa_id')->whereNull('cliente_id');
+        
+        if ($empresaId) {
+            $query->where('empresa_id', $empresaId);
+        }
+        
+        return $query;
     }
 
     /**
-     * Filtrar por cliente
+     * Filtrar sedes de cliente
+     * 
+     * Retorna todas las sedes que pertenecen a clientes (cliente_id NOT NULL)
+     * 
+     * Uso: Sede::deCliente()->get()
+     * Uso: Sede::deCliente($clienteId)->get()
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int|null $clienteId ID del cliente (opcional)
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopePorCliente($query, $clienteId)
+    public function scopeDeCliente($query, $clienteId = null)
     {
-        return $query->where('cliente_id', $clienteId);
+        $query->whereNotNull('cliente_id')->whereNull('empresa_id');
+        
+        if ($clienteId) {
+            $query->where('cliente_id', $clienteId);
+        }
+        
+        return $query;
     }
 
     /**
@@ -126,7 +211,42 @@ class Sede extends Model
      */
 
     /**
-     * Obtener cantidad total de equipos en la sede
+     * Obtener el propietario de la sede (empresa o cliente)
+     * 
+     * @return Empresa|Cliente|null
+     */
+    public function propietario()
+    {
+        return $this->empresa ?? $this->cliente;
+    }
+
+    /**
+     * Verificar si es sede de empresa
+     * 
+     * @return bool
+     */
+    public function esDeEmpresa(): bool
+    {
+        return !is_null($this->empresa_id) && is_null($this->cliente_id);
+    }
+
+    /**
+     * Verificar si es sede de cliente
+     * 
+     * @return bool
+     */
+    public function esDeCliente(): bool
+    {
+        return !is_null($this->cliente_id) && is_null($this->empresa_id);
+    }
+
+    /**
+     * Obtener cantidad total de equipos en todas las áreas de la sede
+     * 
+     * Calcula el total de equipos (independientemente de su estado)
+     * en todas las áreas funcionales de esta sede
+     * 
+     * @return int Cantidad total de equipos
      */
     public function cantidadEquipos()
     {
@@ -137,7 +257,12 @@ class Sede extends Model
     }
 
     /**
-     * Obtener equipos operativos
+     * Obtener cantidad de equipos operativos en la sede
+     * 
+     * Retorna solo los equipos que están en estado 'OPERATIVO'
+     * en todas las áreas de esta sede
+     * 
+     * @return int Cantidad de equipos en estado operativo
      */
     public function equiposOperativos()
     {
