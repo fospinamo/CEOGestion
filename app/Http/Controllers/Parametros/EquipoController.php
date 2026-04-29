@@ -170,4 +170,44 @@ class EquipoController extends Controller
         return redirect()->route('parametros.equipos.index')
             ->with('success', 'Equipo eliminado exitosamente');
     }
+
+    /**
+     * Exportar equipos a Excel
+     */
+    public function exportarExcel()
+    {
+        // Obtener todos los equipos con relaciones
+        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo'])
+            ->get();
+
+        // Para ahora, devolver un archivo CSV simple
+        $filename = 'equipos_' . date('Y-m-d_His') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=$filename",
+        ];
+
+        $callback = function() use ($equipos) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['ID', 'Código', 'Marca', 'Modelo', 'Serie', 'Estado', 'Tipo Equipo', 'Área', 'Sede', 'Cliente/Empresa']);
+            
+            foreach ($equipos as $equipo) {
+                fputcsv($file, [
+                    $equipo->id,
+                    $equipo->codigo_interno,
+                    $equipo->marca,
+                    $equipo->modelo,
+                    $equipo->serie,
+                    $equipo->estado_operativo,
+                    $equipo->tipoEquipo->nombre ?? 'N/A',
+                    $equipo->area->nombre ?? 'N/A',
+                    $equipo->area->sede->nombre ?? 'N/A',
+                    $equipo->area->sede->cliente->razon_social ?? $equipo->area->sede->empresa->nombre ?? 'N/A',
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

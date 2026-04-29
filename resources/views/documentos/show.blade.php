@@ -38,7 +38,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-600 uppercase">Subido por</p>
-                <p class="font-semibold text-gray-900">{{ $documento->subidoPor->name ?? 'Sistema' }}</p>
+                <p class="font-semibold text-gray-900">{{ $documento->usuario->name ?? 'Sistema' }}</p>
             </div>
         </div>
     </div>

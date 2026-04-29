@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
         
         // EQUIPOS
         Route::resource('equipos', EquipoController::class);
+        Route::get('equipos/exportar/excel', [EquipoController::class, 'exportarExcel'])->name('equipos.exportar.excel');
         
         // TIPOS DE EQUIPO
         Route::resource('tipos-equipos', TipoEquipoController::class);

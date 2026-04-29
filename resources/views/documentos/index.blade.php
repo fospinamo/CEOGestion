@@ -48,7 +48,7 @@
                                 <span class="text-gray-500">-</span>
                             @endif
                         </td>
-                        <td class="px-6 py-3 text-sm text-gray-700">{{ $documento->subidoPor->name ?? 'Sistema' }}</td>
+                        <td class="px-6 py-3 text-sm text-gray-700">{{ $documento->usuario->name ?? 'Sistema' }}</td>
                         <td class="px-6 py-3 text-sm text-gray-700">{{ $documento->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-6 py-3 text-center">
                             <div class="flex justify-center gap-2">

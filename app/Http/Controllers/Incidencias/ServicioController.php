@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Incidencias;
 
+use App\Http\Controllers\Controller;
 use App\Models\Servicio;
 use App\Models\Equipo;
 use App\Models\Contrato;
