@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ContratoController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DocumentoAdjuntoController;
 
 // =======================================
 // RUTAS PÚBLICAS
@@ -120,6 +123,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Recurso de Usuarios (CRUD)
     Route::resource('usuarios', UsuarioController::class);
+
+    // Recurso de Contratos (CRUD)
+    Route::resource('contratos', ContratoController::class);
+
+    // Recurso de Categorías (CRUD)
+    Route::resource('categorias', CategoriaController::class);
+
+    // Recurso de Documentos (CRUD + download personalizado)
+    Route::resource('documentos', DocumentoAdjuntoController::class);
+    Route::get('/documentos/{documento}/download', [DocumentoAdjuntoController::class, 'download'])->name('documentos.download');
 });
 
 // =======================================
