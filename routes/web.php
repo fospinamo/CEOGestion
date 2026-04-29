@@ -1,19 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EmpresaController;
-use App\Http\Controllers\SedeController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\DepartamentoController;
-use App\Http\Controllers\MunicipioController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\ContratoController;
-use App\Http\Controllers\AreaController;
-use App\Http\Controllers\EquipoController;
-use App\Http\Controllers\ServicioController;
-use App\Http\Controllers\TipoEquipoController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\DocumentoAdjuntoController;
 use App\Http\Controllers\AuthController;
 
 // =======================================
@@ -259,3 +246,16 @@ Route::post('/register', function () {
 
     return redirect('/login')->with('success', 'Registro exitoso. Por favor inicia sesión.');
 })->name('register.store');
+
+// =======================================
+// IMPORTAR RUTAS MODULARES
+// =======================================
+
+// Módulo Administrativo - Tablas básicas
+require __DIR__ . '/administrativo.php';
+
+// Módulo Parámetros - Configuración general
+require __DIR__ . '/parametros.php';
+
+// Módulo Incidencias - Servicios técnicos
+require __DIR__ . '/incidencias.php';
