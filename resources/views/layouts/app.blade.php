@@ -85,7 +85,7 @@
 
             <nav class="mt-6 space-y-2 px-3 flex-1">
                 @if(auth()->check() && auth()->user()->tipo_rol === 'tecnico')
-                    <a href="{{ route('servicios.technician-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('servicios.technician-panel') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('incidencias.servicios.technician-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.technician-panel') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-tasks w-5"></i>
                         <span>Mis Servicios</span>
                     </a>
@@ -103,12 +103,12 @@
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión Principal</h3>
                     </div>
 
-                    <a href="{{ route('empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('empresas.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-industry w-5"></i>
                         <span>Empresas</span>
                     </a>
 
-                    <a href="{{ route('sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('sedes.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-map-marker-alt w-5"></i>
                         <span>Sedes</span>
                     </a>
@@ -122,12 +122,17 @@
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Ubicación DANE</h3>
                     </div>
 
-                    <a href="{{ route('departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('departamentos.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
+                        <i class="fas fa-globe w-5"></i>
+                        <span>Países</span>
+                    </a>
+
+                    <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-map w-5"></i>
                         <span>Departamentos</span>
                     </a>
 
-                    <a href="{{ route('municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('municipios.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-city w-5"></i>
                         <span>Municipios</span>
                     </a>
@@ -136,7 +141,7 @@
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión TI</h3>
                     </div>
 
-                    <a href="{{ route('clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('clientes.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-handshake w-5"></i>
                         <span>Clientes</span>
                     </a>
@@ -146,27 +151,27 @@
                         <span>Contratos</span>
                     </a>
 
-                    <a href="{{ route('areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('areas.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-th w-5"></i>
                         <span>Áreas</span>
                     </a>
 
-                    <a href="{{ route('equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('equipos.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-laptop w-5"></i>
                         <span>Equipos</span>
                     </a>
 
-                    <a href="{{ route('servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('servicios.*') && !request()->routeIs('servicios.technician-panel') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-tools w-5"></i>
                         <span>Servicios</span>
                     </a>
 
-                    <a href="{{ route('servicios.admin-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('servicios.admin-panel') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-tasks w-5"></i>
                         <span>Servicios Asignados</span>
                     </a>
 
-                    <a href="{{ route('tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('tipos-equipos.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-list w-5"></i>
                         <span>Tipos de Equipos</span>
                     </a>

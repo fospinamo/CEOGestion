@@ -9,6 +9,9 @@ Route::middleware(['auth'])->group(function () {
         // SERVICIOS
         Route::resource('servicios', ServicioController::class);
         
+        // PANEL DEL TÉCNICO
+        Route::get('servicios-panel/tecnico', [ServicioController::class, 'technicianPanel'])->name('servicios.technician-panel');
+        
         // ACCIONES ESPECIALES DE SERVICIOS
         Route::prefix('servicios')->group(function () {
             Route::get('{servicio}/informe', [ServicioController::class, 'report'])->name('servicios.report');
