@@ -60,7 +60,10 @@ class RoleAndPermissionSeeder extends Seeder
 
         $roleMap = [];
         foreach ($roles as $roleData) {
-            $role = Role::create($roleData);
+            $role = Role::firstOrCreate(
+                ['slug' => $roleData['slug']],
+                $roleData
+            );
             $roleMap[$roleData['slug']] = $role;
         }
 
@@ -120,7 +123,10 @@ class RoleAndPermissionSeeder extends Seeder
 
         $permissionMap = [];
         foreach ($allPermissions as $permData) {
-            $permission = Permission::create($permData);
+            $permission = Permission::firstOrCreate(
+                ['name' => $permData['name']],
+                $permData
+            );
             $permissionMap[$permission->name] = $permission;
         }
 

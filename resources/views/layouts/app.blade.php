@@ -84,102 +84,146 @@
             </div>
 
             <nav class="mt-6 space-y-2 px-3 flex-1">
-                @if(auth()->check() && auth()->user()->tipo_rol === 'tecnico')
+                {{-- Dashboard y menú base --}}
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-700' : '' }}">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                {{-- Panel Técnico (solo para Técnicos) --}}
+                @if(auth()->check() && auth()->user()->hasRole('tecnico'))
                     <a href="{{ route('incidencias.servicios.technician-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.technician-panel') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-tasks w-5"></i>
                         <span>Mis Servicios</span>
                     </a>
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-chart-line w-5"></i>
-                        <span>Dashboard</span>
-                    </a>
-                @else
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-chart-line w-5"></i>
-                        <span>Dashboard</span>
-                    </a>
+                @endif
 
+                {{-- Gestión de Seguridad (solo Admin) --}}
+                @if(auth()->check() && auth()->user()->hasRole('admin'))
                     <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión Principal</h3>
+                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Seguridad</h3>
                     </div>
-
-                    <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-industry w-5"></i>
-                        <span>Empresas</span>
-                    </a>
-
-                    <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-map-marker-alt w-5"></i>
-                        <span>Sedes</span>
-                    </a>
-
-                    <a href="{{ route('usuarios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('usuarios.*') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('seguridad.usuarios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.usuarios.*') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-users w-5"></i>
                         <span>Usuarios</span>
                     </a>
+                    <a href="{{ route('seguridad.roles.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.roles.*') ? 'bg-blue-700' : '' }}">
+                        <i class="fas fa-lock w-5"></i>
+                        <span>Roles</span>
+                    </a>
+                    <a href="{{ route('seguridad.permissions.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.permissions.*') ? 'bg-blue-700' : '' }}">
+                        <i class="fas fa-shield-alt w-5"></i>
+                        <span>Permisos</span>
+                    </a>
+                @endif
+
+                {{-- Gestión Administrativa (Admin, Gerente) --}}
+                @if(auth()->check() && (auth()->user()->hasPermission('empresas.ver')))
+                    <div class="pt-4 pb-2">
+                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión Principal</h3>
+                    </div>
+                    @can('empresas.ver')
+                        <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-industry w-5"></i>
+                            <span>Empresas</span>
+                        </a>
+                    @endcan
+                    @can('sedes.ver')
+                        <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-map-marker-alt w-5"></i>
+                            <span>Sedes</span>
+                        </a>
+                    @endcan
 
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Ubicación DANE</h3>
                     </div>
+                    @can('paises.ver')
+                        <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-globe w-5"></i>
+                            <span>Países</span>
+                        </a>
+                    @endcan
+                    @can('departamentos.ver')
+                        <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-map w-5"></i>
+                            <span>Departamentos</span>
+                        </a>
+                    @endcan
+                    @can('municipios.ver')
+                        <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-city w-5"></i>
+                            <span>Municipios</span>
+                        </a>
+                    @endcan
+                @endif
 
-                    <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-globe w-5"></i>
-                        <span>Países</span>
-                    </a>
-
-                    <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-map w-5"></i>
-                        <span>Departamentos</span>
-                    </a>
-
-                    <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-city w-5"></i>
-                        <span>Municipios</span>
-                    </a>
-
+                {{-- Gestión TI (Admin, Gerente, Supervisor, Agente) --}}
+                @if(auth()->check() && (auth()->user()->hasPermission('equipos.ver') || auth()->user()->hasPermission('servicios.ver')))
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión TI</h3>
                     </div>
+                    @can('clientes.ver')
+                        <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-handshake w-5"></i>
+                            <span>Clientes</span>
+                        </a>
+                    @endcan
+                    @can('contratos.ver')
+                        <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-file-contract w-5"></i>
+                            <span>Contratos</span>
+                        </a>
+                    @endcan
+                    @can('areas.ver')
+                        <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-th w-5"></i>
+                            <span>Áreas</span>
+                        </a>
+                    @endcan
+                    @can('equipos.ver')
+                        <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-laptop w-5"></i>
+                            <span>Equipos</span>
+                        </a>
+                    @endcan
+                    @can('tipos-equipos.ver')
+                        <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-list w-5"></i>
+                            <span>Tipos de Equipos</span>
+                        </a>
+                    @endcan
+                    @can('documentos.ver')
+                        <a href="{{ route('parametros.documentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.documentos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-file-upload w-5"></i>
+                            <span>Documentos</span>
+                        </a>
+                    @endcan
+                @endif
 
-                    <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-handshake w-5"></i>
-                        <span>Clientes</span>
-                    </a>
-
-                    <a href="{{ route('contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('contratos.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-file-contract w-5"></i>
-                        <span>Contratos</span>
-                    </a>
-
-                    <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-th w-5"></i>
-                        <span>Áreas</span>
-                    </a>
-
-                    <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-laptop w-5"></i>
-                        <span>Equipos</span>
-                    </a>
-
-                    <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-tools w-5"></i>
-                        <span>Servicios</span>
-                    </a>
-
-                    <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-tasks w-5"></i>
-                        <span>Servicios Asignados</span>
-                    </a>
-
-                    <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-list w-5"></i>
-                        <span>Tipos de Equipos</span>
-                    </a>
-
-                    <a href="{{ route('documentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('documentos.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-file-upload w-5"></i>
-                        <span>Documentos</span>
-                    </a>
+                {{-- Incidencias (Admin, Técnico, Agente) --}}
+                @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
+                    <div class="pt-4 pb-2">
+                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Incidencias</h3>
+                    </div>
+                    @can('servicios.ver')
+                        <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.index') || (request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel')) ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-tools w-5"></i>
+                            <span>Servicios</span>
+                        </a>
+                    @endcan
+                    @can('servicios.panel-admin')
+                        <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-tasks w-5"></i>
+                            <span>Servicios Asignados</span>
+                        </a>
+                    @endcan
+                    @can('servicios.estadisticas')
+                        <a href="{{ route('incidencias.servicios.estadisticas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.estadisticas') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Estadísticas</span>
+                        </a>
+                    @endcan
                 @endif
             </nav>
 
@@ -219,7 +263,7 @@
                         <div class="text-right hidden sm:block">
                             @auth
                                 <p class="text-sm font-semibold text-gray-700">{{ auth()->user()->name ?? 'Usuario' }}</p>
-                                <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->tipo_rol ?? 'usuario') }}</p>
+                                <p class="text-xs text-gray-500">{{ auth()->user()->role?->name ?? 'Sin rol' }}</p>
                             @endauth
                         </div>
                     </div>
