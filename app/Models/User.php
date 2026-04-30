@@ -53,6 +53,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',              // NUEVO: Relación con tabla roles
         'empresa_id',
         'sede_id',
         'cliente_id',
@@ -94,12 +95,17 @@ class User extends Authenticatable
      */
 
     /**
-     * El usuario pertenece a una empresa (proveedora de servicios)
+     * El usuario pertenece a un rol (Admin, Técnico, Agente)
+     * 
+     * NUEVO: Sistema de roles dinámicos desde BD
+     * Reemplaza el campo tipo_rol por relación a tabla roles
      */
-    public function empresa(): BelongsTo
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Role::class);
     }
+
+    /**
 
     /**
      * El usuario pertenece a una sede (ubicación)
@@ -134,8 +140,114 @@ class User extends Authenticatable
     }
 
     /**
-     * Métodos Helpers
+     * Métodos de Autenticación y Permisos
      * ============================================
+     */
+
+    /**
+     * Verifica si el usuario tiene un rol específico
+     * 
+     * @param string $roleName Slug del rol (ej: 'admin', 'tecnico', 'agente')
+     * @return bool
+     * 
+     * EJEMPLO:
+     * if ($user->hasRole('admin')) { ... }
+     */
+    public function hasRole(string $roleName): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+
+        return $this->role->slug === $roleName;
+    }
+
+    /**
+     * Verifica si el usuario tiene un permiso específico
+     * 
+     * @param string $permissionName Nombre del permiso (ej: 'usuarios.crear')
+     * @return bool
+     * 
+     * EJEMPLO:
+     * if ($user->hasPermission('usuarios.crear')) { ... }
+     * 
+     * NOTA: Admin tiene todos los permisos automáticamente
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        // Admin tiene todos los permisos
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        if (!$this->role) {
+            return false;
+        }
+
+        return $this->role->hasPermission($permissionName);
+    }
+
+    /**
+     * Verifica si el usuario tiene alguno de los roles especificados
+     * 
+     * @param array $roleNames Array de slugs de roles
+     * @return bool
+     * 
+     * EJEMPLO:
+     * if ($user->hasAnyRole(['admin', 'agente'])) { ... }
+     */
+    public function hasAnyRole(array $roleNames): bool
+    {
+        return collect($roleNames)
+            ->contains(fn($role) => $this->hasRole($role));
+    }
+
+    /**
+     * Verifica si el usuario tiene todos los roles especificados
+     * 
+     * @param array $roleNames Array de slugs de roles
+     * @return bool
+     * 
+     * EJEMPLO:
+     * if ($user->hasAllRoles(['admin', 'tecnico'])) { ... }
+     */
+    public function hasAllRoles(array $roleNames): bool
+    {
+        return collect($roleNames)
+            ->every(fn($role) => $this->hasRole($role));
+    }
+
+    /**
+     * Verifica si el usuario tiene alguno de los permisos especificados
+     * 
+     * @param array $permissionNames Array de nombres de permisos
+     * @return bool
+     * 
+     * EJEMPLO:
+     * if ($user->hasAnyPermission(['usuarios.crear', 'usuarios.editar'])) { ... }
+     */
+    public function hasAnyPermission(array $permissionNames): bool
+    {
+        return collect($permissionNames)
+            ->contains(fn($perm) => $this->hasPermission($perm));
+    }
+
+    /**
+     * Obtener nombre del rol del usuario
+     * 
+     * @return string|null
+     */
+    public function getRoleNameAttribute(): ?string
+    {
+        return $this->role?->name;
+    }
+
+    /**
+     * Métodos Helpers Deprecated (para compatibilidad)
+     * ============================================
+     * 
+     * ADVERTENCIA: Estos métodos usan tipo_rol (campo deprecado)
+     * Se mantienen para no romper código existente, pero usar nuevos métodos
      */
 
     /**

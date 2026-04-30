@@ -160,6 +160,9 @@ Route::middleware(['auth'])->group(function () {
 // IMPORTAR RUTAS MODULARES
 // =======================================
 
+// Módulo Seguridad - Usuarios, Roles y Permisos (NUEVO)
+require __DIR__ . '/seguridad.php';
+
 // Módulo Administrativo - Tablas básicas
 require __DIR__ . '/administrativo.php';
 

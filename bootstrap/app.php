@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registrar middleware alias personalizado
         $middleware->alias([
             'auth.token' => \App\Http\Middleware\AuthToken::class,
+            // NUEVO: Middleware de autorización y permisos
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
+            'can' => \App\Http\Middleware\CheckPermission::class, // Alias para 'can'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
