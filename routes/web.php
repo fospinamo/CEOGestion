@@ -23,8 +23,29 @@ Route::get('/', function () {
 // AUTENTICACIÓN (Login/Register)
 // =======================================
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
-Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/login', [AuthController::class, 'login'])->name('login.store')->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Register (Registro público)
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register')->middleware('guest');
+
+Route::post('/register', function (\Illuminate\Http\Request $request) {
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users|max:255',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    \App\Models\User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => bcrypt($data['password']),
+    ]);
+
+    return redirect('/login')->with('success', 'Registro exitoso. Por favor inicia sesión.');
+})->name('register.store')->middleware('guest');
 
 // =======================================
 // PORTAL DEL CLIENTE (Acceso con Token)
@@ -134,47 +155,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('documentos', DocumentoAdjuntoController::class);
     Route::get('/documentos/{documento}/download', [DocumentoAdjuntoController::class, 'download'])->name('documentos.download');
 });
-
-// =======================================
-// RUTAS DE AUTENTICACIÓN
-// =======================================
-
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::post('/login', function () {
-    $credentials = request()->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    if (auth()->attempt($credentials)) {
-        return redirect('/dashboard');
-    }
-
-    return back()->withErrors(['email' => 'Credenciales inválidas']);
-})->name('login.store');
-
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
-
-Route::post('/register', function () {
-    $data = request()->validate([
-        'name' => 'required|string',
-        'email' => 'required|email|unique:users',
-        'password' => 'required|min:8|confirmed',
-    ]);
-
-    \App\Models\User::create([
-        'name' => $data['name'],
-        'email' => $data['email'],
-        'password' => bcrypt($data['password']),
-    ]);
-
-    return redirect('/login')->with('success', 'Registro exitoso. Por favor inicia sesión.');
-})->name('register.store');
 
 // =======================================
 // IMPORTAR RUTAS MODULARES

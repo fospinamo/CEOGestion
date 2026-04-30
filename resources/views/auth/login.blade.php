@@ -79,7 +79,7 @@
             @endif
 
             <!-- Form Login -->
-            <form method="POST" action="/login">
+            <form method="POST" action="{{ route('login.store') }}">
                 @csrf
 
                 <!-- Email -->
