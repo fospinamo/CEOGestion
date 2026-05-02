@@ -15,6 +15,11 @@ Route::middleware(['auth'])->group(function () {
         // PANEL DEL TÉCNICO (sin parámetro - para técnicos)
         Route::get('servicios-panel/tecnico', [ServicioController::class, 'technicianPanel'])->name('servicios.technician-panel');
         
+        // ESTADÍSTICAS DE SERVICIOS (sin parámetro - solo Admin y Agente)
+        Route::get('servicios/estadisticas', [ServicioController::class, 'estadisticas'])
+            ->name('servicios.estadisticas')
+            ->middleware('can:servicios.estadisticas');
+        
         // ACCIONES ESPECIALES DE SERVICIOS (requieren parámetro {servicio})
         Route::prefix('servicios')->group(function () {
             Route::get('{servicio}/informe', [ServicioController::class, 'report'])->name('servicios.report');

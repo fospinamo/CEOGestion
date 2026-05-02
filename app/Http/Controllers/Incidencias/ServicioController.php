@@ -1096,4 +1096,75 @@ class ServicioController extends Controller
     {
         return $this->technicianPanel();
     }
+
+    /**
+     * Mostrar estadísticas de servicios
+     * 
+     * GET /incidencias/servicios/estadisticas
+     * 
+     * Muestra:
+     * - Total de servicios por mes
+     * - Servicios por estado
+     * - Servicios por técnico
+     * - Tasa de resolución
+     * - Tiempo promedio de resolución
+     * 
+     * @return View
+     */
+    public function estadisticas(): View
+    {
+        // Total de servicios
+        $totalServicios = Servicio::count();
+        
+        // Servicios por estado
+        $serviciosPorEstado = Servicio::select('estado_servicio_id')
+            ->selectRaw('COUNT(*) as cantidad')
+            ->groupBy('estado_servicio_id')
+            ->with('estadoServicio')
+            ->get();
+        
+        // Servicios por técnico (últimos 30 días)
+        $serviciosPorTecnico = Servicio::where('created_at', '>=', now()->subDays(30))
+            ->select('tecnico_responsable_id')
+            ->selectRaw('COUNT(*) as cantidad')
+            ->groupBy('tecnico_responsable_id')
+            ->with('tecnicoResponsable')
+            ->get();
+        
+        // Servicios por mes (últimos 12 meses)
+        $serviciosPorMes = Servicio::selectRaw('DATE_TRUNC(\'month\', created_at) as mes')
+            ->selectRaw('COUNT(*) as cantidad')
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+        
+        // Servicios completados
+        $serviciosCompletados = Servicio::whereNotNull('fecha_cierre')
+            ->count();
+        
+        // Tasa de resolución
+        $tasaResolucion = $totalServicios > 0 
+            ? round(($serviciosCompletados / $totalServicios) * 100, 2)
+            : 0;
+        
+        // Servicios por cliente (top 5)
+        $serviciosPorCliente = Servicio::select('cliente_id')
+            ->selectRaw('COUNT(*) as cantidad')
+            ->with('equipo.cliente')
+            ->groupBy('cliente_id')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(5)
+            ->get();
+
+        return view('incidencias.servicios.estadisticas', [
+            'totalServicios' => $totalServicios,
+            'serviciosPorEstado' => $serviciosPorEstado,
+            'serviciosPorTecnico' => $serviciosPorTecnico,
+            'serviciosPorMes' => $serviciosPorMes,
+            'serviciosCompletados' => $serviciosCompletados,
+            'tasaResolucion' => $tasaResolucion,
+            'serviciosPorCliente' => $serviciosPorCliente,
+        ]);
+    }
 }
