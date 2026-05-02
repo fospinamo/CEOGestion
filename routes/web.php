@@ -124,7 +124,7 @@ Route::middleware(['auth'])->group(function () {
         }
         
         return \App\Models\Sede::where('empresa_id', $empresa_id)
-            ->where('estado', 'ACTIVA')
+            ->where('estado', true)
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
     });
@@ -137,7 +137,7 @@ Route::middleware(['auth'])->group(function () {
         }
         
         return \App\Models\Sede::where('cliente_id', $cliente_id)
-            ->where('estado', 'ACTIVA')
+            ->where('estado', true)
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
     });
