@@ -23,10 +23,10 @@ Route::middleware(['auth'])->group(function () {
         // ÁREAS
         Route::resource('areas', AreaController::class);
         
-        // EQUIPOS
-        Route::resource('equipos', EquipoController::class);
+        // EQUIPOS - Rutas específicas PRIMERO (antes que resource)
         Route::get('equipos/exportar/excel', [EquipoController::class, 'exportarExcel'])->name('equipos.exportar.excel');
         Route::get('equipos/exportar/pdf', [EquipoController::class, 'exportarPdf'])->name('equipos.exportar.pdf');
+        Route::resource('equipos', EquipoController::class);
         
         // TIPOS DE EQUIPO
         Route::resource('tipos-equipos', TipoEquipoController::class);
