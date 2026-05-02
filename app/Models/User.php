@@ -106,6 +106,12 @@ class User extends Authenticatable
     }
 
     /**
+     * El usuario pertenece a una empresa
+     */
+    public function empresa(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Empresa::class);
+    }
 
     /**
      * El usuario pertenece a una sede (ubicación)
