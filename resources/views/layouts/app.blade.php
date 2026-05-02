@@ -169,12 +169,6 @@
                             <span>Clientes</span>
                         </a>
                     @endif
-                    @if(auth()->user()->hasPermission('contratos.ver'))
-                        <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-file-contract w-5"></i>
-                            <span>Contratos</span>
-                        </a>
-                    @endif
                     @if(auth()->user()->hasPermission('areas.ver'))
                         <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-th w-5"></i>
@@ -193,13 +187,6 @@
                             <span>Tipos de Equipos</span>
                         </a>
                     @endif
-                    @if(auth()->user()->hasPermission('documentos.ver'))
-                        <a href="{{ route('parametros.documentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.documentos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-file-upload w-5"></i>
-                            <span>Documentos</span>
-                        </a>
-                    @endif
-                @endif
 
                 {{-- Incidencias (Admin, Técnico, Agente) --}}
                 @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
