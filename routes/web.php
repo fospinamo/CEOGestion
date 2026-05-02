@@ -142,18 +142,25 @@ Route::middleware(['auth'])->group(function () {
             ->get(['id', 'nombre']);
     });
 
-    // Recurso de Usuarios (CRUD)
-    Route::resource('usuarios', UsuarioController::class);
-
-    // Recurso de Contratos (CRUD)
-    Route::resource('contratos', ContratoController::class);
-
-    // Recurso de Categorías (CRUD)
-    Route::resource('categorias', CategoriaController::class);
-
-    // Recurso de Documentos (CRUD + download personalizado)
-    Route::resource('documentos', DocumentoAdjuntoController::class);
-    Route::get('/documentos/{documento}/download', [DocumentoAdjuntoController::class, 'download'])->name('documentos.download');
+    /**
+     * NOTA: Las rutas de recursos están organizadas por módulos:
+     * 
+     * ✅ SEGURIDAD: /seguridad/usuarios, /seguridad/roles, /seguridad/permissions
+     *    → Protegidas con middleware role:admin
+     *    → Ubicación: routes/seguridad.php
+     * 
+     * ✅ ADMINISTRATIVO: /administrativo/paises, /administrativo/departamentos, /administrativo/municipios
+     *    → Ubicación: routes/administrativo.php
+     * 
+     * ✅ PARÁMETROS: /parametros/empresas, /parametros/sedes, /parametros/clientes, etc.
+     *    → Ubicación: routes/parametros.php
+     * 
+     * ✅ INCIDENCIAS: /incidencias/servicios
+     *    → Ubicación: routes/incidencias.php
+     * 
+     * NO colocar rutas de CRUD aquí en web.php para evitar duplicación y conflictos
+     * Las rutas modularizadas tienen protección adecuada según el rol del usuario
+     */
 });
 
 // =======================================
