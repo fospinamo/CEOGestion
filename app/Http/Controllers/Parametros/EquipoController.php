@@ -210,4 +210,43 @@ class EquipoController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Exportar equipos a PDF
+     * 
+     * GET /parametros/equipos/exportar/pdf
+     * 
+     * Genera un archivo PDF con el listado completo de equipos
+     * incluyendo información de marca, modelo, serie, tipo y ubicación
+     * 
+     * Usa librería barryvdh/laravel-dompdf para generación de PDF
+     * 
+     * @return \Illuminate\Http\Response PDF descargable
+     */
+    public function exportarPdf()
+    {
+        // Obtener todos los equipos con relaciones
+        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo'])
+            ->orderBy('codigo_interno')
+            ->get();
+
+        // Preparar datos para el PDF
+        $data = [
+            'titulo' => 'Listado de Equipos',
+            'fecha_reporte' => now()->format('d/m/Y H:i:s'),
+            'total_equipos' => $equipos->count(),
+            'equipos' => $equipos,
+        ];
+
+        // Generar PDF usando DomPDF
+        $pdf = \PDF::loadView('parametros.equipos.pdf', $data);
+        
+        // Configurar opciones de papel
+        $pdf->setPaper('A4', 'landscape');
+        
+        // Descargar el PDF
+        $filename = 'equipos_' . date('Y-m-d_His') . '.pdf';
+        return $pdf->download($filename);
+    }
 }
+
