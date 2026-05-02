@@ -107,9 +107,6 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar autorización
-        $this->authorize('can', 'permissions.crear');
-
         // Validar datos
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:permissions',

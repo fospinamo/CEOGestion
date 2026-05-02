@@ -74,9 +74,6 @@ class UsuarioController extends Controller
      */
     public function create(): View
     {
-        // Autorización
-        $this->authorize('can', 'usuarios.crear');
-
         // Cargar datos para combos
         $roles = Role::all();
         $empresas = Empresa::all();
@@ -95,9 +92,6 @@ class UsuarioController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Autorización
-        $this->authorize('can', 'usuarios.crear');
-
         // Validar datos
         $validated = $request->validate([
             'name' => 'required|string|max:100',
@@ -153,9 +147,6 @@ class UsuarioController extends Controller
      */
     public function edit(User $usuario): View
     {
-        // Autorización
-        $this->authorize('can', 'usuarios.editar');
-
         // Cargar datos para combos
         $roles = Role::all();
         $empresas = Empresa::all();
@@ -175,8 +166,6 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, User $usuario): RedirectResponse
     {
-        // Autorización
-        $this->authorize('can', 'usuarios.editar');
 
         // Validar datos (email único excepto el del usuario actual)
         $validated = $request->validate([
@@ -217,9 +206,6 @@ class UsuarioController extends Controller
      */
     public function destroy(User $usuario): RedirectResponse
     {
-        // Autorización
-        $this->authorize('can', 'usuarios.eliminar');
-
         // No permitir eliminar al usuario autenticado
         if ($usuario->id === auth()->id()) {
             return redirect()
