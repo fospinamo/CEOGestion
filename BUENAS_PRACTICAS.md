@@ -79,6 +79,74 @@ git commit -m "Feat: Implementar Estadísticas de Servicios con protocolo"
 
 ---
 
+## 📌 CASO DE ESTUDIO 2: Filtro Dinámico - Sedes por Empresa
+
+### ✅ Problema Resuelto
+En formulario de usuarios (`seguridad/usuarios/edit`), el dropdown de Sedes mostraba TODAS las sedes sin filtrar por la empresa seleccionada.
+
+### ✅ Solución Aplicada
+
+**Verificación Pre-Desarrollo:**
+```
+✓ API endpoint /api/sedes-por-empresa EXISTÍA en routes/web.php (línea 118)
+✓ Relación BD correcta: Sede.empresa_id → Empresa
+✓ Validación servidor: sede_id verificado en UsuarioController
+✓ Modelos correctos: User.empresa() y User.sede()
+```
+
+**Paso 1:** Agregar script JavaScript en vistas
+- Ubicación: `resources/views/seguridad/usuarios/edit.blade.php`
+- Ubicación: `resources/views/seguridad/usuarios/create.blade.php`
+
+**JavaScript implementado:**
+```javascript
+// Escuchar cambios en dropdown #empresa_id
+empresaSelect.addEventListener('change', function() {
+    // Obtener sedes de empresa seleccionada
+    fetch(`/api/sedes-por-empresa?empresa_id=${this.value}`)
+        .then(response => response.json())
+        .then(sedes => {
+            // Actualizar dropdown de sedes dinámicamente
+            sedeSelect.innerHTML = '<option value="">Seleccionar sede...</option>';
+            sedes.forEach(sede => {
+                const option = document.createElement('option');
+                option.value = sede.id;
+                option.textContent = sede.nombre;
+                sedeSelect.appendChild(option);
+            });
+        });
+});
+```
+
+**Paso 2:** Validar y comprometer
+```bash
+php artisan view:cache  # Validar sintaxis
+php artisan cache:clear
+git commit -m "Feat: Implementar filtro dinámico de Sedes por Empresa"
+```
+
+### 🎯 Ventajas de esta Implementación
+
+1. **Sin cambios en BD:** Solo JavaScript, datos intactos
+2. **Reutiliza API existente:** No fue necesario crear nuevas rutas
+3. **UX mejorada:** Usuario solo ve sedes de su empresa
+4. **Validación servidor intacta:** Código backend no cambió
+5. **Compatible ambas vistas:** Funciona en create y edit
+
+### 📋 Checklist Usado
+
+```
+✅ 1. API endpoint ya existía → /api/sedes-por-empresa
+✅ 2. Relaciones BD correctas → Sede.empresa_id
+✅ 3. Validación servidor → UsuarioController update()
+✅ 4. Únicamente cambio frontend → JavaScript
+✅ 5. Sin efectos secundarios → Otras formas intactas
+✅ 6. Caches limpios → view:cache OK
+✅ 7. Commit descriptivo → Protocolo aplicado
+```
+
+---
+
 ### 1. ANTES DE MODIFICAR VISTAS
 Siempre verificar:
 - [ ] ¿Existen TODAS las rutas referenciadas en routes/*.php?
