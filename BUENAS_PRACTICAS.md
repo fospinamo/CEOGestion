@@ -10,7 +10,74 @@ Ruta [parametros.contratos.index] no definida
 
 ---
 
-## ✅ PROTOCOLO DE CAMBIOS SEGURO
+## 📌 CASO DE ESTUDIO: Error de Ruta incidencias.servicios.estadisticas
+
+### ❌ Problema
+La vista `layouts/app.blade.php` línea 210 hacía referencia a:
+```blade
+<a href="{{ route('incidencias.servicios.estadisticas') }}" ...>
+```
+
+Pero la ruta **NO estaba definida** en `routes/incidencias.php`.
+
+### ✅ Solución Aplicada
+
+**Paso 1:** Verificar que el permiso existe en BD
+```
+✓ Permiso 'servicios.estadisticas' existe en RoleAndPermissionSeeder
+✓ Asignado a Admin y Agente
+✓ Usado en menú (layouts/app.blade.php)
+```
+
+**Paso 2:** Crear la ruta en `routes/incidencias.php`
+```php
+Route::get('servicios/estadisticas', [ServicioController::class, 'estadisticas'])
+    ->name('servicios.estadisticas')
+    ->middleware('can:servicios.estadisticas');
+```
+
+**Paso 3:** Crear método `estadisticas()` en `ServicioController`
+```php
+public function estadisticas(): View
+{
+    // Calcular métricas
+    $totalServicios = Servicio::count();
+    $serviciosPorEstado = Servicio::select('estado_servicio_id')...
+    // ... más métricas
+    
+    return view('incidencias.servicios.estadisticas', [...]);
+}
+```
+
+**Paso 4:** Crear vista `resources/views/incidencias/servicios/estadisticas.blade.php`
+- Dashboard con 4 KPIs principales
+- Tabla de clientes por servicios
+- Gráfico de técnicos activos
+
+**Paso 5:** Validar y comprometer
+```bash
+php artisan view:cache  # Validar sintaxis
+php artisan cache:clear
+git commit -m "Feat: Implementar Estadísticas de Servicios con protocolo"
+```
+
+### 🎯 Lecciones Aprendidas
+
+1. **Permiso sin implementación = Error garantizado**
+   - Si se crea un permiso en seeder, debe haber:
+     - ✓ Ruta en routes/[modulo].php
+     - ✓ Método en Controlador
+     - ✓ Vista correspondiente
+     - ✓ Link en menú si es UI
+
+2. **Checklist Pre-Desarrollo**
+   - [ ] ¿Existe la ruta?
+   - [ ] ¿Existe el método?
+   - [ ] ¿Existe la vista?
+   - [ ] ¿El permiso está asignado a roles?
+   - [ ] ¿Se agregó el link en menú?
+
+---
 
 ### 1. ANTES DE MODIFICAR VISTAS
 Siempre verificar:
