@@ -187,6 +187,7 @@
                             <span>Tipos de Equipos</span>
                         </a>
                     @endif
+                @endif
 
                 {{-- Incidencias (Admin, Técnico, Agente) --}}
                 @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
