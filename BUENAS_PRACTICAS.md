@@ -345,7 +345,76 @@ git commit -m "Descripción clara de qué cambió y por qué"
 
 ---
 
-## 📝 CHECKLIST POR TIPO DE CAMBIO
+## � CASO DE ESTUDIO 3: Ruta Faltante - equipos.exportar.pdf
+
+### ❌ Problema
+Vista `parametros/equipos/index.blade.php` línea 99 usaba:
+```blade
+{{ route('parametros.equipos.exportar.pdf', request()->query()) }}
+```
+
+Pero la ruta **NO existía** → Error 500 al acceder a la página
+
+### ✅ Solución con nuevo protocolo PASO 3.5
+
+**1. Auditar rutas usadas:**
+```bash
+grep -rho "route('[^']*'" resources/views/ | grep equipos.exportar
+```
+
+**Resultado:**
+```
+✅ equipos.exportar.excel  (EXISTE)
+❌ equipos.exportar.pdf    (NO EXISTE)
+```
+
+**2. Crear la ruta faltante:**
+```php
+// routes/parametros.php
+Route::get('equipos/exportar/pdf', [EquipoController::class, 'exportarPdf'])
+    ->name('equipos.exportar.pdf');
+```
+
+**3. Implementar el método:**
+```php
+public function exportarPdf()
+{
+    $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo'])
+        ->orderBy('codigo_interno')
+        ->get();
+    
+    $data = [
+        'titulo' => 'Listado de Equipos',
+        'fecha_reporte' => now()->format('d/m/Y H:i:s'),
+        'total_equipos' => $equipos->count(),
+        'equipos' => $equipos,
+    ];
+    
+    $pdf = \PDF::loadView('parametros.equipos.pdf', $data);
+    $pdf->setPaper('A4', 'landscape');
+    
+    return $pdf->download('equipos_' . date('Y-m-d_His') . '.pdf');
+}
+```
+
+**4. Crear vista PDF:**
+- Tabla profesional con 10 columnas
+- Estilos para impresión
+- Badges de color por estado
+- Metadatos del reporte
+
+### 🎯 Impacto del protocolo
+
+| Aspecto | Sin PASO 3.5 | Con PASO 3.5 |
+|---------|-------------|------------|
+| Detección | En producción (usuario) | Pre-commit (desarrollador) |
+| Tiempo de fix | Horas/días | Minutos |
+| Impacto | Error 500 (sitio caído) | Prevención |
+| Calidad | Baja (errores en vivo) | Alta (validado) |
+
+---
+
+
 
 ### Si cambio rutas en views/layouts/app.blade.php
 - [ ] Verificar que la ruta exista en routes/
