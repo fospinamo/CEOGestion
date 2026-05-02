@@ -28,14 +28,8 @@ use Illuminate\View\View;
  */
 class PermissionController extends Controller
 {
-    /**
-     * Constructor
-     * Aplicar middleware de autorización
-     */
-    public function __construct()
-    {
-        $this->middleware(['auth', 'can:permissions.ver']);
-    }
+    // Middleware se aplica a nivel de rutas en routes/seguridad.php
+    // NO en el constructor del controlador
 
     /**
      * Mostrar lista de permisos

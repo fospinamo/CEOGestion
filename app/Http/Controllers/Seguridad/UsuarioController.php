@@ -46,14 +46,8 @@ use Illuminate\Support\Facades\Hash;
  */
 class UsuarioController extends Controller
 {
-    /**
-     * Constructor
-     * Aplicar middleware de autorización
-     */
-    public function __construct()
-    {
-        $this->middleware(['auth', 'can:usuarios.ver']);
-    }
+    // Middleware se aplica a nivel de rutas en routes/seguridad.php
+    // NO en el constructor del controlador
 
     /**
      * Mostrar lista de usuarios
