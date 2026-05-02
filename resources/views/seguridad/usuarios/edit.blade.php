@@ -120,7 +120,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         const empresaSelect = document.getElementById('empresa_id');
         const sedeSelect = document.getElementById('sede_id');
-        const sedeActualId = '{{ $usuario->sede_id }}'; // Preservar sede actual del usuario
+        const sedeActualId = '{{ $usuario->sede_id ?? '' }}';
+
+        if (!empresaSelect || !sedeSelect) {
+            console.error('Elementos del formulario no encontrados');
+            return;
+        }
 
         /**
          * Función para cargar sedes dinámicamente según la empresa seleccionada
@@ -128,18 +133,37 @@
         function cargarSedesPorEmpresa() {
             const empresaId = empresaSelect.value;
 
+            console.log('Cargando sedes para empresa:', empresaId, 'Sede actual:', sedeActualId);
+
             // Si no hay empresa seleccionada, limpiar dropdown de sedes
             if (!empresaId) {
                 sedeSelect.innerHTML = '<option value="">Seleccionar sede...</option>';
                 return;
             }
 
+            // Mostrar estado de carga
+            sedeSelect.innerHTML = '<option value="">Cargando sedes...</option>';
+
             // Llamar API para obtener sedes de la empresa
             fetch(`/api/sedes-por-empresa?empresa_id=${empresaId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(sedes => {
+                    console.log('Sedes recibidas:', sedes);
+                    
                     // Limpiar opciones anteriores
                     sedeSelect.innerHTML = '<option value="">Seleccionar sede...</option>';
+
+                    // Si no hay sedes, mostrar mensaje
+                    if (sedes.length === 0) {
+                        console.warn('No hay sedes disponibles para esta empresa');
+                        sedeSelect.innerHTML = '<option value="">No hay sedes disponibles</option>';
+                        return;
+                    }
 
                     // Agregar nuevas opciones
                     sedes.forEach(sede => {
@@ -150,6 +174,7 @@
                         // Si es la sede actual del usuario, seleccionarla
                         if (sede.id == sedeActualId) {
                             option.selected = true;
+                            console.log('Sede seleccionada:', sede.nombre);
                         }
 
                         sedeSelect.appendChild(option);
@@ -165,6 +190,7 @@
         empresaSelect.addEventListener('change', cargarSedesPorEmpresa);
 
         // Cargar sedes al cargar la página (si hay empresa seleccionada)
+        console.log('Script iniciado. Empresa seleccionada:', empresaSelect.value);
         if (empresaSelect.value) {
             cargarSedesPorEmpresa();
         }
