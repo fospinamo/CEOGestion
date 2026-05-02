@@ -77,17 +77,17 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Acciones</h3>
             <div class="space-y-2">
-                <a href="{{ route('usuarios.edit', $usuario) }}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
+                <a href="{{ route('seguridad.usuarios.edit', $usuario) }}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
                     <i class="fas fa-edit mr-2"></i> Editar
                 </a>
-                <form action="{{ route('usuarios.destroy', $usuario) }}" method="POST" onsubmit="return confirm('¿Estás seguro?')">
+                <form action="{{ route('seguridad.usuarios.destroy', $usuario) }}" method="POST" onsubmit="return confirm('¿Estás seguro?')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                         <i class="fas fa-trash mr-2"></i> Eliminar
                     </button>
                 </form>
-                <a href="{{ route('usuarios.index') }}" class="block px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-center">
+                <a href="{{ route('seguridad.usuarios.index') }}" class="block px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-center">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </a>
             </div>

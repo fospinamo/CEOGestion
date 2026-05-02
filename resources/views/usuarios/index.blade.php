@@ -11,7 +11,7 @@
         <div class="flex gap-2">
             <input type="text" placeholder="Buscar usuario..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-        <a href="{{ route('usuarios.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+        <a href="{{ route('seguridad.usuarios.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
             <i class="fas fa-plus"></i> Nuevo Usuario
         </a>
     </div>
@@ -69,13 +69,13 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex justify-center gap-2">
-                                <a href="{{ route('usuarios.show', $usuario) }}" class="text-blue-600 hover:text-blue-900 transition" title="Ver">
+                                <a href="{{ route('seguridad.usuarios.show', $usuario) }}" class="text-blue-600 hover:text-blue-900 transition" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('usuarios.edit', $usuario) }}" class="text-green-600 hover:text-green-900 transition" title="Editar">
+                                <a href="{{ route('seguridad.usuarios.edit', $usuario) }}" class="text-green-600 hover:text-green-900 transition" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('usuarios.destroy', $usuario) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro?')">
+                                <form action="{{ route('seguridad.usuarios.destroy', $usuario) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900 transition" title="Eliminar">

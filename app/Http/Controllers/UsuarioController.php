@@ -109,7 +109,7 @@ class UsuarioController extends Controller
     {
         $usuario->delete();
 
-        return redirect()->route('usuarios.index')
+        return redirect()->route('seguridad.usuarios.index')
             ->with('success', 'Usuario eliminado exitosamente');
     }
 }
