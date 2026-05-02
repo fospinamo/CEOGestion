@@ -469,5 +469,83 @@ grep -r "route(" resources/views/ | wc -l
 
 ---
 
+## 📋 CASO DE ESTUDIO 4: Orden de Rutas y Model Binding
+
+### ❌ Problema
+Botón "Descargar Excel" en `parametros/equipos/index.blade.php` estaba en blanco.
+
+Error: Ruta `parametros.equipos.exportar.excel` no funcionaba aunque estaba definida.
+
+**Archivo `routes/parametros.php` (INCORRECTO):**
+```php
+Route::resource('equipos', EquipoController::class);  // ← PRIMERO
+Route::get('equipos/exportar/excel', [EquipoController::class, 'exportarExcel'])
+    ->name('equipos.exportar.excel');  // ← DESPUÉS
+Route::get('equipos/exportar/pdf', [EquipoController::class, 'exportarPdf'])
+    ->name('equipos.exportar.pdf');
+```
+
+### 🔍 Root Cause
+
+`Route::resource()` registra TODAS las rutas CRUD incluida:
+```
+GET /equipos/{equipo}  ← Model Binding
+```
+
+Laravel intenta matching de rutas en ORDEN:
+1. `/equipos/exportar/excel` → ¿Es equipos/{id}? → "exportar" es el ID
+2. Laravel intenta: `Equipo::findOrFail('exportar')` → 404
+3. Nunca llega a la ruta específica (está después)
+
+### ✅ Solución
+
+**Archivo `routes/parametros.php` (CORRECTO):**
+```php
+// ✅ RUTAS ESPECÍFICAS PRIMERO
+Route::get('equipos/exportar/excel', [EquipoController::class, 'exportarExcel'])
+    ->name('equipos.exportar.excel');
+Route::get('equipos/exportar/pdf', [EquipoController::class, 'exportarPdf'])
+    ->name('equipos.exportar.pdf');
+
+// ✅ RESOURCE DESPUÉS (model binding ya no interfiere)
+Route::resource('equipos', EquipoController::class);
+```
+
+Ahora Laravel intenta matching así:
+1. `/equipos/exportar/excel` → ✅ Coincide ruta específica
+2. `/equipos/{equipo}` → ✅ Si no es exportar/excel ni pdf
+
+### 📚 Regla General
+
+**Cuando uses rutas específicas CON Route::resource():**
+
+```php
+// ❌ INCORRECTO (specific route DESPUÉS de resource)
+Route::resource('items', ItemController::class);
+Route::get('items/export/pdf', ...);  // NUNCA se ejecutará
+
+// ✅ CORRECTO (specific routes ANTES de resource)
+Route::get('items/export/pdf', ...);
+Route::get('items/export/excel', ...);
+Route::resource('items', ItemController::class);  // Resource al final
+```
+
+### 🎯 Validación
+
+Después de ordenar las rutas:
+```bash
+php artisan route:list | Select-String "equipos.exportar"
+```
+
+Debe mostrar:
+```
+GET|HEAD   parametros/equipos/exportar/excel    parametros.equipos.exportarExcel
+GET|HEAD   parametros/equipos/exportar/pdf      parametros.equipos.exportarPdf
+```
+
+✅ Si las rutas aparecen, los botones funcionarán correctamente.
+
+---
+
 **ÚLTIMA ACTUALIZACIÓN**: 2/05/2026
 **ESTADO**: Sistema estable después de limpiar referencias obsoletas
