@@ -114,4 +114,60 @@
         </form>
     </div>
 </div>
+
+<!-- Script: Filtrar Sedes por Empresa -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const empresaSelect = document.getElementById('empresa_id');
+        const sedeSelect = document.getElementById('sede_id');
+        const sedeActualId = '{{ $usuario->sede_id }}'; // Preservar sede actual del usuario
+
+        /**
+         * Función para cargar sedes dinámicamente según la empresa seleccionada
+         */
+        function cargarSedesPorEmpresa() {
+            const empresaId = empresaSelect.value;
+
+            // Si no hay empresa seleccionada, limpiar dropdown de sedes
+            if (!empresaId) {
+                sedeSelect.innerHTML = '<option value="">Seleccionar sede...</option>';
+                return;
+            }
+
+            // Llamar API para obtener sedes de la empresa
+            fetch(`/api/sedes-por-empresa?empresa_id=${empresaId}`)
+                .then(response => response.json())
+                .then(sedes => {
+                    // Limpiar opciones anteriores
+                    sedeSelect.innerHTML = '<option value="">Seleccionar sede...</option>';
+
+                    // Agregar nuevas opciones
+                    sedes.forEach(sede => {
+                        const option = document.createElement('option');
+                        option.value = sede.id;
+                        option.textContent = sede.nombre;
+
+                        // Si es la sede actual del usuario, seleccionarla
+                        if (sede.id == sedeActualId) {
+                            option.selected = true;
+                        }
+
+                        sedeSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar sedes:', error);
+                    sedeSelect.innerHTML = '<option value="">Error al cargar sedes</option>';
+                });
+        }
+
+        // Escuchar cambios en el dropdown de empresa
+        empresaSelect.addEventListener('change', cargarSedesPorEmpresa);
+
+        // Cargar sedes al cargar la página (si hay empresa seleccionada)
+        if (empresaSelect.value) {
+            cargarSedesPorEmpresa();
+        }
+    });
+</script>
 @endsection
