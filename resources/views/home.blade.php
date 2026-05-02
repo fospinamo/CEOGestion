@@ -84,11 +84,11 @@
                 <a href="{{ route('parametros.sedes.create') }}" class="block px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center gap-2">
                     <i class="fas fa-plus"></i> Nueva Sede
                 </a>
-                @can('usuarios.crear')
+                @if(auth()->user()->hasPermission('usuarios.crear'))
                     <a href="{{ route('seguridad.usuarios.create') }}" class="block px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition flex items-center gap-2">
                         <i class="fas fa-plus"></i> Nuevo Usuario
                     </a>
-                @endcan
+                @endif
             </div>
         </div>
 
@@ -103,12 +103,12 @@
                     <span>Ver Sedes</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
-                @can('usuarios.ver')
+                @if(auth()->user()->hasPermission('usuarios.ver'))
                     <a href="{{ route('seguridad.usuarios.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
                         <span>Ver Usuarios</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
-                @endcan
+                @endif
             </div>
         </div>
     </div>

@@ -8,11 +8,11 @@
     <!-- Botón crear usuario -->
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-800">Usuarios</h1>
-        @can('usuarios.crear')
+        @if(auth()->user()->hasPermission('usuarios.crear'))
             <a href="{{ route('seguridad.usuarios.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                 <i class="fas fa-plus"></i> Nuevo Usuario
             </a>
-        @endcan
+        @endif
     </div>
 
     <!-- Tabla de usuarios -->
@@ -54,12 +54,12 @@
                             <a href="{{ route('seguridad.usuarios.show', $usuario) }}" class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            @can('usuarios.editar')
+                            @if(auth()->user()->hasPermission('usuarios.editar'))
                                 <a href="{{ route('seguridad.usuarios.edit', $usuario) }}" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                            @endcan
-                            @can('usuarios.eliminar')
+                            @endif
+                            @if(auth()->user()->hasPermission('usuarios.eliminar'))
                                 <form method="POST" action="{{ route('seguridad.usuarios.destroy', $usuario) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar usuario?');">
                                     @csrf
                                     @method('DELETE')
@@ -67,7 +67,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
-                            @endcan
+                            @endif
                         </td>
                     </tr>
                 @empty

@@ -122,40 +122,40 @@
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión Principal</h3>
                     </div>
-                    @can('empresas.ver')
+                    @if(auth()->user()->hasPermission('empresas.ver'))
                         <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-industry w-5"></i>
                             <span>Empresas</span>
                         </a>
-                    @endcan
-                    @can('sedes.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('sedes.ver'))
                         <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-map-marker-alt w-5"></i>
                             <span>Sedes</span>
                         </a>
-                    @endcan
+                    @endif
 
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Ubicación DANE</h3>
                     </div>
-                    @can('paises.ver')
+                    @if(auth()->user()->hasPermission('paises.ver'))
                         <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-globe w-5"></i>
                             <span>Países</span>
                         </a>
-                    @endcan
-                    @can('departamentos.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('departamentos.ver'))
                         <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-map w-5"></i>
                             <span>Departamentos</span>
                         </a>
-                    @endcan
-                    @can('municipios.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('municipios.ver'))
                         <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-city w-5"></i>
                             <span>Municipios</span>
                         </a>
-                    @endcan
+                    @endif
                 @endif
 
                 {{-- Gestión TI (Admin, Gerente, Supervisor, Agente) --}}
@@ -163,42 +163,42 @@
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión TI</h3>
                     </div>
-                    @can('clientes.ver')
+                    @if(auth()->user()->hasPermission('clientes.ver'))
                         <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-handshake w-5"></i>
                             <span>Clientes</span>
                         </a>
-                    @endcan
-                    @can('contratos.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('contratos.ver'))
                         <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-file-contract w-5"></i>
                             <span>Contratos</span>
                         </a>
-                    @endcan
-                    @can('areas.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('areas.ver'))
                         <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-th w-5"></i>
                             <span>Áreas</span>
                         </a>
-                    @endcan
-                    @can('equipos.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('equipos.ver'))
                         <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-laptop w-5"></i>
                             <span>Equipos</span>
                         </a>
-                    @endcan
-                    @can('tipos-equipos.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('tipos-equipos.ver'))
                         <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-list w-5"></i>
                             <span>Tipos de Equipos</span>
                         </a>
-                    @endcan
-                    @can('documentos.ver')
+                    @endif
+                    @if(auth()->user()->hasPermission('documentos.ver'))
                         <a href="{{ route('parametros.documentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.documentos.*') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-file-upload w-5"></i>
                             <span>Documentos</span>
                         </a>
-                    @endcan
+                    @endif
                 @endif
 
                 {{-- Incidencias (Admin, Técnico, Agente) --}}
@@ -206,24 +206,24 @@
                     <div class="pt-4 pb-2">
                         <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Incidencias</h3>
                     </div>
-                    @can('servicios.ver')
+                    @if(auth()->user()->hasPermission('servicios.ver'))
                         <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.index') || (request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel')) ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-tools w-5"></i>
                             <span>Servicios</span>
                         </a>
-                    @endcan
-                    @can('servicios.panel-admin')
+                    @endif
+                    @if(auth()->user()->hasPermission('servicios.panel-admin'))
                         <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-tasks w-5"></i>
                             <span>Servicios Asignados</span>
                         </a>
-                    @endcan
-                    @can('servicios.estadisticas')
+                    @endif
+                    @if(auth()->user()->hasPermission('servicios.estadisticas'))
                         <a href="{{ route('incidencias.servicios.estadisticas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.estadisticas') ? 'bg-blue-700' : '' }}">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Estadísticas</span>
                         </a>
-                    @endcan
+                    @endif
                 @endif
             </nav>
 

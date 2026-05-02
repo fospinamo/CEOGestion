@@ -11,11 +11,11 @@
                 <h1 class="text-3xl font-bold text-gray-800">{{ $usuario->name }}</h1>
                 <p class="text-gray-600 mt-2">{{ $usuario->email }}</p>
             </div>
-            @can('usuarios.editar')
+            @if(auth()->user()->hasPermission('usuarios.editar'))
                 <a href="{{ route('seguridad.usuarios.edit', $usuario) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center gap-2">
                     <i class="fas fa-edit"></i> Editar
                 </a>
-            @endcan
+            @endif
         </div>
 
         <div class="grid grid-cols-2 gap-4 mb-6">
