@@ -176,13 +176,69 @@ Buscar todas las referencias a rutas en templates:
 grep -r "route(" resources/views/
 ```
 
-### 4. COMPARAR RUTAS
+### 3.5 🆕 AUDITORÍA DE RUTAS EN VISTAS (NUEVO - CRÍTICO)
+
+⚠️ **Paso que falta cuando solo se hacen cambios en vistas**
+
+**Problema:** Una vista puede hacer `route()` a una ruta que NO existe
+- Ejemplo: `route('parametros.equipos.exportar.pdf')` pero no existe la ruta
+- El error solo se ve cuando un usuario accede a esa vista
+- Afecta toda la página (error 500)
+
+**Solución (Auditoría completa):**
+
+**1. Listar TODAS las rutas usadas en vistas**
+```bash
+grep -rho "route('[^']*'" resources/views/ | sort -u
+```
+Ejemplo output:
+```
+route('seguridad.usuarios.index'
+route('parametros.equipos.exportar.pdf'
+route('incidencias.servicios.estadisticas'
+...
+```
+
+**2. Para cada ruta, verificar que existe**
+```bash
+php artisan route:list | grep "equipos.exportar.pdf"
+```
+Debe mostrar algo como:
+```
+equipos.exportar.pdf    GET|HEAD   /parametros/equipos/exportar/pdf
+```
+
+**3. Si NO existe:**
+```
+❌ BLOQUEAR el cambio
+❌ NO hacer commit
+❌ NO subir a producción
+```
+
+**4. Acciones si ruta NO existe:**
+- **Opción A**: Crear la ruta en routes/[modulo].php
+- **Opción B**: Remover `route()` de la vista
+- **Opción C**: Cambiar la referencia por otra ruta que SÍ exista
+
+**5. Validar después de resolver:**
+```bash
+php artisan route:list | grep "nombre-ruta"
+```
+
+**Ejemplos de errores que PREVIENE:**
+- ✅ `route('parametros.equipos.exportar.pdf')` pero no existe → ❌ Error 500
+- ✅ `route('incidencias.servicios.estadisticas')` pero no existe → ❌ Error 500
+- ✅ `route('parametros.contratos.index')` pero no existe → ❌ Error 500
+
+---
+
+### 5. COMPARAR RUTAS
 Crear lista de:
 - ✓ Rutas DEFINIDAS en routes/
 - ✓ Rutas USADAS en vistas/
 - ✗ Rutas FALTANTES
 
-### 5. RESOLVER DISCREPANCIAS
+### 6. RESOLVER DISCREPANCIAS
 Para cada ruta faltante:
 - **Opción A**: Crear la ruta si es necesaria
 - **Opción B**: Remover la referencia en la vista si no es necesaria
