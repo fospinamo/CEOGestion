@@ -1,30 +1,40 @@
 -- Limpiar datos operacionales en producción
 -- Mantener SOLO tablas maestras
+-- Ejecutar TODO JUNTO (no por sentencias individuales)
 
 SET FOREIGN_KEY_CHECKS=0;
 
--- Vaciar tablas de datos operacionales
-TRUNCATE TABLE servicios;
-TRUNCATE TABLE equipos;
-TRUNCATE TABLE areas;
-TRUNCATE TABLE sedes;
-TRUNCATE TABLE clientes;
-TRUNCATE TABLE empresas;
-TRUNCATE TABLE contratos;
-TRUNCATE TABLE contrato_servicios;
-TRUNCATE TABLE seguimientos_servicios;
-TRUNCATE TABLE documentos_adjuntos;
+-- Limpiar tablas que tienen dependencias (orden importante)
+DELETE FROM seguimientos_servicios;
+DELETE FROM contrato_servicios;
+DELETE FROM servicios;
+DELETE FROM documentos_adjuntos;
+DELETE FROM equipos;
+DELETE FROM areas;
+DELETE FROM contratos;
+DELETE FROM sedes;
+DELETE FROM clientes;
+DELETE FROM empresas;
 
--- Mantener solo usuarios con role admin
+-- Mantener solo usuario admin (id=1)
 DELETE FROM users WHERE id > 1;
 
 -- Limpiar sesiones y temporales
-TRUNCATE TABLE sessions;
-TRUNCATE TABLE jobs;
-TRUNCATE TABLE job_batches;
-TRUNCATE TABLE failed_jobs;
-TRUNCATE TABLE password_reset_tokens;
-TRUNCATE TABLE cache;
-TRUNCATE TABLE cache_locks;
+DELETE FROM sessions;
+DELETE FROM jobs;
+DELETE FROM job_batches;
+DELETE FROM failed_jobs;
+DELETE FROM password_reset_tokens;
+DELETE FROM cache;
+DELETE FROM cache_locks;
 
+-- Re-habilitar constraints
 SET FOREIGN_KEY_CHECKS=1;
+
+-- Resetear auto-increments (opcional)
+ALTER TABLE servicios AUTO_INCREMENT = 1;
+ALTER TABLE equipos AUTO_INCREMENT = 1;
+ALTER TABLE areas AUTO_INCREMENT = 1;
+ALTER TABLE sedes AUTO_INCREMENT = 1;
+ALTER TABLE clientes AUTO_INCREMENT = 1;
+ALTER TABLE empresas AUTO_INCREMENT = 1;

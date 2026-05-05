@@ -43,7 +43,21 @@ function ejecutarSQL($pdo, $archivo, $nombre) {
     echo "📂 Leyendo: " . basename($archivo) . "\n";
     $content = file_get_contents($archivo);
     
-    // Parsear SQL correctamente
+    // Si es limpieza, ejecutar TODO JUNTO para preservar FOREIGN_KEY_CHECKS=0
+    if (strpos($nombre, 'limpiar') !== false) {
+        echo "   Ejecutando LIMPIEZA (todo junto)...\n";
+        try {
+            $pdo->exec($content);
+            echo "   ✅ Limpieza completada\n";
+        } catch (Exception $e) {
+            echo "   ⚠️  Error: " . substr($e->getMessage(), 0, 100) . "\n";
+        }
+        echo "\n";
+        return true;
+    }
+    
+    // Si es importación, parsear y ejecutar por partes
+    echo "   Parseando SQL...\n";
     $statements = [];
     $statement = '';
     $lines = explode("\n", $content);
