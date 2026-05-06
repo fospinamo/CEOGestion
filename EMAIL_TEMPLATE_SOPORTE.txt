@@ -1,0 +1,46 @@
+📧 EMAIL TEMPLATE PARA CPANEL
+
+================================================================================
+ASUNTO: Restauración de BD - Opción phpMyAdmin SQL
+================================================================================
+
+Estimado equipo de soporte,
+
+Necesito restaurar mis bases de datos con el siguiente procedimiento:
+
+1. Base de datos: simotec_ceogestion_prod
+2. Usuario BD: simotec_ceog (o el usuario correspondiente)
+3. Método: Ejecutar SQL INSERT desde phpMyAdmin
+
+Les envío el archivo SQL: insert_maestras_phpmyadmin.sql
+
+INSTRUCCIONES:
+
+1. En cPanel, acceder a: phpMyAdmin
+2. Seleccionar BD: simotec_ceogestion_prod
+3. Click en pestaña: SQL
+4. Pegar el contenido del archivo insert_maestras_phpmyadmin.sql
+5. Hacer click en: Ejecutar (Go)
+6. Confirmar que se ejecutó correctamente
+
+El archivo SQL contiene:
+- 10 tablas maestras
+- ~250 registros totales
+- Instrucciones de limpieza (DELETE) integradas
+- Compatible con cualquier versión de MySQL 5.7+
+
+Agradezco su asistencia.
+
+Contacto: [tu email]
+Dominio: [tu dominio]
+Teléfono: [tu teléfono]
+
+================================================================================
+FIN EMAIL
+================================================================================
+
+NOTAS PARA TI:
+- Reemplaza: [tu email], [tu dominio], [tu teléfono]
+- Adjunta el archivo: insert_maestras_phpmyadmin.sql
+- Sé cortés pero directo
+- Si no responden en 24 horas, escala a otro admin
