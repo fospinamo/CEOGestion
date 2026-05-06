@@ -6,6 +6,15 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DocumentoAdjuntoController;
+use App\Http\Controllers\MigrationController;
+
+// =======================================
+// MIGRACIONES WEB (SIN TERMINAL CPANEL)
+// =======================================
+Route::get('/api/migrate-db', [MigrationController::class, 'runMigrations'])->name('migrate.run');
+Route::get('/api/seed-db', [MigrationController::class, 'runSeeds'])->name('seed.run');
+Route::get('/api/verify-db', [MigrationController::class, 'verifyDatabase'])->name('verify.db');
+Route::get('/migration-panel', [MigrationController::class, 'panel'])->name('migration.panel');
 
 // =======================================
 // RUTAS PÚBLICAS
