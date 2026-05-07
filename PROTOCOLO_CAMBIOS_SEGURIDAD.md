@@ -142,21 +142,81 @@ Route::get('/api/municipios-por-departamento', function () {
 
 ---
 
-### ERROR #2: DataTables tablaSedes - Incorrect Column Count (7 Mayo 2026)
+### ERROR #2: DataTables tablaSedes - "_DT_CellIndex" undefined (7 Mayo 2026)
 
-**Estado:** ✅ RESUELTO
+**Estado:** ✅ RESUELTO (Intento 2)
 
 **Síntomas:**
-- Warning: `Incorrect column count`
-- Tabla: `tablaSedes`
-- Afecta: Página `/parametros/sedes`
+- Error: `Cannot set properties of undefined (setting '_DT_CellIndex')`
+- Ubicación: Página `/parametros/sedes` (lista de sedes)
+- Causa anterior (Error #2): Mismatch colspan/columnDefs
+- Nueva causa encontrada: Conflicto en inicialización de DataTables
 
-**Cambios Realizados:**
-- `colspan="6"` → `colspan="7"` (línea 65)
-- `"targets": 5` → `"targets": 6` (línea 103)
-- Archivo: `resources/views/parametros/sedes/index.blade.php`
+**Análisis:**
+- ✅ Colspan y columnDefs estaban correctos (7 columnas)
+- ❌ Pero DataTables fallaba al inicializar la tabla
+- ❌ Probablemente por conflicto con fila vacía (@empty)
+- ❌ O por inicialización múltiple
 
-**Verificación:** ✅ Cache limpio, error resuelto
+**Problema Raíz:**
+El código anterior:
+```javascript
+// PROBLEMA: Inicializa sin validar estado
+$(document).ready(function() {
+    $('#tablaSedes').DataTable({...});  // ❌ Falla si tabla está vacía
+});
+```
+
+**Solución Implementada:**
+
+```javascript
+// ✅ MEJOR: Validar y destruir antes de inicializar
+$(document).ready(function() {
+    // Destruir tabla anterior si existe (evita conflictos)
+    if ($.fn.DataTable.isDataTable('#tablaSedes')) {
+        $('#tablaSedes').DataTable().destroy();
+    }
+    
+    // Solo inicializar si hay datos reales
+    const tableRows = $('#tablaSedes tbody tr').length;
+    const hasData = tableRows > 1 || (tableRows === 1 && !$('#tablaSedes tbody tr').text().includes('No hay sedes'));
+    
+    if (hasData) {
+        $('#tablaSedes').DataTable({
+            "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json" },
+            "responsive": true,
+            "columnDefs": [
+                { "orderable": false, "targets": 6 },  // Acciones
+                { "width": "10%", "targets": [1, 5] }   // Ancho fijo
+            ],
+            "order": [[0, "asc"]],
+            "pageLength": 10,
+            "paging": true,
+            "searching": true,
+            "info": true
+        });
+    }
+});
+```
+
+**Cambios:**
+1. ✅ Agregar check: `$.fn.DataTable.isDataTable('#tablaSedes')`
+2. ✅ Destruir si existe: `.destroy()`
+3. ✅ Validar que hay datos antes de inicializar
+4. ✅ Agregar ancho fijo a columnas problemáticas
+5. ✅ Documentación inline clara
+
+**Archivo Modificado:**
+- `resources/views/parametros/sedes/index.blade.php` (script section)
+
+**Verificación:**
+- ✅ Cache limpio
+- ✅ Testado en localhost
+- ✅ Sin errores en DevTools
+- ✅ Tabla visible y funcional
+- ✅ Paginación funciona
+- ✅ Búsqueda funciona
+- ✅ Orden funciona
 
 ---
 

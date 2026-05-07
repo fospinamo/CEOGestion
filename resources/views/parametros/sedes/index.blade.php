@@ -77,7 +77,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center gap-2">
                                 <i class="fas fa-inbox text-4xl opacity-30"></i>
                                 <p>No hay sedes registradas</p>
@@ -94,18 +94,32 @@
 @section('scripts')
 <script>
 $(document).ready(function() {
-    $('#tablaSedes').DataTable({
-        "language": {
-            "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
-        },
-        "responsive": true,
-        "columnDefs": [
-            { "orderable": false, "targets": 5 }
-        ],
-        "order": [[0, "asc"]],
-        "pageLength": 10,
-        "paging": true
-    });
+    // ⚠️ PROTOCOLO: Destruir tabla anterior si existe (evita conflictos)
+    if ($.fn.DataTable.isDataTable('#tablaSedes')) {
+        $('#tablaSedes').DataTable().destroy();
+    }
+    
+    // ⚠️ MEJOR PRÁCTICA: Solo inicializar si hay filas de datos
+    const tableRows = $('#tablaSedes tbody tr').length;
+    const hasData = tableRows > 1 || (tableRows === 1 && !$('#tablaSedes tbody tr').text().includes('No hay sedes'));
+    
+    if (hasData) {
+        $('#tablaSedes').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            },
+            "responsive": true,
+            "columnDefs": [
+                { "orderable": false, "targets": 6 },  // Columna Acciones no ordenable
+                { "width": "10%", "targets": [1, 5] }   // Ancho fijo para Código y Estado
+            ],
+            "order": [[0, "asc"]],
+            "pageLength": 10,
+            "paging": true,
+            "searching": true,
+            "info": true
+        });
+    }
 });
 </script>
 @endsection
