@@ -112,43 +112,116 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // API para cargar municipios por departamento
+    // ⚠️ BUENAS PRÁCTICAS: Validación + Error Handling + Logging
     Route::get('/api/municipios-por-departamento', function () {
-        $departamento_id = request()->query('departamento_id');
-        
-        if (!$departamento_id) {
-            return [];
+        try {
+            $departamento_id = request()->query('departamento_id');
+            
+            // Validación de entrada: debe ser numérico
+            if (!$departamento_id || !is_numeric($departamento_id)) {
+                return response()->json([], 200); // Retorna JSON vacío, no HTML error
+            }
+            
+            // Query segura con Eloquent (previene SQL injection)
+            $municipios = \App\Models\Municipio::where('departamento_id', (int) $departamento_id)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre']);
+            
+            return response()->json($municipios, 200);
+            
+        } catch (\Exception $e) {
+            // Log del error en storage/logs/laravel.log
+            \Illuminate\Support\Facades\Log::error('API municipios-por-departamento error', [
+                'departamento_id' => request()->query('departamento_id'),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            
+            // Retorna JSON error, nunca HTML
+            return response()->json([], 200);
         }
-        
-        return \App\Models\Municipio::where('departamento_id', $departamento_id)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre']);
+    });
+
+    // API para cargar barrios por municipio
+    // ⚠️ BUENAS PRÁCTICAS: Validación + Error Handling + Logging
+    Route::get('/api/barrios-por-municipio', function () {
+        try {
+            $municipio_id = request()->query('municipio_id');
+            
+            // Validación de entrada: debe ser numérico
+            if (!$municipio_id || !is_numeric($municipio_id)) {
+                return response()->json([], 200);
+            }
+            
+            // Query segura con Eloquent
+            $barrios = \App\Models\Barrio::where('municipio_id', (int) $municipio_id)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre']);
+            
+            return response()->json($barrios, 200);
+            
+        } catch (\Exception $e) {
+            // Log del error
+            \Illuminate\Support\Facades\Log::error('API barrios-por-municipio error', [
+                'municipio_id' => request()->query('municipio_id'),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            
+            return response()->json([], 200);
+        }
     });
 
     // API PARA SEDES DINÁMICAS
+    // ⚠️ BUENAS PRÁCTICAS: Validación + Error Handling
     Route::get('/api/sedes-por-empresa', function () {
-        $empresa_id = request()->query('empresa_id');
-        
-        if (!$empresa_id) {
-            return [];
+        try {
+            $empresa_id = request()->query('empresa_id');
+            
+            if (!$empresa_id || !is_numeric($empresa_id)) {
+                return response()->json([], 200);
+            }
+            
+            $sedes = \App\Models\Sede::where('empresa_id', (int) $empresa_id)
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre']);
+            
+            return response()->json($sedes, 200);
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('API sedes-por-empresa error', [
+                'empresa_id' => request()->query('empresa_id'),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            return response()->json([], 200);
         }
-        
-        return \App\Models\Sede::where('empresa_id', $empresa_id)
-            ->where('estado', true)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre']);
     });
 
     Route::get('/api/sedes-por-cliente', function () {
-        $cliente_id = request()->query('cliente_id');
-        
-        if (!$cliente_id) {
-            return [];
+        try {
+            $cliente_id = request()->query('cliente_id');
+            
+            if (!$cliente_id || !is_numeric($cliente_id)) {
+                return response()->json([], 200);
+            }
+            
+            $sedes = \App\Models\Sede::where('cliente_id', (int) $cliente_id)
+                ->where('estado', true)
+                ->orderBy('nombre')
+                ->get(['id', 'nombre']);
+            
+            return response()->json($sedes, 200);
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('API sedes-por-cliente error', [
+                'cliente_id' => request()->query('cliente_id'),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            return response()->json([], 200);
         }
-        
-        return \App\Models\Sede::where('cliente_id', $cliente_id)
-            ->where('estado', true)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre']);
     });
 
     /**

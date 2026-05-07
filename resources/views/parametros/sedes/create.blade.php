@@ -125,14 +125,9 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Barrio</label>
-                    <select name="barrio_id"
+                    <select name="barrio_id" id="barrioSelect"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Selecciona un barrio (opcional)</option>
-                        @foreach($barrios as $barrio)
-                            <option value="{{ $barrio->id }}" {{ old('barrio_id') == $barrio->id ? 'selected' : '' }}>
-                                {{ $barrio->nombre }}
-                            </option>
-                        @endforeach
                     </select>
                 </div>
             </div>
@@ -181,12 +176,15 @@
 </div>
 
 <script>
+// ⚠️ CASCADA: Departamento → Municipio
 document.getElementById('departamentoSelect').addEventListener('change', async function() {
     const departamento_id = this.value;
     const municipioSelect = document.getElementById('municipioSelect');
+    const barrioSelect = document.getElementById('barrioSelect');
     
     if (!departamento_id) {
         municipioSelect.innerHTML = '<option value="">Selecciona municipio</option>';
+        barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
         return;
     }
     
@@ -201,8 +199,48 @@ document.getElementById('departamentoSelect').addEventListener('change', async f
             option.textContent = municipio.nombre;
             municipioSelect.appendChild(option);
         });
+        
+        // Limpiar barrios cuando cambia departamento
+        barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
+        
     } catch (error) {
         console.error('Error cargando municipios:', error);
+        // Log al servidor
+        fetch('/api/log-error', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                error: error.message,
+                context: 'departamento-change'
+            })
+        });
+    }
+});
+
+// ⚠️ CASCADA: Municipio → Barrio
+document.getElementById('municipioSelect').addEventListener('change', async function() {
+    const municipio_id = this.value;
+    const barrioSelect = document.getElementById('barrioSelect');
+    
+    if (!municipio_id) {
+        barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/barrios-por-municipio?municipio_id=${municipio_id}`);
+        const barrios = await response.json();
+        
+        barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
+        barrios.forEach(barrio => {
+            const option = document.createElement('option');
+            option.value = barrio.id;
+            option.textContent = barrio.nombre;
+            barrioSelect.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error cargando barrios:', error);
     }
 });
 </script>
