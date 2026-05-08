@@ -7,6 +7,8 @@ use App\Http\Controllers\Parametros\ClienteController;
 use App\Http\Controllers\Parametros\AreaController;
 use App\Http\Controllers\Parametros\EquipoController;
 use App\Http\Controllers\Parametros\TipoEquipoController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ContratoController;
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('parametros')->name('parametros.')->group(function () {
@@ -30,5 +32,12 @@ Route::middleware(['auth'])->group(function () {
         
         // TIPOS DE EQUIPO
         Route::resource('tipos-equipos', TipoEquipoController::class);
+        
+        // CATEGORÍAS
+        Route::resource('categorias', CategoriaController::class);
+        
+        // CONTRATOS
+        Route::resource('contratos', ContratoController::class);
+    
     });
 });

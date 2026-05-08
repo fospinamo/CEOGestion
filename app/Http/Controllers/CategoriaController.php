@@ -57,7 +57,7 @@ class CategoriaController extends Controller
 
         Categoria::create($validated);
 
-        return redirect()->route('categorias.index')
+        return redirect()->route('parametros.categorias.index')
             ->with('success', 'Categoría creada exitosamente');
     }
 
@@ -102,7 +102,7 @@ class CategoriaController extends Controller
 
         $categoria->update($validated);
 
-        return redirect()->route('categorias.index')
+        return redirect()->route('parametros.categorias.index')
             ->with('success', 'Categoría actualizada exitosamente');
     }
 
@@ -121,7 +121,7 @@ class CategoriaController extends Controller
 
         $categoria->delete();
 
-        return redirect()->route('categorias.index')
+        return redirect()->route('parametros.categorias.index')
             ->with('success', 'Categoría eliminada exitosamente');
     }
 }

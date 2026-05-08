@@ -75,7 +75,7 @@ class ContratoController extends Controller
 
         Contrato::create($validated);
 
-        return redirect()->route('contratos.index')
+        return redirect()->route('parametros.contratos.index')
             ->with('success', 'Contrato creado exitosamente');
     }
 
@@ -144,7 +144,7 @@ class ContratoController extends Controller
 
         $contrato->update($validated);
 
-        return redirect()->route('contratos.show', $contrato)
+        return redirect()->route('parametros.contratos.show', $contrato)
             ->with('success', 'Contrato actualizado exitosamente');
     }
 
@@ -155,7 +155,7 @@ class ContratoController extends Controller
     {
         $contrato->delete();
 
-        return redirect()->route('contratos.index')
+        return redirect()->route('parametros.contratos.index')
             ->with('success', 'Contrato eliminado exitosamente');
     }
 }
