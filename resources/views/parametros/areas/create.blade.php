@@ -14,7 +14,7 @@
     </div>
 @else
 <div class="max-w-3xl">
-    <form action="{{ $area ? route('parametros.areas.update', ['area' => $area->id]) : route('parametros.areas.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ $area ? url('parametros/areas/' . $area->id) : route('parametros.areas.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @if($area) @method('PUT') @endif
 

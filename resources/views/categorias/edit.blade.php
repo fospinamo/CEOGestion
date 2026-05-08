@@ -21,7 +21,7 @@
 @endphp
 
 <div class="max-w-2xl">
-    <form action="{{ route('parametros.categorias.update', ['categoria' => $categoria->slug]) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ url('parametros/categorias/' . $categoria->slug) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @method('PUT')
 

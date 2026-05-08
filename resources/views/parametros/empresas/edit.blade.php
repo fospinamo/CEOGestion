@@ -17,7 +17,7 @@
 @else
 <div class="max-w-4xl">
     <div class="bg-white rounded-lg shadow">
-        <form action="{{ route('parametros.empresas.update', ['empresa' => $empresa->id]) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+        <form action="{{ url('parametros/empresas/' . $empresa->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 

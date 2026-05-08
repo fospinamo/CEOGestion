@@ -16,7 +16,7 @@
     </div>
 @else
 <div class="max-w-4xl">
-    <form action="{{ route('parametros.contratos.update', ['contrato' => $contrato->id]) }}" method="POST" class="space-y-6">
+    <form action="{{ url('parametros/contratos/' . $contrato->id) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
