@@ -1,0 +1,575 @@
+/* ============================================================================
+   LOGIN MODERN - CSS THEME SYSTEM
+   Clean, visible, professional login design with full theme support
+   ============================================================================ */
+
+* {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+html, body {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif !important;
+    background: linear-gradient(135deg, #1A4B8E 0%, #0D2A54 100%) !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-x: hidden !important;
+    padding: 2rem 1rem !important;
+}
+
+/* ============================================================================
+   LAYOUT
+   ============================================================================ */
+
+.container-login {
+    width: 100% !important;
+    max-width: 448px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.card-login {
+    width: 100% !important;
+    background-color: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+    padding: 2rem !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* ============================================================================
+   HEADER - LOGOS
+   ============================================================================ */
+
+.header-logos {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+}
+
+.logo-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.logo-empresa {
+    max-width: 80px !important;
+    max-height: 80px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    animation: fadeInScale 0.6s ease-out !important;
+}
+
+.logo-ceo {
+    max-width: 60px !important;
+    max-height: 60px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============================================================================
+   HEADER - TITLE
+   ============================================================================ */
+
+.header-title {
+    text-align: center !important;
+    margin-bottom: 2rem !important;
+}
+
+.header-title h1 {
+    font-size: 1.875rem !important;
+    font-weight: 700 !important;
+    color: #0D2A54 !important;
+    margin: 0 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.header-title p {
+    color: #666 !important;
+    font-size: 0.875rem !important;
+    margin: 0.5rem 0 0 0 !important;
+    font-weight: 400 !important;
+}
+
+/* ============================================================================
+   FORM ELEMENTS
+   ============================================================================ */
+
+.form-group {
+    margin-bottom: 1rem !important;
+    width: 100% !important;
+}
+
+.form-group label {
+    display: block !important;
+    color: #333 !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.form-group input {
+    width: 100% !important;
+    padding: 0.75rem 1rem !important;
+    border: 2px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-family: 'Inter', 'Segoe UI', sans-serif !important;
+    transition: all 0.2s ease !important;
+    background-color: #fff !important;
+    color: #1a1a1a !important;
+}
+
+.form-group input::placeholder {
+    color: #999 !important;
+}
+
+.form-group input:focus {
+    border-color: #1A4B8E !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(26, 75, 142, 0.1) !important;
+}
+
+.form-group input[type="checkbox"] {
+    width: auto !important;
+    margin-right: 0.5rem !important;
+}
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center !important;
+    font-size: 0.875rem !important;
+    color: #666 !important;
+    cursor: pointer !important;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.submit-btn {
+    width: 100% !important;
+    background: linear-gradient(90deg, #1A4B8E 0%, #0D2A54 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.875rem 1rem !important;
+    border-radius: 8px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    text-transform: none !important;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(90deg, #1540A3 0%, #08193A 100%) !important;
+    box-shadow: 0 4px 12px rgba(26, 75, 142, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+.submit-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* ============================================================================
+   DIVIDER
+   ============================================================================ */
+
+.divider {
+    display: flex !important;
+    align-items: center !important;
+    margin: 1.5rem 0 !important;
+}
+
+.divider-line {
+    flex: 1 !important;
+    border-top: 2px solid #d1d5db !important;
+}
+
+.divider-text {
+    padding: 0 0.75rem !important;
+    color: #999 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+}
+
+/* ============================================================================
+   CREDENTIALS BOX
+   ============================================================================ */
+
+.credentials-box {
+    background-color: #f0f6ff !important;
+    border-left: 4px solid #2E7DFF !important;
+    padding: 1rem !important;
+    border-radius: 4px !important;
+    margin-bottom: 1rem !important;
+}
+
+.credentials-box p {
+    margin: 0.5rem 0 !important;
+    font-size: 0.875rem !important;
+    color: #333 !important;
+    line-height: 1.5 !important;
+}
+
+.credentials-box p strong {
+    font-weight: 600 !important;
+    color: #1A4B8E !important;
+}
+
+.credentials-box p code {
+    background-color: rgba(26, 75, 142, 0.1) !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 3px !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 0.8rem !important;
+}
+
+/* ============================================================================
+   REGISTER LINK
+   ============================================================================ */
+
+.register-link {
+    text-align: center !important;
+    margin-top: 1.5rem !important;
+}
+
+.register-link p {
+    color: #666 !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+}
+
+.register-link a {
+    color: #1A4B8E !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.register-link a:hover {
+    text-decoration: underline !important;
+    color: #0D2A54 !important;
+}
+
+/* ============================================================================
+   ERROR BOX
+   ============================================================================ */
+
+.error-box {
+    background-color: #fee !important;
+    border-left: 4px solid #dc2626 !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    border-radius: 4px !important;
+}
+
+.error-box p {
+    color: #991b1b !important;
+    font-size: 0.875rem !important;
+    margin: 0.25rem 0 !important;
+    line-height: 1.5 !important;
+}
+
+.error-box ul {
+    margin-left: 1.5rem !important;
+    color: #991b1b !important;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.footer {
+    text-align: center !important;
+    margin-top: 1.5rem !important;
+    color: white !important;
+    font-size: 0.875rem !important;
+    width: 100% !important;
+    max-width: 448px !important;
+    padding: 0 1rem !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    font-weight: 500 !important;
+}
+
+.footer p {
+    margin: 0 !important;
+    word-break: break-word !important;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0 !important;
+        transform: scale(0.95) !important;
+    }
+    to {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
+    }
+    to {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.card-login {
+    animation: slideUp 0.6s ease-out !important;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    body {
+        padding: 1.5rem 1rem !important;
+    }
+
+    .container-login {
+        max-width: 100% !important;
+    }
+
+    .card-login {
+        padding: 1.5rem !important;
+        border-radius: 12px !important;
+    }
+
+    .header-logos {
+        gap: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .logo-empresa {
+        max-width: 70px !important;
+        max-height: 70px !important;
+    }
+
+    .logo-ceo {
+        max-width: 50px !important;
+        max-height: 50px !important;
+    }
+
+    .header-title h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .form-group input {
+        padding: 0.625rem 0.875rem !important;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+    }
+
+    .credentials-box {
+        padding: 0.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem !important;
+    }
+
+    .card-login {
+        padding: 1.25rem !important;
+        border-radius: 10px !important;
+    }
+
+    .header-logos {
+        gap: 0.75rem !important;
+    }
+
+    .logo-empresa {
+        max-width: 60px !important;
+        max-height: 60px !important;
+    }
+
+    .logo-ceo {
+        max-width: 45px !important;
+        max-height: 45px !important;
+    }
+
+    .logo-container span {
+        font-size: 0.65rem !important;
+    }
+
+    .header-title h1 {
+        font-size: 1.25rem !important;
+    }
+
+    .header-title p {
+        font-size: 0.75rem !important;
+    }
+
+    .form-group label {
+        font-size: 0.8rem !important;
+    }
+
+    .form-group input {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 16px !important;
+    }
+
+    .submit-btn {
+        padding: 0.75rem 0.875rem !important;
+        font-size: 0.9375rem !important;
+    }
+
+    .credentials-box {
+        padding: 0.625rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .credentials-box p {
+        margin: 0.25rem 0 !important;
+    }
+
+    .divider {
+        margin: 1rem 0 !important;
+    }
+
+    .register-link p {
+        font-size: 0.75rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .card-login {
+        padding: 1rem !important;
+    }
+
+    .header-logos {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .logo-empresa,
+    .logo-ceo {
+        max-width: 50px !important;
+        max-height: 50px !important;
+    }
+
+    .header-title h1 {
+        font-size: 1.125rem !important;
+    }
+
+    .form-group {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .submit-btn {
+        margin-bottom: 1rem !important;
+    }
+
+    .credentials-box {
+        font-size: 0.7rem !important;
+        padding: 0.5rem !important;
+    }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+    .card-login {
+        background-color: #1a1a1a !important;
+    }
+
+    .header-title h1 {
+        color: #e5e7eb !important;
+    }
+
+    .header-title p {
+        color: #999 !important;
+    }
+
+    .form-group label {
+        color: #e5e7eb !important;
+    }
+
+    .form-group input {
+        background-color: #2a2a2a !important;
+        border-color: #444 !important;
+        color: #e5e7eb !important;
+    }
+
+    .form-group input:focus {
+        border-color: #60a5fa !important;
+    }
+
+    .credentials-box {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        color: #e5e7eb !important;
+    }
+
+    .register-link a {
+        color: #60a5fa !important;
+    }
+
+    .register-link p {
+        color: #999 !important;
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+.form-group input:focus-visible {
+    outline: 2px solid #1A4B8E !important;
+    outline-offset: 2px !important;
+}
+
+button:focus-visible {
+    outline: 2px solid #1A4B8E !important;
+    outline-offset: 2px !important;
+}

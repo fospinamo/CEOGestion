@@ -1,5 +1,275 @@
 # 📋 BUENAS PRÁCTICAS - DESARROLLO SEGURO Y ESTABLE
 
+## 🎨 PROTOCOLO: CAMBIOS EN VISTAS/UI/CSS (NUEVO - CRÍTICO)
+
+⚠️ **Problema:** Cambios en vistas pueden causar layouts desbordados, campos fuera de lugar, o desalineación sin generar errores de compilación.
+
+**Caso Real:** Al actualizar `auth/login.blade.php` con nuevos logos dinámicos, los campos de email y contraseña se desbordaban a la derecha sin errores visibles en el código.
+
+### ✅ PROTOCOLO COMPLETO: "VALIDACIÓN 360° DE VISTAS"
+
+#### PASO 1: AUDITORÍA PRE-CAMBIOS (ANTES de tocar el archivo)
+
+```
+Archivo a cambiar: resources/views/auth/login.blade.php
+
+Checklist:
+- [ ] ¿Está actualmente funcional sin errores?
+- [ ] ¿Dónde se usa esta vista? (login, rutas, controlador)
+- [ ] ¿Qué pantallas debo probar? (desktop, tablet, móvil)
+- [ ] ¿Hay CSS externo que afecta? (Tailwind, Bootstrap, custom)
+- [ ] ¿Hay JavaScript que manipula el DOM?
+```
+
+#### PASO 2: AUDITORÍA DE CSS Y LAYOUT (CRÍTICO)
+
+**Antes de cambios:**
+```
+✓ Inspeccionar elemento en navegador (F12)
+✓ Revisar el ancho del contenedor principal
+✓ Verificar que NO hay overflow-x o overflow-y activado
+✓ Buscar elementos con width: 100% sin box-sizing: border-box
+✓ Verificar padding/margin que no resten al ancho
+```
+
+**Checklist CSS:**
+```bash
+# Buscar en el archivo CSS/estilos:
+- [ ] ¿Hay estilos conflictivos sin !important?
+- [ ] ¿El contenedor padre tiene max-width definido?
+- [ ] ¿Se usa flex correctamente con flex-wrap?
+- [ ] ¿Hay elementos con width: auto que no tienen restricción?
+- [ ] ¿Hay elementos con overflow que podrían desbordar?
+- [ ] ¿Se aplica box-sizing: border-box a TODO?
+- [ ] ¿Hay padding que suma al ancho total?
+```
+
+**Checklist HTML/Estructura:**
+```
+- [ ] ¿El contenedor tiene max-width definido?
+- [ ] ¿Todos los elementos hijo respetar el ancho del padre?
+- [ ] ¿Hay elementos con inline styles que podrían conflictuar?
+- [ ] ¿Se usan clases de frameworks sin conflicto?
+```
+
+#### PASO 3: HACER CAMBIOS EN PEQUEÑOS INCREMENTOS
+
+❌ **MALO:** Cambiar 50 cosas en 1 commit
+✅ **BUENO:** Cambiar 5 cosas, probar, después las siguientes
+
+```
+Cambio 1: Agregar nuevo div con logos
+  → Probar en navegador
+  → Verificar layout
+  → Commit
+
+Cambio 2: Ajustar CSS del nuevo div
+  → Probar en navegador
+  → Verificar responsive
+  → Commit
+
+Cambio 3: Ajustar espaciado
+  → Probar en navegador
+  → Verificar alineación
+  → Commit
+```
+
+#### PASO 4: VERIFICACIÓN EN NAVEGADOR (OBLIGATORIO)
+
+**Desktop:**
+```
+[ ] Abrir http://localhost:3000/login
+[ ] Verificar que nada se desborda a la derecha
+[ ] Scroll horizontal NO debe aparecer
+[ ] Todos los campos están dentro de la caja
+[ ] Inspeccionar con F12 y revisar estilos computados
+```
+
+**Tablet (iPad - 768px):**
+```
+[ ] Abrir dev tools → Tamaño 768x1024
+[ ] Verificar que layout es responsive
+[ ] Campos no se desbordan
+[ ] Logos se ajustan correctamente
+```
+
+**Móvil (iPhone - 375px):**
+```
+[ ] Abrir dev tools → Tamaño 375x812
+[ ] Verificar que layout es responsive
+[ ] Campos legibles sin scroll horizontal
+[ ] Botones clickeables
+```
+
+#### PASO 5: VALIDACIÓN ESPECÍFICA PARA CAMBIOS CRÍTICOS
+
+**Si cambias CSS de contenedor:**
+```css
+/* ANTES: Revisar esto */
+.container {
+    width: 100%;              /* ← Revisar si tiene padding */
+    padding: 2rem;            /* ← Esto SUMA al ancho! */
+    /* Resultado: 100% + 4rem overflow */
+}
+
+/* DESPUÉS: Usar box-sizing: border-box */
+.container {
+    width: 100% !important;
+    box-sizing: border-box !important;   /* ← IMPORTANTE */
+    padding: 2rem !important;
+    max-width: 448px !important;         /* ← Limitar ancho */
+    overflow-x: hidden !important;       /* ← Prevenir desbordes */
+}
+```
+
+**Si cambias estructura HTML:**
+```blade
+<!-- ANTES: Revisar que el padre tiene restricción -->
+<div class="form-container">  <!-- ← ¿Tiene max-width? -->
+    <input class="form-input"> <!-- ← ¿Respeta ancho padre? -->
+</div>
+
+<!-- DESPUÉS: Asegurar restricciones -->
+<div class="form-container" style="max-width: 448px; width: 100%;">
+    <input class="form-input" style="width: 100%;"> <!-- ← Explícito -->
+</div>
+```
+
+#### PASO 6: TESTING AUTOMATIZADO (Opcional pero recomendado)
+
+```bash
+# Verificar que el archivo no tiene errores de sintaxis
+php artisan view:cache
+
+# Verificar que hay rutas() válidas
+grep -o "route('[^']*'" resources/views/auth/login.blade.php | sort -u
+
+# Para cada route(), verificar que existe
+php artisan route:list | grep login
+```
+
+#### PASO 7: CLEAN UP Y COMMIT
+
+```bash
+# Limpiar caches
+php artisan cache:clear
+php artisan view:clear
+php artisan config:clear
+
+# Ver cambios
+git diff resources/views/auth/login.blade.php
+
+# Commit con descripción clara
+git commit -m "Fix: Corregir layout desbordado en login
+
+CAMBIOS:
+- Agregadas restricciones max-width: 448px a contenedores
+- Agregado overflow-x: hidden al body
+- Reforzados estilos con !important para evitar conflictos
+- Agregado flex-shrink: 0 a logos para evitar compresión
+- Probado en desktop (1920x1080), tablet (768x1024), móvil (375x812)
+
+VALIDACIONES:
+✓ Nada se desborda a la derecha
+✓ Campos dentro del contenedor
+✓ Responsive en todos los tamaños
+✓ Sin scroll horizontal"
+```
+
+---
+
+### 📋 CHECKLIST COMPLETO: "CAMBIOS EN VISTAS/UI/CSS"
+
+```
+ANTES DE CAMBIOS:
+[ ] ¿La vista está funcionando sin errores actuales?
+[ ] ¿Está correctamente responsive en mobile/tablet/desktop?
+[ ] ¿He documentado qué voy a cambiar?
+
+DURANTE CAMBIOS:
+[ ] Cambios pequeños e incrementales (no todo de una vez)
+[ ] Testeo en navegador después de cada cambio
+[ ] Inspeccionar con F12 los estilos aplicados
+[ ] Verificar que no hay conflictos de CSS
+
+DESPUÉS DE CAMBIOS:
+[ ] Desktop (1920x1080): Sin desbordes ✓
+[ ] Tablet (768x1024): Responsive ✓
+[ ] Móvil (375x812): Legible y funcional ✓
+[ ] Sin scroll horizontal ✓
+[ ] Todos los elementos dentro de contenedor ✓
+[ ] Caches limpios (cache:clear, view:clear) ✓
+[ ] Sintaxis válida (view:cache) ✓
+[ ] Commit descriptivo ✓
+
+ANTES DE SUBIR A PRODUCCIÓN:
+[ ] Revisar en navegador nuevamente
+[ ] Probar en múltiples navegadores (Chrome, Firefox, Safari)
+[ ] Verificar en móvil real si es posible
+[ ] NO cambiar archivos no relacionados en el mismo commit
+```
+
+---
+
+### 🚨 PROBLEMAS COMUNES Y SOLUCIONES
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| Campos desbordados a derecha | Sin `max-width` o `overflow-x: hidden` | Agregar restricciones CSS con `!important` |
+| Layout desalineado en móvil | `box-sizing` diferente o padding sumando | Usar `box-sizing: border-box !important` |
+| Scroll horizontal aparece | Elemento más ancho que viewport | Usar `overflow-x: hidden` en body/contenedor |
+| Flex items no se ajustan | `flex-shrink` no configurado | Agregar `flex-shrink: 0` a items |
+| Estilos no se aplican | CSS con conflictos o sin precedencia | Usar `!important` solo cuando sea necesario |
+| Responsive no funciona | Falta `<meta name="viewport">` | Asegurar que está en `<head>` |
+| Cambios no se ven | Caches de Laravel activos | Ejecutar `cache:clear` + `view:clear` |
+
+---
+
+### 💡 TIPS PRÁCTICOS
+
+**Para evitar desbordes:**
+```css
+/* Universal fix */
+* { box-sizing: border-box !important; }
+html, body { width: 100% !important; overflow-x: hidden !important; }
+
+/* Contenedores principales */
+.container-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Inputs y forms */
+input, textarea, select {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+```
+
+**Para testing rápido:**
+```bash
+# Terminal 1: Dev server
+php artisan serve
+
+# Terminal 2: Limpiar caches en cada cambio
+watch -n 1 'php artisan cache:clear && php artisan view:clear'
+```
+
+**Comandos útiles:**
+```bash
+# Ver cambios antes de commit
+git diff resources/views/auth/login.blade.php
+
+# Ver solo los cambios de CSS
+git diff resources/views/auth/login.blade.php | grep "style\|class"
+
+# Deshacer cambios si algo va mal
+git checkout resources/views/auth/login.blade.php
+```
+
+---
+
 ## ⚠️ PROBLEMA ENCONTRADO
 
 Cuando se hacen cambios en vistas sin verificar que TODAS las rutas referenciadas existen, se generan errores como:

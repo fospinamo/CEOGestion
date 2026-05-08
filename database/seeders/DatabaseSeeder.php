@@ -15,14 +15,16 @@ class DatabaseSeeder extends Seeder
      * 
      * Orden de ejecución respetando dependencias de foreign keys:
      * 1. Ubicación DANE (Pais → Departamento → Municipio → Barrio)
-     * 2. Catálogo de categorías (Categoria) - requerido por TipoEquipo
-     * 3. Catálogo de tipos (TipoEquipo)
-     * 4. Clientes (depende de Empresa, Municipio)
-     * 5. Contratos (depende de Cliente, User)
-     * 6. Usuarios (si no existen)
-     * 7. Áreas (depende de Sede)
-     * 8. Equipos (depende de Area, TipoEquipo)
-     * 9. Servicios (depende de Equipo, Contrato)
+     * 2. Empresa
+     * 3. Roles y Permisos (CRÍTICO - Debe ser primero antes de usuarios)
+     * 4. Catálogo de categorías (Categoria) - requerido por TipoEquipo
+     * 5. Catálogo de tipos (TipoEquipo)
+     * 6. Clientes (depende de Empresa, Municipio)
+     * 7. Contratos (depende de Cliente, User)
+     * 8. Usuarios (con roles y permisos asignados)
+     * 9. Áreas (depende de Sede)
+     * 10. Equipos (depende de Area, TipoEquipo)
+     * 11. Servicios (depende de Equipo, Contrato)
      */
     public function run(): void
     {
@@ -42,17 +44,32 @@ class DatabaseSeeder extends Seeder
         $this->call(EmpresaSeeder::class);
 
         // =======================
-        // 3. CATEGORÍAS
+        // 3. ROLES Y PERMISOS (CRÍTICO - Debe ser primero)
+        // =======================
+        $this->call(RoleAndPermissionSeeder::class);
+
+        // =======================
+        // 4. TEMAS (TEMA DEL LOGIN Y APLICACIÓN)
+        // =======================
+        $this->call(ThemeSeeder::class);
+
+        // =======================
+        // 5. CATEGORÍAS
         // =======================
         $this->call(CategoriaSeeder::class);
 
         // =======================
-        // 4. CATÁLOGO TI
+        // 5. CATEGORÍAS
+        // =======================
+        $this->call(CategoriaSeeder::class);
+
+        // =======================
+        // 6. CATÁLOGO TI
         // =======================
         $this->call(TipoEquipoSeeder::class);
 
         // =======================
-        // 5. CLIENTES Y CONTRATOS
+        // 7. CLIENTES Y CONTRATOS
         // =======================
         $this->call([
             ClienteSeeder::class,
@@ -61,18 +78,18 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // =======================
-        // 6. USUARIOS CON ROLES
+        // 8. USUARIOS CON ROLES
         // =======================
         // Crear después de clientes para que cada cliente tenga su usuario de acceso
         $this->call(UsuariosConRolesSeeder::class);
 
         // =======================
-        // 7. SEDES DE CLIENTES
+        // 9. SEDES DE CLIENTES
         // =======================
         $this->call(SedeSeeder::class);
 
         // =======================
-        // 8. INFRAESTRUCTURA TI
+        // 10. INFRAESTRUCTURA TI
         // =======================
         $this->call([
             AreaSeeder::class,

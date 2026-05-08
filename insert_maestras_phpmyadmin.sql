@@ -212,7 +212,7 @@ INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color
 INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color`, `estado`, `created_at`, `updated_at`) VALUES ('2', 'SOFTWARE', 'software', 'Licencias, aplicaciones, sistemas operativos y programas', 'fa-code', '#10b981', '1', '2026-05-06 02:15:27', '2026-05-06 02:15:27');
 INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color`, `estado`, `created_at`, `updated_at`) VALUES ('3', 'RED', 'red', 'Equipos de conectividad: routers, switches, cableado, firewalls', 'fa-network-wired', '#f59e0b', '1', '2026-05-06 02:15:27', '2026-05-06 02:15:27');
 INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color`, `estado`, `created_at`, `updated_at`) VALUES ('4', 'PERIFERICO', 'periferico', 'Periféricos: impresoras, escáneres, monitores, teclados', 'fa-print', '#ef4444', '1', '2026-05-06 02:15:27', '2026-05-06 02:15:27');
-INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color`, `estado`, `created_at`, `updated_at`) VALUES ('5', 'OTRO', 'otro', 'Equipos no clasificados en otras categorías', 'fa-cubes', '#8b5cf6', '1', '2026-05-06 02:15:27', '2026-05-06 02:15:27');
+INSERT INTO `categorias` (`id`, `nombre`, `slug`, `descripcion`, `icono`, `color`, `estado`, `created_at`, `updated_at`) VALUES ('5', 'BIOMEDICO', 'imagenologia', 'imagenes diagnoticas', 'fa-cubes', '#8b5cf6', '1', '2026-05-06 02:15:27', '2026-05-06 02:15:27');
 
 -- Tabla: estado_servicios (vacía)
 

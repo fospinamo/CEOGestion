@@ -177,12 +177,39 @@
 </div>
 
 <script>
+console.log('🔍 Inicializando cascada de sedes (edit)...');
+
+// 🎯 Construir URL base del API de forma ABSOLUTA
+// Detecta automáticamente la estructura: /origen/CEOGestion/public/api
+function getApiBase() {
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    console.log('📂 Path segments:', pathSegments);
+    
+    // Buscar el índice de 'public' (siempre existe en producción y localhost)
+    const publicIndex = pathSegments.indexOf('public');
+    
+    if (publicIndex !== -1) {
+        // Reconstruir la ruta hasta 'public': /gestion/CEOGestion/public
+        const basePath = '/' + pathSegments.slice(0, publicIndex + 1).join('/');
+        const apiBase = window.location.origin + basePath + '/api';
+        console.log('✅ API Base calculado:', apiBase);
+        return apiBase;
+    }
+    
+    // Fallback para localhost
+    console.log('⚠️ No se encontró /public/, usando URL del origen');
+    return window.location.origin + '/api';
+}
+
+const API_BASE = getApiBase();
+
 // ⚠️ CASCADA: Departamento → Municipio
-// NOTA: En edit, se cargan solo municipios del departamento seleccionado, preservando la selección actual
 document.getElementById('departamentoSelect').addEventListener('change', async function() {
     const departamento_id = this.value;
     const municipioSelect = document.getElementById('municipioSelect');
     const barrioSelect = document.getElementById('barrioSelect');
+    
+    console.log('📍 Departamento seleccionado:', departamento_id);
     
     if (!departamento_id) {
         municipioSelect.innerHTML = '<option value="">Selecciona municipio</option>';
@@ -191,26 +218,38 @@ document.getElementById('departamentoSelect').addEventListener('change', async f
     }
     
     try {
-        const response = await fetch(`/api/municipios-por-departamento?departamento_id=${departamento_id}`);
+        // URL ABSOLUTA - funciona en cualquier servidor
+        const apiUrl = `${API_BASE}/municipios-por-departamento?departamento_id=${departamento_id}`;
+        
+        console.log('🌐 URL del API (absoluta):', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const municipios = await response.json();
+        console.log('✅ Municipios recibidos:', municipios);
         
         const selectedMunicipio = '{{ old('municipio_id', $sede->municipio_id) }}';
         municipioSelect.innerHTML = '<option value="">Selecciona municipio</option>';
-        municipios.forEach(municipio => {
-            const option = document.createElement('option');
-            option.value = municipio.id;
-            option.textContent = municipio.nombre;
-            if (municipio.id == selectedMunicipio) {
-                option.selected = true;
-            }
-            municipioSelect.appendChild(option);
-        });
+        if (Array.isArray(municipios)) {
+            municipios.forEach(municipio => {
+                const option = document.createElement('option');
+                option.value = municipio.id;
+                option.textContent = municipio.nombre;
+                if (municipio.id == selectedMunicipio) {
+                    option.selected = true;
+                }
+                municipioSelect.appendChild(option);
+            });
+        }
         
-        // Limpiar barrios cuando cambia departamento
         barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
         
     } catch (error) {
-        console.error('Error cargando municipios:', error);
+        console.error('❌ Error:', error);
     }
 });
 
@@ -219,43 +258,59 @@ document.getElementById('municipioSelect').addEventListener('change', async func
     const municipio_id = this.value;
     const barrioSelect = document.getElementById('barrioSelect');
     
+    console.log('🏙️ Municipio seleccionado:', municipio_id);
+    
     if (!municipio_id) {
         barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
         return;
     }
     
     try {
-        const response = await fetch(`/api/barrios-por-municipio?municipio_id=${municipio_id}`);
+        // URL ABSOLUTA - funciona en cualquier servidor
+        const apiUrl = `${API_BASE}/barrios-por-municipio?municipio_id=${municipio_id}`;
+        
+        console.log('🌐 URL del API (absoluta):', apiUrl);
+        
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const barrios = await response.json();
+        console.log('✅ Barrios recibidos:', barrios);
         
         const selectedBarrio = '{{ old('barrio_id', $sede->barrio_id) }}';
         barrioSelect.innerHTML = '<option value="">Selecciona un barrio (opcional)</option>';
-        barrios.forEach(barrio => {
-            const option = document.createElement('option');
-            option.value = barrio.id;
-            option.textContent = barrio.nombre;
-            if (barrio.id == selectedBarrio) {
-                option.selected = true;
-            }
-            barrioSelect.appendChild(option);
-        });
+        if (Array.isArray(barrios)) {
+            barrios.forEach(barrio => {
+                const option = document.createElement('option');
+                option.value = barrio.id;
+                option.textContent = barrio.nombre;
+                if (barrio.id == selectedBarrio) {
+                    option.selected = true;
+                }
+                barrioSelect.appendChild(option);
+            });
+        }
         
     } catch (error) {
-        console.error('Error cargando barrios:', error);
+        console.error('❌ Error:', error);
     }
 });
 
 // Cargar barrios cuando carga la página (si hay municipio seleccionado)
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM Cargado completamente');
     const municipioSelect = document.getElementById('municipioSelect');
-    const barrioSelect = document.getElementById('barrioSelect');
     const municipio_id = municipioSelect.value;
     
     if (municipio_id) {
-        // Simular cambio de municipio para cargar barrios
         const event = new Event('change');
         municipioSelect.dispatchEvent(event);
     }
 });
+
+console.log('✅ Script de cascada (edit) cargado correctamente');
 </script>
 @endsection

@@ -34,6 +34,8 @@ class Empresa extends Model
         'digito_verificacion',
         'telefono',
         'email',
+        'logo',
+        'descripcion',
         'pagina_web',
         'tipo_contribuyente',
         'responsabilidades_fiscales',
@@ -73,5 +75,13 @@ class Empresa extends Model
     public function sedes(): HasManyThrough
     {
         return $this->hasManyThrough(Sede::class, Cliente::class);
+    }
+
+    /**
+     * Relación: Una empresa tiene una configuración de tema
+     */
+    public function themeSetting()
+    {
+        return $this->hasOne(EmpresaThemeSetting::class);
     }
 }

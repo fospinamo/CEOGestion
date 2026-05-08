@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parametros;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * EmpresaController - Módulo Parámetros
@@ -33,11 +34,21 @@ class EmpresaController extends Controller
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'pagina_web' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'descripcion' => 'nullable|string|max:1000',
             'tipo_contribuyente' => 'required|in:persona_natural,persona_juridica,gran_contribuyente',
             'responsabilidades_fiscales' => 'nullable|array',
             'direccion' => 'nullable|string|max:500',
             'estado' => 'boolean',
         ]);
+
+        // Manejar subida de logo
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            $filename = time() . '_' . $logo->getClientOriginalName();
+            $logo->move(public_path('empresas'), $filename);
+            $validated['logo'] = 'empresas/' . $filename;
+        }
 
         Empresa::create($validated);
 
@@ -64,11 +75,27 @@ class EmpresaController extends Controller
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'pagina_web' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'descripcion' => 'nullable|string|max:1000',
             'tipo_contribuyente' => 'required|in:persona_natural,persona_juridica,gran_contribuyente',
             'responsabilidades_fiscales' => 'nullable|array',
             'direccion' => 'nullable|string|max:500',
             'estado' => 'boolean',
         ]);
+
+        // Manejar subida de logo
+        if ($request->hasFile('logo')) {
+            // Eliminar logo anterior si existe
+            if ($empresa->logo && file_exists(public_path($empresa->logo))) {
+                @unlink(public_path($empresa->logo));
+            }
+            
+            // Guardar nuevo logo
+            $logo = $request->file('logo');
+            $filename = time() . '_' . $logo->getClientOriginalName();
+            $logo->move(public_path('empresas'), $filename);
+            $validated['logo'] = 'empresas/' . $filename;
+        }
 
         $empresa->update($validated);
 

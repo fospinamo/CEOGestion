@@ -7,7 +7,7 @@
 @section('content')
 <div class="max-w-4xl">
     <div class="bg-white rounded-lg shadow">
-        <form action="{{ route('parametros.empresas.store') }}" method="POST" class="p-6 space-y-6">
+        <form action="{{ route('parametros.empresas.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
 
             <!-- Row 1: Nombre y NIT -->
@@ -87,7 +87,36 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <!-- Row 5: Dirección -->
+            <!-- Logo Upload Section -->
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50"
+                onclick="document.getElementById('logoInput').click()">
+                <div id="logoPreviewContainer" class="hidden">
+                    <img id="logoPreview" src="" alt="Vista previa" class="h-32 mx-auto mb-4 object-contain">
+                    <p class="text-sm text-gray-600">Click para cambiar logo</p>
+                </div>
+                <div id="logoPlaceholder">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-sm font-semibold text-gray-700">Sube el logo de la empresa</p>
+                    <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF (máx. 2MB)</p>
+                </div>
+                <input type="file" id="logoInput" name="logo" accept="image/*" 
+                    class="hidden"
+                    onchange="previewImage(event)">
+                @error('logo')
+                    <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Row 5: Descripción -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Descripción</label>
+                <textarea name="descripcion" rows="2" placeholder="Descripción de la empresa"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('descripcion') }}</textarea>
+            </div>
+
+            <!-- Row 6: Dirección -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Dirección</label>
                 <textarea name="direccion" rows="3"
@@ -115,4 +144,29 @@
         </form>
     </div>
 </div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Cambiar de placeholder a preview
+            document.getElementById('logoPlaceholder').classList.add('hidden');
+            document.getElementById('logoPreviewContainer').classList.remove('hidden');
+            document.getElementById('logoPreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Restaurar placeholder al hacer reload
+document.addEventListener('DOMContentLoaded', function() {
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput.files.length === 0) {
+        document.getElementById('logoPreviewContainer').classList.add('hidden');
+        document.getElementById('logoPlaceholder').classList.remove('hidden');
+    }
+});
+</script>
 @endsection

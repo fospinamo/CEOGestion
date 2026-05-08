@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +13,14 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        return view('auth.login');
+        // Obtener la empresa principal (primera empresa de la BD)
+        $empresa = Empresa::where('estado', true)->first() ?? Empresa::first();
+        $theme = $empresa?->themeSetting()->first();
+        
+        return view('auth.login', [
+            'empresa' => $empresa,
+            'theme' => $theme,
+        ]);
     }
 
     /**
@@ -45,6 +53,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     }
 }

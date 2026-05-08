@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1A4B8E">
     <title>Registrarse - CEOGestion</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📊</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1A4B8E 0%, #0D2A54 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
@@ -55,7 +56,7 @@
         <div class="bg-white rounded-lg shadow-2xl p-8">
             <!-- Header -->
             <div class="text-center mb-8">
-                <img src="/images/playstore.png" alt="Logo CEOGestion" class="h-16 w-16 mx-auto mb-4 rounded-lg shadow-lg">
+                <img src="{{ asset('images/playstore.png') }}" alt="Logo CEOGestion" class="h-16 w-16 mx-auto mb-4 rounded-lg shadow-lg">
                 <h1 class="text-3xl font-bold text-blue-700">CEOGestion</h1>
                 <p class="text-gray-600 text-sm">Crear Nueva Cuenta</p>
             </div>

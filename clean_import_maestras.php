@@ -43,75 +43,15 @@ function ejecutarSQL($pdo, $archivo, $nombre) {
     echo "📂 Leyendo: " . basename($archivo) . "\n";
     $content = file_get_contents($archivo);
     
-    // Si es limpieza, ejecutar TODO JUNTO para preservar FOREIGN_KEY_CHECKS=0
-    if (strpos($nombre, 'limpiar') !== false) {
-        echo "   Ejecutando LIMPIEZA (todo junto)...\n";
-        try {
-            $pdo->exec($content);
-            echo "   ✅ Limpieza completada\n";
-        } catch (Exception $e) {
-            echo "   ⚠️  Error: " . substr($e->getMessage(), 0, 100) . "\n";
-        }
-        echo "\n";
-        return true;
-    }
-    
-    // Si es importación, parsear y ejecutar por partes
-    echo "   Parseando SQL...\n";
-    $statements = [];
-    $statement = '';
-    $lines = explode("\n", $content);
-    
-    foreach ($lines as $line) {
-        $trimmed = trim($line);
-        
-        // Skip comentarios y líneas vacías
-        if (empty($trimmed) || strpos($trimmed, '--') === 0) {
-            continue;
-        }
-        if (strpos($trimmed, '/*') === 0 || strpos($trimmed, '*/') !== false) {
-            continue;
-        }
-        
-        $statement .= $line . "\n";
-        
-        // Fin de statement
-        if (strpos($line, ';') !== false) {
-            $stmt = trim($statement);
-            if (!empty($stmt)) {
-                $statements[] = $stmt;
-            }
-            $statement = '';
-        }
-    }
-    
-    echo "   Encontrados: " . count($statements) . " comandos\n";
-    
-    // Ejecutar
-    $pdo->exec("SET FOREIGN_KEY_CHECKS=0;");
-    
-    $executed = 0;
-    $errors = [];
-    
-    foreach ($statements as $idx => $stmt) {
-        try {
-            if (!empty(trim($stmt))) {
-                $pdo->exec($stmt);
-                $executed++;
-            }
-        } catch (Exception $e) {
-            $errors[] = $e->getMessage();
-            if (count($errors) <= 3) {
-                echo "   ⚠️  Error en comando " . ($idx + 1) . ": " . substr($e->getMessage(), 0, 80) . "\n";
-            }
-        }
-    }
-    
-    $pdo->exec("SET FOREIGN_KEY_CHECKS=1;");
-    
-    echo "   ✅ Ejecutados: $executed\n";
-    if (count($errors) > 0) {
-        echo "   ❌ Errores: " . count($errors) . " (primeros 3 mostrados)\n";
+    // Para ambos tipos de archivo: ejecutar TODO JUNTO sin parsear
+    // Esto evita problemas con comentarios condicionales, LOCK TABLES, etc.
+    echo "   Ejecutando SQL (todo junto)...\n";
+    try {
+        $pdo->exec($content);
+        echo "   ✅ Ejecución completada\n";
+    } catch (Exception $e) {
+        echo "   ⚠️  Error: " . substr($e->getMessage(), 0, 150) . "\n";
+        $errors = 1;
     }
     echo "\n";
     

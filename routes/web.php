@@ -249,14 +249,14 @@ Route::middleware(['auth'])->group(function () {
 // IMPORTAR RUTAS MODULARES
 // =======================================
 
-// Módulo Seguridad - Usuarios, Roles y Permisos (NUEVO)
+// Módulo Parámetros - Empresas, Sedes, Clientes, Áreas, Equipos
+require __DIR__ . '/parametros.php';
+
+// Módulo Seguridad - Usuarios, Roles y Permisos
 require __DIR__ . '/seguridad.php';
 
 // Módulo Administrativo - Tablas básicas
 require __DIR__ . '/administrativo.php';
-
-// Módulo Parámetros - Configuración general
-require __DIR__ . '/parametros.php';
 
 // Módulo Incidencias - Servicios técnicos
 require __DIR__ . '/incidencias.php';

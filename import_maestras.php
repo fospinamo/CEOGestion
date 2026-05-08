@@ -7,11 +7,11 @@
  * ⚠️ ELIMINA ESTE ARCHIVO DESPUÉS DE IMPORTAR
  */
 
-// Configuración desde .env
-$host = getenv('DB_HOST') ?: 'localhost';
-$database = getenv('DB_DATABASE') ?: 'ceogestion_db';
-$username = getenv('DB_USERNAME') ?: 'root';
-$password = getenv('DB_PASSWORD') ?: '';
+// Configuración
+$host = 'localhost';
+$database = getenv('DB_DATABASE') ?: 'simotec_ceogestion_prod';
+$username = getenv('DB_USERNAME') ?: 'simotec_ceogestion_user';
+$password = getenv('DB_PASSWORD') ?: 'Simotec2026';
 
 // Ruta del backup (misma carpeta que este script)
 $backupFile = __DIR__ . '/backup_maestras.sql';
@@ -24,64 +24,105 @@ echo "<pre style='font-family: monospace; background: #f5f5f5; padding: 15px; bo
 echo "🔧 IMPORTADOR DE BASES DE DATOS\n";
 echo "================================\n\n";
 
-// Primero intenta con mysql CLI (método más confiable)
-echo "📡 Importando con mysql CLI...\n";
+// Conectar a MySQL
+echo "📡 Conectando a base de datos: $database\n";
+try {
+    $pdo = new PDO(
+        "mysql:host=$host;dbname=$database;charset=utf8mb4",
+        $username,
+        $password,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 30
+        ]
+    );
+    echo "✅ Conexión exitosa\n\n";
+} catch (Exception $e) {
+    echo "❌ Error de conexión: " . $e->getMessage() . "\n";
+    echo "   Host: $host\n";
+    echo "   BD: $database\n";
+    echo "   Usuario: $username\n";
+    die();
+}
 
-$cmd = sprintf(
-    'mysql -h%s -u%s %s %s < "%s" 2>&1',
-    escapeshellarg($host),
-    escapeshellarg($username),
-    (!empty($password) ? "-p" . escapeshellarg($password) : ""),
-    escapeshellarg($database),
-    escapeshellarg($backupFile)
-);
+// Leer archivo SQL
+echo "📂 Leyendo archivo: backup_maestras.sql (" . filesize($backupFile) . " bytes)\n";
+$sql = file_get_contents($backupFile);
+echo "✅ Archivo leído\n\n";
 
-$output = shell_exec($cmd);
-$output = trim($output);
+// Dividir por comandos (separador ; que no está dentro de comentarios)
+$commands = [];
+$current = '';
+$lines = explode("\n", $sql);
 
-if (empty($output) || strpos($output, 'ERROR') === false) {
-    echo "✅ Importación exitosa vía mysql CLI\n";
-    echo "📂 Archivo: " . basename($backupFile) . " (" . filesize($backupFile) . " bytes)\n";
-    echo "💾 Base de datos: $database\n\n";
-    
-    // Valida importación
-    echo "🔍 VERIFICACIÓN DE TABLAS:\n";
-    try {
-        $pdo = new PDO(
-            "mysql:host=$host;dbname=$database;charset=utf8mb4",
-            $username,
-            $password
-        );
-        
-        $masterTables = ['paises', 'departamentos', 'municipios', 'barrios', 'tipos_equipos', 
-                         'categorias', 'estado_servicios', 'roles', 'permissions', 'role_permissions'];
-        
-        $imported = 0;
-        foreach ($masterTables as $table) {
-            try {
-                $count = $pdo->query("SELECT COUNT(*) FROM `$table`")->fetchColumn();
-                echo "   ✅ $table ($count registros)\n";
-                $imported++;
-            } catch (Exception $e) {
-                echo "   ❌ $table - error\n";
-            }
-        }
-        
-        echo "\n   📊 Tablas maestras importadas: $imported/" . count($masterTables) . "\n";
-        
-    } catch (Exception $e) {
-        echo "   ⚠️  Error al verificar: " . $e->getMessage() . "\n";
+foreach ($lines as $line) {
+    // Ignorar comentarios
+    if (substr(trim($line), 0, 2) === '--') {
+        continue;
+    }
+    if (substr(trim($line), 0, 2) === '/*') {
+        continue;
     }
     
-} else {
-    echo "❌ Error en importación:\n$output\n";
+    $current .= $line . "\n";
+    
+    // Si termina con ;
+    if (strpos($line, ';') !== false && trim($line) !== '') {
+        $cmd = trim($current);
+        if (!empty($cmd) && $cmd !== ';') {
+            $commands[] = $cmd;
+            $current = '';
+        }
+    }
+}
+
+// Ejecutar comandos
+echo "⚙️  Ejecutando SQL...\n";
+$executed = 0;
+$errors = [];
+
+foreach ($commands as $idx => $command) {
+    try {
+        if (!empty(trim($command))) {
+            $pdo->exec($command);
+            $executed++;
+            echo "   ✓ Comando " . ($idx + 1) . "\n";
+        }
+    } catch (Exception $e) {
+        $errors[] = "Comando " . ($idx + 1) . ": " . $e->getMessage();
+        echo "   ✗ Comando " . ($idx + 1) . " ERROR: " . $e->getMessage() . "\n";
+    }
 }
 
 echo "\n";
 echo "================================\n";
-echo "✅ PROCESO COMPLETADO\n";
-echo "⚠️  ELIMINA ESTE ARCHIVO (import_maestras.php) POR SEGURIDAD\n";
+echo "📊 RESULTADOS DE IMPORTACIÓN\n";
 echo "================================\n";
+echo "✅ Comandos ejecutados: $executed\n";
+echo "❌ Errores: " . count($errors) . "\n";
+
+if (!empty($errors)) {
+    echo "\n⚠️  ERRORES ENCONTRADOS:\n";
+    foreach ($errors as $err) {
+        echo "   - $err\n";
+    }
+}
+
+// Verificar tablas importadas
+echo "\n🔍 TABLAS IMPORTADAS:\n";
+try {
+    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($tables as $table) {
+        $count = $pdo->query("SELECT COUNT(*) FROM `$table`")->fetchColumn();
+        echo "   ✓ $table ($count registros)\n";
+    }
+} catch (Exception $e) {
+    echo "   Error al verificar: " . $e->getMessage() . "\n";
+}
+
+echo "\n";
+echo "✅ IMPORTACIÓN COMPLETADA\n";
+echo "⚠️  ELIMINA ESTE ARCHIVO (import_maestras.php) POR SEGURIDAD\n";
 echo "</pre>";
 
 ?>

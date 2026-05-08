@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Cliente;
 use App\Models\Empresa;
 use Illuminate\Database\Seeder;
@@ -12,17 +13,14 @@ use Illuminate\Support\Str;
 /**
  * Seeder: UsuariosConRolesSeeder
  * 
- * Crea usuarios de prueba con diferentes roles:
- * - 1 Admin: Acceso completo
- * - 1 Coordinador: Asigna y monitorea servicios
- * - 2 Operarios: Registran servicios
- * - 3 Técnicos: Atienden servicios
+ * NOTA: Los roles y permisos se crean en RoleAndPermissionSeeder
+ * Este seeder solo crea usuarios de prueba y los asigna a roles
+ * 
+ * Usuarios creados:
+ * - 1 Admin: admin@ceogestion.com / password123
+ * - 1 Técnico: tecnico1@ceogestion.com / password123
+ * - 1 Agente: agente1@ceogestion.com / password123
  * - N Usuarios Cliente: Uno por cada cliente (acceso portal)
- * 
- * Contraseñas de prueba:
- * - Todos usan: 'password123'
- * 
- * Tokens de acceso para clientes generados automáticamente
  */
 class UsuariosConRolesSeeder extends Seeder
 {
@@ -31,7 +29,7 @@ class UsuariosConRolesSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtener o crear empresa principal
+        // Obtener empresa principal
         $empresa = Empresa::first();
         if (!$empresa) {
             $empresa = Empresa::create([
@@ -44,158 +42,82 @@ class UsuariosConRolesSeeder extends Seeder
             ]);
         }
 
-        // Contraseña por defecto para todos los usuarios de prueba
         $passwordHash = Hash::make('password123');
+
+        // Obtener roles (creados por RoleAndPermissionSeeder)
+        $adminRole = Role::where('slug', 'admin')->first();
+        $tecnicoRole = Role::where('slug', 'tecnico')->first();
+        $agenteRole = Role::where('slug', 'agente')->first();
 
         // ============================================
         // 1. USUARIO ADMINISTRADOR
         // ============================================
-        User::updateOrCreate(
-            ['email' => 'admin@ceogestion.com'],
-            [
-                'name' => 'Administrador Sistema',
-                'email' => 'admin@ceogestion.com',
-                'password' => $passwordHash,
-                'empresa_id' => $empresa->id,
-                'tipo_rol' => 'admin',
-                'cedula' => '1001234567',
-                'telefono' => '3001234567',
-                'estado' => true,
-                'permisos' => [
-                    'ver_estadisticas',
-                    'generar_reportes',
-                    'gestionar_usuarios',
-                    'gestionar_clientes',
-                    'ver_sla_compliance',
-                ],
-            ]
-        );
-
-        // ============================================
-        // 2. USUARIO COORDINADOR/MONITOR
-        // ============================================
-        User::updateOrCreate(
-            ['email' => 'coordinador@ceogestion.com'],
-            [
-                'name' => 'Juan Carlos Coordinador',
-                'email' => 'coordinador@ceogestion.com',
-                'password' => $passwordHash,
-                'empresa_id' => $empresa->id,
-                'tipo_rol' => 'coordinador',
-                'cedula' => '1001234568',
-                'telefono' => '3001234568',
-                'estado' => true,
-                'permisos' => [
-                    'ver_servicios_abiertos',
-                    'asignar_servicios',
-                    'cambiar_prioridad',
-                    'ver_carga_tecnicos',
-                ],
-            ]
-        );
-
-        // ============================================
-        // 3. USUARIOS OPERARIOS (Registran servicios)
-        // ============================================
-        $operarios = [
-            [
-                'email' => 'operario1@ceogestion.com',
-                'name' => 'María García - Operaria',
-                'cedula' => '1001234569',
-                'telefono' => '3001234569',
-                'observacion' => 'Turno mañana',
-            ],
-            [
-                'email' => 'operario2@ceogestion.com',
-                'name' => 'Carlos López - Operario',
-                'cedula' => '1001234570',
-                'telefono' => '3001234570',
-                'observacion' => 'Turno tarde',
-            ],
-        ];
-
-        foreach ($operarios as $operario) {
-            User::updateOrCreate(
-                ['email' => $operario['email']],
+        if ($adminRole) {
+            $admin = User::updateOrCreate(
+                ['email' => 'admin@ceogestion.com'],
                 [
-                    'name' => $operario['name'],
-                    'email' => $operario['email'],
+                    'name' => 'Administrador Sistema',
+                    'email' => 'admin@ceogestion.com',
                     'password' => $passwordHash,
                     'empresa_id' => $empresa->id,
-                    'tipo_rol' => 'operario',
-                    'cedula' => $operario['cedula'],
-                    'telefono' => $operario['telefono'],
+                    'role_id' => $adminRole->id,
+                    'cedula' => '1001234567',
+                    'telefono' => '3001234567',
                     'estado' => true,
-                    'permisos' => [
-                        'crear_servicios',
-                        'ver_clientes',
-                        'ver_equipos_cliente',
-                    ],
                 ]
             );
+            echo "✓ Admin creado: admin@ceogestion.com / password123" . PHP_EOL;
         }
 
         // ============================================
-        // 4. USUARIOS TÉCNICOS
+        // 2. USUARIO TÉCNICO (Demo)
         // ============================================
-        $tecnicos = [
-            [
-                'email' => 'tecnico1@ceogestion.com',
-                'name' => 'Pedro Rodríguez - Técnico Senior',
-                'cedula' => '1001234571',
-                'telefono' => '3001234571',
-                'especialidad' => 'Redes e Infraestructura',
-            ],
-            [
-                'email' => 'tecnico2@ceogestion.com',
-                'name' => 'Laura Martínez - Técnico Servidores',
-                'cedula' => '1001234572',
-                'telefono' => '3001234572',
-                'especialidad' => 'Servidores y Backup',
-            ],
-            [
-                'email' => 'tecnico3@ceogestion.com',
-                'name' => 'Roberto Gómez - Técnico Campo',
-                'cedula' => '1001234573',
-                'telefono' => '3001234573',
-                'especialidad' => 'Soporte en sitio',
-            ],
-        ];
-
-        foreach ($tecnicos as $tecnico) {
-            User::updateOrCreate(
-                ['email' => $tecnico['email']],
+        if ($tecnicoRole) {
+            $tecnico = User::updateOrCreate(
+                ['email' => 'tecnico1@ceogestion.com'],
                 [
-                    'name' => $tecnico['name'],
-                    'email' => $tecnico['email'],
+                    'name' => 'Técnico Demo',
+                    'email' => 'tecnico1@ceogestion.com',
                     'password' => $passwordHash,
                     'empresa_id' => $empresa->id,
-                    'tipo_rol' => 'tecnico',
-                    'cedula' => $tecnico['cedula'],
-                    'telefono' => $tecnico['telefono'],
+                    'role_id' => $tecnicoRole->id,
+                    'cedula' => '1001234571',
+                    'telefono' => '3001234571',
                     'estado' => true,
-                    'permisos' => [
-                        'ver_servicios_asignados',
-                        'actualizar_estado_servicio',
-                        'registrar_seguimiento',
-                        'registrar_tiempo_trabajo',
-                    ],
                 ]
             );
+            echo "✓ Técnico creado: tecnico1@ceogestion.com / password123" . PHP_EOL;
         }
 
         // ============================================
-        // 5. USUARIOS CLIENTE (Portal del Cliente)
+        // 3. USUARIO AGENTE (Demo)
         // ============================================
-        // Obtener todos los clientes existentes
+        if ($agenteRole) {
+            $agente = User::updateOrCreate(
+                ['email' => 'agente1@ceogestion.com'],
+                [
+                    'name' => 'Agente Demo',
+                    'email' => 'agente1@ceogestion.com',
+                    'password' => $passwordHash,
+                    'empresa_id' => $empresa->id,
+                    'role_id' => $agenteRole->id,
+                    'cedula' => '1001234580',
+                    'telefono' => '3001234580',
+                    'estado' => true,
+                ]
+            );
+            echo "✓ Agente creado: agente1@ceogestion.com / password123" . PHP_EOL;
+        }
+
+        // ============================================
+        // 4. USUARIOS CLIENTE (Portal)
+        // ============================================
         $clientes = Cliente::where('estado', true)->get();
 
         foreach ($clientes as $cliente) {
-            // Generar email único para usuario cliente
             $slugNombre = Str::slug($cliente->razon_social);
             $email = "cliente.{$slugNombre}@portal.ceogestion.com";
 
-            // Crear o actualizar usuario cliente
             $usuarioCliente = User::updateOrCreate(
                 ['email' => $email],
                 [
@@ -204,30 +126,15 @@ class UsuariosConRolesSeeder extends Seeder
                     'password' => $passwordHash,
                     'empresa_id' => $empresa->id,
                     'cliente_id' => $cliente->id,
-                    'tipo_rol' => 'cliente',
                     'cedula' => $cliente->documento,
                     'telefono' => $cliente->telefono_movil ?? $cliente->telefono_fijo,
                     'estado' => true,
-                    'permisos' => [
-                        'ver_propios_contratos',
-                        'ver_propios_equipos',
-                        'ver_propios_servicios',
-                        'crear_servicio',
-                        'descargar_atencion',
-                    ],
                 ]
             );
 
-            // Generar token de acceso único si no existe
-            if (!$usuarioCliente->token_acceso) {
-                $usuarioCliente->generarTokenAcceso();
-            }
-
-            // Log para debugging
-            echo "✓ Usuario cliente creado: {$cliente->razon_social} ({$email})" . PHP_EOL;
-            echo "  Token: {$usuarioCliente->token_acceso}" . PHP_EOL;
+            echo "✓ Usuario cliente: {$email}" . PHP_EOL;
         }
 
-        echo PHP_EOL . "✅ Usuarios con roles creados exitosamente" . PHP_EOL;
+        echo PHP_EOL . "✅ Usuarios creados exitosamente" . PHP_EOL;
     }
 }
