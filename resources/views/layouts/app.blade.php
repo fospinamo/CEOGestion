@@ -6,6 +6,12 @@
     <title>@yield('title', 'CEOGESTION') - Sistema de Gestión Empresarial</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📊</text></svg>">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Inyectar baseUrl para URLs absolutas en JavaScript -->
+    <script>
+        window.Laravel = {
+            baseUrl: "{{ url('/') }}"
+        };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">

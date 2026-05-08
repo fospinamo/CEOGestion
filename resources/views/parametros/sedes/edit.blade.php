@@ -179,29 +179,8 @@
 <script>
 console.log('🔍 Inicializando cascada de sedes (edit)...');
 
-// 🎯 Construir URL base del API de forma ABSOLUTA
-// Detecta automáticamente la estructura: /origen/CEOGestion/public/api
-function getApiBase() {
-    const pathSegments = window.location.pathname.split('/').filter(Boolean);
-    console.log('📂 Path segments:', pathSegments);
-    
-    // Buscar el índice de 'public' (siempre existe en producción y localhost)
-    const publicIndex = pathSegments.indexOf('public');
-    
-    if (publicIndex !== -1) {
-        // Reconstruir la ruta hasta 'public': /gestion/CEOGestion/public
-        const basePath = '/' + pathSegments.slice(0, publicIndex + 1).join('/');
-        const apiBase = window.location.origin + basePath + '/api';
-        console.log('✅ API Base calculado:', apiBase);
-        return apiBase;
-    }
-    
-    // Fallback para localhost
-    console.log('⚠️ No se encontró /public/, usando URL del origen');
-    return window.location.origin + '/api';
-}
-
-const API_BASE = getApiBase();
+// 🎯 Usar window.Laravel.baseUrl inyectado desde layouts/app.blade.php
+console.log('✅ API Base disponible desde window.Laravel.baseUrl:', window.Laravel.baseUrl);
 
 // ⚠️ CASCADA: Departamento → Municipio
 document.getElementById('departamentoSelect').addEventListener('change', async function() {
@@ -218,8 +197,8 @@ document.getElementById('departamentoSelect').addEventListener('change', async f
     }
     
     try {
-        // URL ABSOLUTA - funciona en cualquier servidor
-        const apiUrl = `${API_BASE}/municipios-por-departamento?departamento_id=${departamento_id}`;
+        // URL ABSOLUTA usando window.Laravel.baseUrl (inyectado en layouts/app.blade.php)
+        const apiUrl = `${window.Laravel.baseUrl}/api/municipios-por-departamento?departamento_id=${departamento_id}`;
         
         console.log('🌐 URL del API (absoluta):', apiUrl);
         
@@ -266,8 +245,8 @@ document.getElementById('municipioSelect').addEventListener('change', async func
     }
     
     try {
-        // URL ABSOLUTA - funciona en cualquier servidor
-        const apiUrl = `${API_BASE}/barrios-por-municipio?municipio_id=${municipio_id}`;
+        // URL ABSOLUTA usando window.Laravel.baseUrl
+        const apiUrl = `${window.Laravel.baseUrl}/api/barrios-por-municipio?municipio_id=${municipio_id}`;
         
         console.log('🌐 URL del API (absoluta):', apiUrl);
         
