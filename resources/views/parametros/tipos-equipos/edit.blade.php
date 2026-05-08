@@ -4,7 +4,7 @@
 @section('page-description', 'Actualiza los datos del tipo de equipo')
 @section('content')
 <div class="max-w-2xl">
-    <form action="{{ route('parametros.tipos-equipos.update', $tipoEquipo) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ route('parametros.tipos-equipos.update', ['tipos_equipo' => $tipoEquipo->id]) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @method('PUT')
 
