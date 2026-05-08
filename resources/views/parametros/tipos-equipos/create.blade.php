@@ -35,7 +35,7 @@
             @enderror
             <p class="text-xs text-gray-500 mt-1">
                 <i class="fas fa-info-circle"></i>
-                ¿No encuentras la categoría? <a href="{{ route('categorias.create') }}" class="text-blue-600 hover:underline">Crea una nueva aquí</a>
+                ¿No encuentras la categoría? <a href="{{ route('parametros.categorias.create') }}" class="text-blue-600 hover:underline">Crea una nueva aquí</a>
             </p>
         </div>
 
