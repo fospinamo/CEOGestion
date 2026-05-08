@@ -5,8 +5,18 @@
 @section('page-description', $cliente ? 'Actualizar información del cliente' : 'Registrar un nuevo cliente')
 
 @section('content')
+
+@if(isset($cliente) && !$cliente && request()->method() === 'PUT')
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Cliente no encontrado</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar el cliente para editar.</p>
+        <a href="{{ route('parametros.clientes.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-4xl">
-    <form action="{{ $cliente ? route('parametros.clientes.update', $cliente) : route('parametros.clientes.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ $cliente ? route('parametros.clientes.update', ['cliente' => $cliente->id]) : route('parametros.clientes.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @if($cliente)
             @method('PUT')
@@ -188,4 +198,5 @@
         </div>
     </form>
 </div>
+@endif
 @endsection

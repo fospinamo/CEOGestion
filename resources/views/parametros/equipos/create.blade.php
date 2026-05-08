@@ -5,8 +5,18 @@
 @section('page-description', $equipo ? 'Actualizar equipo TI' : 'Agregar equipo a inventario')
 
 @section('content')
+
+@if(isset($equipo) && !$equipo && request()->method() === 'PUT')
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Equipo no encontrado</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar el equipo para editar.</p>
+        <a href="{{ route('parametros.equipos.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-4xl">
-    <form action="{{ $equipo ? route('parametros.equipos.update', $equipo) : route('parametros.equipos.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ $equipo ? route('parametros.equipos.update', ['equipo' => $equipo->id]) : route('parametros.equipos.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @if($equipo)
             @method('PUT')
@@ -309,6 +319,5 @@ $(document).ready(function() {
     filterAreas();
 });
 </script>
-@endsection
-
+@endif
 @endsection

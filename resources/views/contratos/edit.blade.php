@@ -5,8 +5,18 @@
 @section('page-description', 'Actualizar información del contrato de servicios TI')
 
 @section('content')
+
+@if(!isset($contrato) || !$contrato)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Contrato no encontrado</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar el contrato para editar.</p>
+        <a href="{{ route('parametros.contratos.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-4xl">
-    <form action="{{ route('parametros.contratos.update', $contrato) }}" method="POST" class="space-y-6">
+    <form action="{{ route('parametros.contratos.update', ['contrato' => $contrato->id]) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -197,4 +207,5 @@
         @endif
     </form>
 </div>
+@endif
 @endsection

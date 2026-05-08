@@ -3,8 +3,18 @@
 @section('page-title', $area ? 'Editar Área' : 'Nueva Área')
 @section('page-description', $area ? 'Actualizar área' : 'Crear nueva área')
 @section('content')
+
+@if(isset($area) && !$area && request()->method() === 'PUT')
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Área no encontrada</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar el área para editar.</p>
+        <a href="{{ route('parametros.areas.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-3xl">
-    <form action="{{ $area ? route('parametros.areas.update', $area) : route('parametros.areas.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ $area ? route('parametros.areas.update', ['area' => $area->id]) : route('parametros.areas.store') }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @if($area) @method('PUT') @endif
 
@@ -174,6 +184,5 @@ $(document).ready(function() {
     filterSedes();
 });
 </script>
-@endsection
-
+@endif
 @endsection

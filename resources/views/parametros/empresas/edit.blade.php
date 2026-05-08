@@ -5,9 +5,19 @@
 @section('page-description', 'Actualiza la información de la empresa')
 
 @section('content')
+
+@if(!isset($empresa) || !$empresa)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Empresa no encontrada</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar la empresa para editar.</p>
+        <a href="{{ route('parametros.empresas.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-4xl">
     <div class="bg-white rounded-lg shadow">
-        <form action="{{ route('parametros.empresas.update', $empresa) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+        <form action="{{ route('parametros.empresas.update', ['empresa' => $empresa->id]) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 
@@ -148,6 +158,7 @@
         </form>
     </div>
 </div>
+@endif
 
 <script>
 function previewImage(event) {

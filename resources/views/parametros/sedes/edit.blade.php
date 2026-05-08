@@ -5,9 +5,19 @@
 @section('page-description', 'Actualiza la información de la sede')
 
 @section('content')
+
+@if(!isset($sede) || !$sede)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Sede no encontrada</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar la sede para editar.</p>
+        <a href="{{ route('parametros.sedes.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-4xl">
     <div class="bg-white rounded-lg shadow">
-        <form action="{{ route('parametros.sedes.update', $sede) }}" method="POST" class="p-6 space-y-6">
+        <form action="{{ route('parametros.sedes.update', ['sede' => $sede->id]) }}" method="POST" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 
@@ -292,4 +302,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 console.log('✅ Script de cascada (edit) cargado correctamente');
 </script>
+@endif
 @endsection

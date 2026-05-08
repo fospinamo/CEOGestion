@@ -5,13 +5,23 @@
 @section('page-description', 'Actualizar información de la categoría')
 
 @section('content')
+
+@if(!isset($categoria) || !$categoria)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Categoría no encontrada</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar la categoría para editar.</p>
+        <a href="{{ route('parametros.categorias.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 @php
     // Usar create.blade.php con $categoria pasada como variable
     $_categoria = $categoria;
 @endphp
 
 <div class="max-w-2xl">
-    <form action="{{ route('parametros.categorias.update', $categoria) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+    <form action="{{ route('parametros.categorias.update', ['categoria' => $categoria->slug]) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
         @method('PUT')
 
@@ -95,6 +105,7 @@
         @endif
     </form>
 </div>
+@endif
 @endsection
 
 @section('scripts')
