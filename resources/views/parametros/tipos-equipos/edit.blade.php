@@ -3,6 +3,16 @@
 @section('page-title', 'Editar Tipo de Equipo')
 @section('page-description', 'Actualiza los datos del tipo de equipo')
 @section('content')
+
+@if(!isset($tipoEquipo) || !$tipoEquipo)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 class="text-lg font-bold text-red-800 mb-2">Error: Tipo de equipo no encontrado</h2>
+        <p class="text-red-700 mb-4">No se pudo cargar el tipo de equipo para editar.</p>
+        <a href="{{ route('parametros.tipos-equipos.index') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Volver a la lista
+        </a>
+    </div>
+@else
 <div class="max-w-2xl">
     <form action="{{ route('parametros.tipos-equipos.update', ['tipos_equipo' => $tipoEquipo->id]) }}" method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
         @csrf
@@ -74,4 +84,5 @@
         </div>
     </form>
 </div>
+@endif
 @endsection

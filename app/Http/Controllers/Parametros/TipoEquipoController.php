@@ -59,7 +59,10 @@ class TipoEquipoController extends Controller
 
     public function edit(TipoEquipo $tipoEquipo): View
     {
+        // Cargar relaciones necesarias para la vista
+        $tipoEquipo->load('categoriaObj');
         $categorias = Categoria::activas()->orderBy('nombre')->get();
+        
         return view('parametros.tipos-equipos.edit', compact('tipoEquipo', 'categorias'));
     }
 
@@ -71,6 +74,8 @@ class TipoEquipoController extends Controller
             'categoria_id' => 'required|exists:categorias,id',
             'icono' => 'nullable|string|max:50',
         ], [
+            'nombre.unique' => 'Este nombre ya existe',
+            'categoria_id.required' => 'La categoría es obligatoria',
             'categoria_id.exists' => 'La categoría seleccionada no existe',
         ]);
 
