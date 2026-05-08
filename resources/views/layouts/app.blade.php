@@ -194,6 +194,12 @@
                             <span>Tipos de Equipos</span>
                         </a>
                     @endif
+                    @if(auth()->user()->hasPermission('parametros.categorias.ver'))
+                        <a href="{{ route('parametros.categorias.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.categorias.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-tags w-5"></i>
+                            <span>Categorías</span>
+                        </a>
+                    @endif
                 @endif
 
                 {{-- Incidencias (Admin, Técnico, Agente) --}}
