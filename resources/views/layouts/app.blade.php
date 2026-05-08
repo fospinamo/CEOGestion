@@ -202,6 +202,19 @@
                     @endif
                 @endif
 
+                {{-- Gestión de Contratos (Admin) --}}
+                @if(auth()->check() && auth()->user()->hasPermission('contratos.ver'))
+                    <div class="pt-4 pb-2">
+                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Contratos y Servicios</h3>
+                    </div>
+                    @if(auth()->user()->hasPermission('contratos.ver'))
+                        <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-file-contract w-5"></i>
+                            <span>Contratos</span>
+                        </a>
+                    @endif
+                @endif
+
                 {{-- Incidencias (Admin, Técnico, Agente) --}}
                 @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
                     <div class="pt-4 pb-2">
