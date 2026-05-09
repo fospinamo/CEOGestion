@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\CategoriaController;
@@ -21,12 +22,8 @@ Route::get('/migration-panel', [MigrationController::class, 'panel'])->name('mig
 // =======================================
 
 // Home - Redirige a dashboard si está autenticado, sino a login
-Route::get('/', function () {
-    if (auth()->check()) {
-        return view('home');
-    }
-    return redirect()->route('login');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home')->middleware('auth');
+Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard')->middleware('auth');
 
 // =======================================
 // AUTENTICACIÓN (Login/Register)
