@@ -88,9 +88,11 @@ Route::get('/portal/acceso/{token}', 'App\Http\Controllers\PortalClienteControll
 // RUTAS AUTENTICADAS
 // =======================================
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('home');
-    })->name('dashboard');
+    // NOTA: Dashboard está manejado por HomeController en routes incluidos
+    // Eliminar esta ruta anónima para evitar conflictos de variables no definidas
+    // Route::get('/dashboard', function () {
+    //     return view('home');
+    // })->name('dashboard');
 
     // API para cargar entidades dinámicamente
     Route::get('/api/entidades', function () {
