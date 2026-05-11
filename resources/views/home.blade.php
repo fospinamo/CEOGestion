@@ -257,13 +257,13 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Gestión Rápida</h3>
             <div class="space-y-2">
-                <a href="{{ route('parametros.contratos.index') }}" class="block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2">
+                <a href="{{ url('parametros/contratos') }}" class="block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2">
                     <i class="fas fa-file-contract"></i> Ver Contratos
                 </a>
-                <a href="{{ route('parametros.clientes.index') }}" class="block px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center gap-2">
+                <a href="{{ url('parametros/clientes') }}" class="block px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition flex items-center gap-2">
                     <i class="fas fa-users"></i> Ver Clientes
                 </a>
-                <a href="{{ route('parametros.equipos.index') }}" class="block px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition flex items-center gap-2">
+                <a href="{{ url('parametros/equipos') }}" class="block px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition flex items-center gap-2">
                     <i class="fas fa-laptop"></i> Ver Equipos
                 </a>
             </div>
@@ -272,11 +272,11 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Accesos Directos</h3>
             <div class="space-y-2">
-                <a href="{{ route('incidencias.servicios.index') }}" class="block px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition flex items-center gap-2 justify-between">
+                <a href="{{ url('incidencias/servicios') }}" class="block px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition flex items-center gap-2 justify-between">
                     <span>Ver Incidencias</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="{{ route('parametros.empresas.index') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
+                <a href="{{ url('parametros/empresas') }}" class="block px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 justify-between">
                     <span>Gestionar Empresas</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
