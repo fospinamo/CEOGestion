@@ -82,21 +82,21 @@
                 <!-- Fecha de Inicio -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha de Inicio *</label>
-                    <input type="date" name="fecha_inicio" value="{{ old('fecha_inicio', $contrato->fecha_inicio->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_inicio') border-red-500 @enderror" required>
+                    <input type="date" name="fecha_inicio" value="{{ old('fecha_inicio', $contrato->fecha_inicio?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_inicio') border-red-500 @enderror" required>
                     @error('fecha_inicio')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <!-- Fecha de Fin -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha de Fin Prevista *</label>
-                    <input type="date" name="fecha_fin" value="{{ old('fecha_fin', $contrato->fecha_fin->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_fin') border-red-500 @enderror" required>
+                    <input type="date" name="fecha_fin" value="{{ old('fecha_fin', $contrato->fecha_fin?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_fin') border-red-500 @enderror" required>
                     @error('fecha_fin')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <!-- Fecha de Firma -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha de Firma *</label>
-                    <input type="date" name="fecha_firma" value="{{ old('fecha_firma', $contrato->fecha_firma->format('Y-m-d')) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_firma') border-red-500 @enderror" required>
+                    <input type="date" name="fecha_firma" value="{{ old('fecha_firma', $contrato->fecha_firma?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_firma') border-red-500 @enderror" required>
                     @error('fecha_firma')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
