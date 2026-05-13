@@ -659,36 +659,34 @@ class ServicioController extends Controller
         $tecnicoId = auth()->id();
         
         // Obtener servicios por estado
+        // Estados posibles: PENDIENTE, EN_PROCESO, RESUELTO, CERRADO, CANCELADO
+        
+        // Servicios pendientes: con tecnico asignado pero estado PENDIENTE
         $serviciosPendientes = Servicio::where('tecnico_id', $tecnicoId)
-            ->whereHas('estadoServicio', function($q) {
-                $q->where('nombre', 'Asignado');
-            })
-            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->where('estado', 'PENDIENTE')
+            ->with(['equipo.area.sede.cliente', 'estadoServicio'])
             ->orderByDesc('fecha_asignacion')
             ->get();
 
+        // Servicios en proceso
         $serviciosEnProceso = Servicio::where('tecnico_id', $tecnicoId)
-            ->whereHas('estadoServicio', function($q) {
-                $q->where('es_en_proceso', true);
-            })
-            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->where('estado', 'EN_PROCESO')
+            ->with(['equipo.area.sede.cliente', 'estadoServicio'])
             ->orderByDesc('fecha_asignacion')
             ->get();
 
+        // Servicios pendientes de repuesto
         $serviciosPendienteRepuesto = Servicio::where('tecnico_id', $tecnicoId)
-            ->whereHas('estadoServicio', function($q) {
-                $q->where('es_pendiente_repuesto', true);
-            })
-            ->with(['equipo.area.sede', 'estadoServicio'])
+            ->where('estado', 'PENDIENTE_REPUESTO')
+            ->with(['equipo.area.sede.cliente', 'estadoServicio'])
             ->orderByDesc('fecha_asignacion')
             ->get();
 
+        // Servicios completados (resueltos o cerrados)
         $serviciosCompletados = Servicio::where('tecnico_id', $tecnicoId)
-            ->whereHas('estadoServicio', function($q) {
-                $q->where('es_cierre', true);
-            })
-            ->with(['equipo.area.sede', 'estadoServicio'])
-            ->orderByDesc('fecha_firma')
+            ->whereIn('estado', ['RESUELTO', 'CERRADO'])
+            ->with(['equipo.area.sede.cliente', 'estadoServicio'])
+            ->orderByDesc('fecha_cierre')
             ->get();
 
         return view('incidencias.servicios.technician-panel', compact(

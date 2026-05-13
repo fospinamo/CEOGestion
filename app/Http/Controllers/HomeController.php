@@ -20,10 +20,18 @@ use Carbon\Carbon;
 class HomeController extends Controller
 {
     /**
-     * Mostrar dashboard principal
+     * Mostrar dashboard principal o dashboard de técnico
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        
+        // Si el usuario es técnico, mostrar su dashboard específico
+        if ($user && $user->hasRole('tecnico')) {
+            return $this->dashboardTecnico();
+        }
+        
+        // Para otros roles, mostrar dashboard normal
         // Obtener empresas para selector
         $empresas = Empresa::orderBy('nombre')->get();
         
@@ -95,6 +103,39 @@ class HomeController extends Controller
         }
         
         return view('home', compact('dashboard', 'empresas', 'empresa'));
+    }
+    
+    /**
+     * Dashboard específico para técnicos
+     * Muestra solo los servicios asignados al técnico actual
+     */
+    private function dashboardTecnico(): View
+    {
+        $tecnico = auth()->user();
+        
+        // Obtener servicios del técnico actual
+        $servicios = Servicio::where('tecnico_id', $tecnico->id)
+            ->with(['equipo.area.sede.cliente', 'estadoServicio'])
+            ->get();
+        
+        // Estadísticas del técnico
+        $dashboard = [
+            'tecnico' => $tecnico,
+            'servicios_totales' => $servicios->count(),
+            'servicios_pendientes' => $servicios->where('estado', 'PENDIENTE')->count(),
+            'servicios_en_proceso' => $servicios->where('estado', 'EN_PROCESO')->count(),
+            'servicios_resueltos' => $servicios->where('estado', 'RESUELTO')->count(),
+            'servicios_cerrados' => $servicios->where('estado', 'CERRADO')->count(),
+            'servicios_pendientes_repuesto' => $servicios->where('estado', 'PENDIENTE_REPUESTO')->count(),
+            'servicios_por_mes' => $this->getIncidenciasPorMes($servicios),
+            'servicios_por_prioridad' => $servicios->groupBy('prioridad')
+                ->map(function ($items) {
+                    return $items->count();
+                })
+                ->toArray(),
+        ];
+        
+        return view('home.tecnico-dashboard', compact('dashboard', 'servicios', 'tecnico'));
     }
     
     /**
