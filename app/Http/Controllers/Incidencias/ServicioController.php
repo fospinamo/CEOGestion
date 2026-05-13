@@ -1125,14 +1125,14 @@ class ServicioController extends Controller
         
         // Servicios por técnico (últimos 30 días)
         $serviciosPorTecnico = Servicio::where('created_at', '>=', now()->subDays(30))
-            ->select('tecnico_responsable_id')
+            ->select('tecnico_id')
             ->selectRaw('COUNT(*) as cantidad')
-            ->groupBy('tecnico_responsable_id')
-            ->with('tecnicoResponsable')
+            ->groupBy('tecnico_id')
+            ->with('tecnico')
             ->get();
         
         // Servicios por mes (últimos 12 meses)
-        $serviciosPorMes = Servicio::selectRaw('DATE_TRUNC(\'month\', created_at) as mes')
+        $serviciosPorMes = Servicio::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as mes")
             ->selectRaw('COUNT(*) as cantidad')
             ->where('created_at', '>=', now()->subMonths(12))
             ->groupBy('mes')

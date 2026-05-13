@@ -99,7 +99,7 @@
 
                 {{-- Panel Técnico (solo para Técnicos) --}}
                 @if(auth()->check() && auth()->user()->hasRole('tecnico'))
-                    <a href="{{ route('incidencias.servicios.technician-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.technician-panel') ? 'bg-blue-700' : '' }}">
+                    <a href="{{ route('incidencias.servicios.mi-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.mi-panel') ? 'bg-blue-700' : '' }}">
                         <i class="fas fa-tasks w-5"></i>
                         <span>Mis Servicios</span>
                     </a>
