@@ -783,8 +783,8 @@ class ServicioController extends Controller
 
         $tecnico = User::findOrFail($validated['tecnico_id']);
 
-        // Validar que sea técnico
-        if ($tecnico->tipo_rol !== 'tecnico') {
+        // Validar que sea técnico (usando nuevo sistema de roles)
+        if (!$tecnico->hasRole('tecnico')) {
             return back()->withErrors(['tecnico_id' => 'El usuario seleccionado no es un técnico']);
         }
 
