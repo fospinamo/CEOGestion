@@ -1120,19 +1120,17 @@ class ServicioController extends Controller
         $totalServicios = Servicio::count();
         
         // Servicios por estado
-        $serviciosPorEstado = Servicio::select('estado_servicio_id')
-            ->selectRaw('COUNT(*) as cantidad')
+        $serviciosPorEstado = Servicio::selectRaw('estado_servicio_id, COUNT(*) as cantidad')
             ->groupBy('estado_servicio_id')
-            ->with('estadoServicio')
-            ->get();
+            ->get()
+            ->load('estadoServicio');
         
         // Servicios por técnico (últimos 30 días)
         $serviciosPorTecnico = Servicio::where('created_at', '>=', now()->subDays(30))
-            ->select('tecnico_id')
-            ->selectRaw('COUNT(*) as cantidad')
+            ->selectRaw('tecnico_id, COUNT(*) as cantidad')
             ->groupBy('tecnico_id')
-            ->with('tecnico')
-            ->get();
+            ->get()
+            ->load('tecnico');
         
         // Servicios por mes (últimos 12 meses)
         $serviciosPorMes = Servicio::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as mes")
@@ -1152,13 +1150,23 @@ class ServicioController extends Controller
             : 0;
         
         // Servicios por cliente (top 5)
-        $serviciosPorCliente = Servicio::select('cliente_id')
-            ->selectRaw('COUNT(*) as cantidad')
-            ->with('equipo.cliente')
-            ->groupBy('cliente_id')
-            ->orderByRaw('COUNT(*) DESC')
-            ->limit(5)
-            ->get();
+        // Relación: Servicio → Equipo → Area → Sede → Cliente
+        try {
+            $serviciosPorCliente = Servicio::select('clientes.id', 'clientes.razon_social')
+                ->selectRaw('COUNT(servicios.id) as cantidad')
+                ->join('equipos', 'servicios.equipo_id', '=', 'equipos.id')
+                ->join('areas', 'equipos.area_id', '=', 'areas.id')
+                ->join('sedes', 'areas.sede_id', '=', 'sedes.id')
+                ->join('clientes', 'sedes.cliente_id', '=', 'clientes.id')
+                ->whereNull('servicios.deleted_at')
+                ->groupBy('clientes.id', 'clientes.razon_social')
+                ->orderByRaw('COUNT(servicios.id) DESC')
+                ->limit(5)
+                ->get();
+        } catch (\Exception $e) {
+            // Fallback si hay error
+            $serviciosPorCliente = collect([]);
+        }
 
         return view('incidencias.servicios.estadisticas', [
             'totalServicios' => $totalServicios,
