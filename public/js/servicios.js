@@ -144,10 +144,10 @@ $(document).ready(function() {
         console.log('🔍 FILTRO 3: Area seleccionada -', areaId);
         
         if (areaId) {
-            console.log('📡 Enviando AJAX a: /servicios/equipos-area/' + areaId);
+            console.log('📡 Enviando AJAX a: /incidencias/incidencias/servicios/equipos-area/' + areaId);
             // Cargar equipos del área
             $.ajax({
-                url: `/servicios/equipos-area/${areaId}`,
+                url: `/incidencias/servicios/equipos-area/${areaId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(equipos) {
@@ -207,10 +207,10 @@ $(document).ready(function() {
             elementos.contrato_info.html('<div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded"><div class="text-yellow-800">⏳ Verificando contrato y servicios...</div></div>');
             elementos.tipo_servicio.empty().append('<option value="">Cargando servicios...</option>').prop('disabled', true);
             
-            console.log('📡 FILTRO 4: Enviando AJAX a: /servicios/contrato-activo/' + clienteId);
+            console.log('📡 FILTRO 4: Enviando AJAX a: /incidencias/servicios/contrato-activo/' + clienteId);
             // Cargar contrato activo y servicios cubiertos
             $.ajax({
-                url: `/servicios/contrato-activo/${clienteId}`,
+                url: `/incidencias/servicios/contrato-activo/${clienteId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {

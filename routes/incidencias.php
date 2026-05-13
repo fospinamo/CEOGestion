@@ -6,19 +6,17 @@ use App\Http\Controllers\Incidencias\ServicioController;
 Route::middleware(['auth'])->group(function () {
     Route::prefix('incidencias')->name('incidencias.')->group(function () {
         
-        // SERVICIOS RESOURCE
-        Route::resource('servicios', ServicioController::class);
-        
-        // PANEL DE SERVICIOS ASIGNADOS (sin parámetro - para admin/coordinador)
+        // RUTAS AJAX PARA CARGA DINÁMICA (ANTES del resource para evitar conflictos de routing)
+        Route::get('servicios/equipos-area/{area_id}', [ServicioController::class, 'getEquiposByArea'])->name('servicios.equipos-area');
+        Route::get('servicios/contrato-activo/{cliente_id}', [ServicioController::class, 'getContratoActivo'])->name('servicios.contrato-activo');
         Route::get('servicios/panel', [ServicioController::class, 'adminAssignedPanel'])->name('servicios.panel');
-        
-        // PANEL DEL TÉCNICO (sin parámetro - para técnicos)
-        Route::get('servicios-panel/tecnico', [ServicioController::class, 'technicianPanel'])->name('servicios.technician-panel');
-        
-        // ESTADÍSTICAS DE SERVICIOS (sin parámetro - solo Admin y Agente)
         Route::get('servicios/estadisticas', [ServicioController::class, 'estadisticas'])
             ->name('servicios.estadisticas')
             ->middleware('can:servicios.estadisticas');
+        Route::get('servicios-panel/tecnico', [ServicioController::class, 'technicianPanel'])->name('servicios.technician-panel');
+        
+        // SERVICIOS RESOURCE (después de rutas específicas)
+        Route::resource('servicios', ServicioController::class);
         
         // ACCIONES ESPECIALES DE SERVICIOS (requieren parámetro {servicio})
         Route::prefix('servicios')->group(function () {
