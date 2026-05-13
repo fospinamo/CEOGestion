@@ -377,8 +377,11 @@ class ServicioController extends Controller
      */
     public function getEquiposByArea($area_id): JsonResponse
     {
+        // Obtener equipos del área que NO están dados de baja ni obsoletos
+        // Estados permitidos: OPERATIVO, MANTENIMIENTO, REPARACION
+        // Estados NO permitidos: BAJA, OBSOLETO
         $equipos = Equipo::where('area_id', $area_id)
-            ->where('estado_operativo', 'OPERATIVO')
+            ->whereNotIn('estado_operativo', ['BAJA', 'OBSOLETO'])
             ->orderBy('codigo_interno')
             ->get(['id', 'codigo_interno', 'marca', 'modelo', 'serial', 'estado_operativo']);
         
