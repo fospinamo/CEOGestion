@@ -13,6 +13,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('servicios/equipos-area/{area_id}', [ServicioController::class, 'getEquiposByArea'])
             ->name('servicios.equipos-area');
         
+        Route::post('servicios/crear-equipo', [ServicioController::class, 'crearEquipo'])
+            ->name('servicios.crear-equipo');
+        
         Route::get('servicios/contrato-activo/{cliente_id}', [ServicioController::class, 'getContratoActivo'])
             ->name('servicios.contrato-activo');
         

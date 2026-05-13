@@ -109,13 +109,31 @@
 
                 <!-- Equipo -->
                 <div class="mb-4">
-                    <label class="block text-sm font-bold mb-2">Equipo *</label>
+                    <label class="block text-sm font-bold mb-2">
+                        Equipo *
+                        <button type="button" id="btn-crear-equipo" class="ml-2 text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition" style="display:none;">
+                            ➕ Crear Equipo
+                        </button>
+                    </label>
                     <select name="equipo_id" id="equipo_id" class="w-full border rounded px-3 py-2 @error('equipo_id') border-red-500 @enderror" required disabled>
                         <option value="">Seleccione área primero</option>
                     </select>
                     @error('equipo_id')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-1" id="equipos-aviso"></p>
+                </div>
+
+                <!-- Información de Contrato -->
+                <div class="md:col-span-2 mb-4 p-4 rounded-lg border" id="contrato-status" style="display:none;">
+                    <div class="flex items-start space-x-3">
+                        <div class="text-2xl" id="contrato-icon">ℹ️</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold" id="contrato-titulo">Estado del Contrato</h4>
+                            <p class="text-sm text-gray-600" id="contrato-mensaje"></p>
+                            <p class="text-xs text-gray-500 mt-2" id="contrato-detalles"></p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SECCIÓN 2: Tipo y Prioridad -->
@@ -250,6 +268,61 @@
                 </button>
             </div>
         </form>
+
+        <!-- MODAL CREAR EQUIPO -->
+        <div id="modal-crear-equipo" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+                <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                    <h3 class="text-lg font-bold">➕ Crear Nuevo Equipo</h3>
+                    <button type="button" class="text-white text-2xl cursor-pointer hover:bg-blue-700 p-1 rounded" onclick="document.getElementById('modal-crear-equipo').classList.add('hidden')">×</button>
+                </div>
+                
+                <form id="form-crear-equipo" class="p-4 space-y-4">
+                    @csrf
+                    
+                    <input type="hidden" name="area_id" id="modal-area_id" value="">
+
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Código Interno *</label>
+                        <input type="text" name="codigo_interno" id="modal-codigo_interno" class="w-full border rounded px-3 py-2" placeholder="ej: EQ-001" required>
+                        <p class="text-xs text-gray-500 mt-1">Identificador único del equipo</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Marca *</label>
+                        <input type="text" name="marca" id="modal-marca" class="w-full border rounded px-3 py-2" placeholder="ej: Dell, HP, Cisco..." required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Modelo *</label>
+                        <input type="text" name="modelo" id="modal-modelo" class="w-full border rounded px-3 py-2" placeholder="ej: PowerEdge R750" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Serial</label>
+                        <input type="text" name="serial" id="modal-serial" class="w-full border rounded px-3 py-2" placeholder="Número de serie del equipo">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Descripción</label>
+                        <textarea name="descripcion" id="modal-descripcion" class="w-full border rounded px-3 py-2" rows="2" placeholder="Información adicional del equipo"></textarea>
+                    </div>
+
+                    <div class="bg-blue-50 p-3 rounded text-sm text-blue-700">
+                        ℹ️ El equipo se creará con estado <strong>OPERATIVO</strong>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 pt-4 border-t">
+                        <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition" onclick="document.getElementById('modal-crear-equipo').classList.add('hidden')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition font-bold" id="btn-submit-equipo">
+                            ✅ Crear Equipo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

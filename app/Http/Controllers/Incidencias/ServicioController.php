@@ -160,60 +160,65 @@ class ServicioController extends Controller
                 ->withInput();
         }
 
-        // VALIDACIÓN 3: El equipo pertenece al área y está operativo
+        // VALIDACIÓN 3: El equipo pertenece al área y NO está dado de baja ni obsoleto
+        // Permite estados: OPERATIVO, MANTENIMIENTO, REPARACION
         $equipo = Equipo::where('id', $request->equipo_id)
             ->where('area_id', $request->area_id)
-            ->where('estado_operativo', 'OPERATIVO')
+            ->whereNotIn('estado_operativo', ['BAJA', 'OBSOLETO'])
             ->first();
         
         if (!$equipo) {
             return back()
-                ->withErrors(['equipo_id' => 'El equipo seleccionado no pertenece al área o no está operativo'])
+                ->withErrors(['equipo_id' => 'El equipo seleccionado no pertenece al área o no está disponible (BAJA/OBSOLETO)'])
                 ->withInput();
         }
 
-        // VALIDACIÓN 4: Cliente tiene contrato activo
+        // VALIDACIÓN 4: Cliente tiene contrato activo (OPCIONAL)
+        // Se permite registrar servicio sin contrato, pero se registra como fuera de contrato
         $contrato = Contrato::where('cliente_id', $request->cliente_id)
             ->where('estado', 'ACTIVO')
             ->where('fecha_inicio', '<=', now())
             ->where('fecha_fin', '>=', now())
             ->first();
         
-        if (!$contrato) {
-            return back()
-                ->withErrors(['cliente_id' => 'El cliente no tiene un contrato activo vigente'])
-                ->withInput();
-        }
+        $slaRespuesta = 4;  // Default SLA: 4 horas
+        $slaSolucion = 24;  // Default SLA: 24 horas
+        $contratoId = null;
 
-        // VALIDACIÓN 5: Contrato cubre este tipo de servicio
-        $cobertura = ContratoServicio::where('contrato_id', $contrato->id)
-            ->where('tipo_servicio', $request->tipo_servicio)
-            ->where('incluido', true)
-            ->first();
-        
-        // Si hay servicios específicos pero este no está incluido, error
-        $tieneServicios = ContratoServicio::where('contrato_id', $contrato->id)->exists();
-        
-        if ($tieneServicios && !$cobertura) {
-            return back()
-                ->withErrors(['tipo_servicio' => 'Este tipo de servicio no está cubierto por el contrato del cliente'])
-                ->withInput();
-        }
+        // Si existe contrato, verificar cobertura y obtener SLAs
+        if ($contrato) {
+            $contratoId = $contrato->id;
+            
+            // VALIDACIÓN 5: Contrato cubre este tipo de servicio
+            $cobertura = ContratoServicio::where('contrato_id', $contrato->id)
+                ->where('tipo_servicio', $request->tipo_servicio)
+                ->where('incluido', true)
+                ->first();
+            
+            // Si hay servicios específicos pero este no está incluido, error
+            $tieneServicios = ContratoServicio::where('contrato_id', $contrato->id)->exists();
+            
+            if ($tieneServicios && !$cobertura) {
+                return back()
+                    ->withErrors(['tipo_servicio' => 'Este tipo de servicio no está cubierto por el contrato del cliente. El servicio se registrará fuera de contrato.'])
+                    ->withInput();
+            }
 
-        // Calcular SLAs
-        if ($cobertura) {
-            $slaRespuesta = $cobertura->sla_horas_respuesta ?? $contrato->sla_default_horas_respuesta;
-            $slaSolucion = $cobertura->sla_horas_solucion ?? $contrato->sla_default_horas_solucion;
-        } else {
-            $slaRespuesta = $contrato->sla_default_horas_respuesta ?? 4;
-            $slaSolucion = $contrato->sla_default_horas_solucion ?? 24;
+            // Calcular SLAs desde cobertura o contrato
+            if ($cobertura) {
+                $slaRespuesta = $cobertura->sla_horas_respuesta ?? $contrato->sla_default_horas_respuesta ?? 4;
+                $slaSolucion = $cobertura->sla_horas_solucion ?? $contrato->sla_default_horas_solucion ?? 24;
+            } else {
+                $slaRespuesta = $contrato->sla_default_horas_respuesta ?? 4;
+                $slaSolucion = $contrato->sla_default_horas_solucion ?? 24;
+            }
         }
 
         // Crear servicio
         $servicio = Servicio::create([
             'cliente_id' => $request->cliente_id,
             'equipo_id' => $request->equipo_id,
-            'contrato_id' => $contrato->id,
+            'contrato_id' => $contratoId,  // Puede ser NULL si es fuera de contrato
             'tipo_servicio' => $request->tipo_servicio,
             'prioridad' => $request->prioridad,
             'fecha_solicitud' => now(),
@@ -418,7 +423,52 @@ class ServicioController extends Controller
     }
 
     /**
-     * MÉTODO 3: Generar código único de servicio
+     * MÉTODO 4: Crear equipo rápidamente desde formulario (AJAX)
+     */
+    public function crearEquipo(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'area_id' => 'required|exists:areas,id',
+            'codigo_interno' => 'required|string|max:50|unique:equipos',
+            'marca' => 'required|string|max:100',
+            'modelo' => 'required|string|max:100',
+            'serial' => 'nullable|string|max:100',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        try {
+            $equipo = Equipo::create([
+                'area_id' => $validated['area_id'],
+                'codigo_interno' => $validated['codigo_interno'],
+                'marca' => $validated['marca'],
+                'modelo' => $validated['modelo'],
+                'serial' => $validated['serial'] ?? null,
+                'descripcion' => $validated['descripcion'] ?? null,
+                'estado_operativo' => 'OPERATIVO',  // Nuevo equipo comienza operativo
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Equipo creado exitosamente',
+                'equipo' => [
+                    'id' => $equipo->id,
+                    'codigo_interno' => $equipo->codigo_interno,
+                    'marca' => $equipo->marca,
+                    'modelo' => $equipo->modelo,
+                    'serial' => $equipo->serial,
+                    'estado_operativo' => $equipo->estado_operativo,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear equipo: ' . $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * MÉTODO 5: Generar código único de servicio
      */
     private function generarCodigoServicio(): string
     {

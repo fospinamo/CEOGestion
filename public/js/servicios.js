@@ -204,7 +204,7 @@ $(document).ready(function() {
         
         if (equipoId && clienteId) {
             // Mostrar cargando
-            elementos.contrato_info.html('<div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded"><div class="text-yellow-800">⏳ Verificando contrato y servicios...</div></div>');
+            $('#contrato-status').hide();
             elementos.tipo_servicio.empty().append('<option value="">Cargando servicios...</option>').prop('disabled', true);
             
             console.log('📡 FILTRO 4: Enviando AJAX a: /incidencias/servicios/contrato-activo/' + clienteId);
@@ -215,19 +215,20 @@ $(document).ready(function() {
                 dataType: 'json',
                 success: function(data) {
                     console.log('✅ AJAX FILTRO 4 exitoso, datos:', data);
-                    // Mostrar información del contrato
-                    elementos.contrato_info.html(`
-                        <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded">
-                            <div class="font-bold text-green-800">✅ Contrato Activo: ${data.contrato.numero_contrato}</div>
-                            <div class="text-sm text-green-700 mt-2 grid grid-cols-2 gap-2">
-                                <div>📅 <strong>Desde:</strong> ${formatDate(data.contrato.fecha_inicio)}</div>
-                                <div>📅 <strong>Hasta:</strong> ${formatDate(data.contrato.fecha_fin)}</div>
-                                <div>⏱️ <strong>SLA Respuesta:</strong> ${data.sla_respuesta} horas</div>
-                                <div>⏱️ <strong>SLA Solución:</strong> ${data.sla_solucion} horas</div>
-                                <div class="col-span-2">📋 <strong>Servicios Cubiertos:</strong> ${data.servicios_cubiertos.join(', ')}</div>
-                            </div>
-                        </div>
+                    
+                    // ============ CONTRATO ACTIVO ============
+                    $('#contrato-status').show();
+                    $('#contrato-icon').text('✅');
+                    $('#contrato-titulo').text('Contrato Vigente');
+                    $('#contrato-mensaje').html(`
+                        <strong>${data.contrato.numero_contrato}</strong><br>
+                        📅 Válido desde ${formatDate(data.contrato.fecha_inicio)} hasta ${formatDate(data.contrato.fecha_fin)}
                     `);
+                    $('#contrato-detalles').html(`
+                        ⏱️ <strong>SLA:</strong> Respuesta en ${data.sla_respuesta}h | Solución en ${data.sla_solucion}h<br>
+                        📋 <strong>Servicios cubiertos:</strong> ${data.servicios_cubiertos.join(', ')}
+                    `);
+                    $('#contrato-status').removeClass('border-yellow-200 bg-yellow-50').addClass('border-green-200 bg-green-50');
                     
                     // Cargar tipos de servicio permitidos
                     const $tipoServicio = elementos.tipo_servicio;
@@ -264,18 +265,39 @@ $(document).ready(function() {
                 error: function(xhr, status, error) {
                     console.error('❌ Error FILTRO 4 AJAX:', status, error);
                     console.error('Respuesta:', xhr.responseText);
-                    elementos.contrato_info.html(`
-                        <div class="bg-red-100 border-l-4 border-red-500 p-4 rounded">
-                            <div class="font-bold text-red-800">⚠️ Cliente sin contrato activo</div>
-                            <div class="text-sm text-red-700 mt-1">No se pueden registrar servicios hasta que el cliente tenga un contrato vigente.</div>
-                        </div>
+                    
+                    // ============ SIN CONTRATO - SERVICIOS FUERA DE CONTRATO ============
+                    $('#contrato-status').show();
+                    $('#contrato-icon').text('⚠️');
+                    $('#contrato-titulo').text('Servicio Fuera de Contrato');
+                    $('#contrato-mensaje').html(`
+                        <strong>El cliente NO tiene contrato activo vigente</strong><br>
+                        Este servicio se registrará como <strong style="color: #dc2626;">FUERA DE CONTRATO</strong>
                     `);
-                    elementos.tipo_servicio.empty().append('<option value="">No disponible - Sin contrato activo</option>').prop('disabled', true);
+                    $('#contrato-detalles').html(`
+                        📌 Se aplicarán SLAs por defecto (4h respuesta, 24h solución)<br>
+                        💰 Este servicio será facturado por separado
+                    `);
+                    $('#contrato-status').removeClass('border-green-200 bg-green-50').addClass('border-yellow-200 bg-yellow-50');
+                    
+                    // Permitir todos los tipos de servicio sin contrato
+                    const $tipoServicio = elementos.tipo_servicio;
+                    $tipoServicio.empty().append('<option value="">Seleccione tipo de servicio</option>').prop('disabled', false);
+                    
+                    const todosTipos = ['CORRECTIVO', 'PREVENTIVO', 'INSTALACION', 'CONFIGURACION', 'CAPACITACION', 'CONSULTA'];
+                    todosTipos.forEach(tipo => {
+                        $tipoServicio.append(`<option value="${tipo}">${tipo}</option>`);
+                    });
+                    
+                    // Limpiar contrato ID para indicar que es fuera de contrato
+                    $('#contrato_id').val('');
+                    $('#sla_respuesta').val('4');
+                    $('#sla_solucion').val('24');
                 }
             });
         } else {
             // Reset
-            elementos.contrato_info.html('');
+            $('#contrato-status').hide();
             elementos.tipo_servicio.empty().append('<option value="">Seleccione equipo primero</option>').prop('disabled', true);
         }
     });
@@ -299,6 +321,85 @@ $(document).ready(function() {
             return true;
         });
     }
+    
+    // ========== MODAL CREAR EQUIPO ==========
+    const btnCrearEquipo = $('#btn-crear-equipo');
+    const modalCrearEquipo = $('#modal-crear-equipo');
+    const formCrearEquipo = $('#form-crear-equipo');
+    
+    // Mostrar/ocultar botón crear equipo según el área
+    elementos.area_id.on('change', function() {
+        if ($(this).val()) {
+            btnCrearEquipo.show();
+        } else {
+            btnCrearEquipo.hide();
+        }
+    });
+    
+    // Abrir modal
+    btnCrearEquipo.on('click', function() {
+        const areaId = elementos.area_id.val();
+        $('#modal-area_id').val(areaId);
+        $('#modal-codigo_interno').val('');
+        $('#modal-marca').val('');
+        $('#modal-modelo').val('');
+        $('#modal-serial').val('');
+        $('#modal-descripcion').val('');
+        modalCrearEquipo.removeClass('hidden');
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    modalCrearEquipo.on('click', function(e) {
+        if (e.target === this) {
+            modalCrearEquipo.addClass('hidden');
+        }
+    });
+    
+    // Crear equipo via AJAX
+    formCrearEquipo.on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const btn = $('#btn-submit-equipo');
+        const btnText = btn.html();
+        
+        btn.prop('disabled', true).html('⏳ Creando...');
+        
+        $.ajax({
+            url: '/incidencias/servicios/crear-equipo',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('✅ Equipo creado:', response.equipo);
+                
+                // Cerrar modal
+                modalCrearEquipo.addClass('hidden');
+                
+                // Recargar equipos del área
+                const areaId = elementos.area_id.val();
+                handleAreaChange();
+                
+                // Seleccionar el equipo recién creado
+                setTimeout(function() {
+                    elementos.equipo_id.val(response.equipo.id).trigger('change');
+                    
+                    // Mostrar mensaje de éxito
+                    alert('✅ Equipo creado exitosamente: ' + response.equipo.codigo_interno);
+                }, 500);
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Error al crear equipo:', error);
+                const errorData = xhr.responseJSON;
+                alert('❌ Error: ' + (errorData?.message || 'No se pudo crear el equipo'));
+                btn.prop('disabled', false).html(btnText);
+            }
+        });
+    });
     
     console.log('✅ Todos los event listeners configurados correctamente');
 });
