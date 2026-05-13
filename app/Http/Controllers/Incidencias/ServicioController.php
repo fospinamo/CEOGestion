@@ -706,13 +706,13 @@ class ServicioController extends Controller
     {
         // Verificar que el usuario sea admin o coordinador
         abort_if(
-            auth()->user()->tipo_rol !== 'admin' && auth()->user()->tipo_rol !== 'coordinador',
+            !auth()->user()->hasRole('admin') && !auth()->user()->hasRole('coordinador'),
             403,
             'No tienes permisos para acceder a este panel'
         );
 
         // Obtener todos los técnicos con servicios asignados
-        $tecnicos = User::where('tipo_rol', 'tecnico')
+        $tecnicos = User::whereRelation('role', 'slug', 'tecnico')
             ->with([
                 'servicios' => function($q) {
                     $q->whereNotNull('tecnico_id')
@@ -759,8 +759,8 @@ class ServicioController extends Controller
             'tecnicoResponsable'
         ]);
 
-        // Obtener todos los técnicos activos
-        $tecnicos = User::where('tipo_rol', 'tecnico')
+        // Obtener todos los técnicos activos (usando el nuevo sistema de roles)
+        $tecnicos = User::whereRelation('role', 'slug', 'tecnico')
             ->where('estado', true)
             ->orderBy('name')
             ->get();

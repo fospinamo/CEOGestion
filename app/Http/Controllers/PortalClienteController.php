@@ -49,7 +49,7 @@ class PortalClienteController extends Controller
     {
         // Buscar usuario con este token
         $usuario = User::where('token_acceso', $token)
-            ->where('tipo_rol', 'cliente')
+            ->whereRelation('role', 'slug', 'cliente')
             ->where('estado', true)
             ->first();
 
