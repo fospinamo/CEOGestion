@@ -111,11 +111,19 @@
                             </a>
                         </td>
                         <td class="px-6 py-3">
-                            <p class="text-sm font-semibold text-gray-900">{{ $servicio->equipo->area->sede->cliente->razon_social }}</p>
+                            @if($servicio->equipo?->area?->sede?->cliente)
+                                <p class="text-sm font-semibold text-gray-900">{{ $servicio->equipo->area->sede->cliente->razon_social }}</p>
+                            @else
+                                <p class="text-sm text-gray-500 italic">Sin equipo asociado</p>
+                            @endif
                         </td>
                         <td class="px-6 py-3">
-                            <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_interno }}</p>
-                            <p class="text-xs text-gray-500">{{ $servicio->equipo->area->nombre }}</p>
+                            @if($servicio->equipo)
+                                <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_interno }}</p>
+                                <p class="text-xs text-gray-500">{{ $servicio->equipo->area?->nombre ?? 'N/A' }}</p>
+                            @else
+                                <p class="text-sm text-gray-500 italic">Sin equipo</p>
+                            @endif
                         </td>
                         <td class="px-6 py-3">
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
