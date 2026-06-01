@@ -45,7 +45,7 @@
                     <!-- NIT/Identificación -->
                     <div class="bg-blue-50 p-3 sm:p-4 rounded-lg">
                         <p class="text-xs sm:text-sm text-gray-600 font-semibold uppercase tracking-wider">NIT / Identificación</p>
-                        <p class="text-base sm:text-lg font-bold text-gray-900 mt-1">{{ $servicio->equipo->area->sede->cliente->nit ?? 'N/A' }}</p>
+                        <p class="text-base sm:text-lg font-bold text-gray-900 mt-1">{{ $servicio->equipo->area->sede->cliente->documento_formateado ?? $servicio->equipo->area->sede->cliente->documento ?? 'N/A' }}</p>
                     </div>
 
                     <!-- Sede -->
@@ -69,7 +69,7 @@
                     <!-- Ciudad -->
                     <div class="bg-blue-50 p-3 sm:p-4 rounded-lg">
                         <p class="text-xs sm:text-sm text-gray-600 font-semibold uppercase tracking-wider">Ciudad</p>
-                        <p class="text-base sm:text-lg font-bold text-gray-900 mt-1">{{ $servicio->equipo->area->sede->ciudad ?? 'N/A' }}</p>
+                        <p class="text-base sm:text-lg font-bold text-gray-900 mt-1">{{ $servicio->equipo->area->sede->municipio->nombre ?? $servicio->equipo->area->sede->cliente->ciudadNotificacion->nombre ?? 'N/A' }}</p>
                     </div>
 
                     <!-- Número de Contrato - Full width -->
@@ -110,7 +110,7 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Hora de Inicio de Atención *</label>
                         <input type="time" name="hora_inicio_atencion" 
                             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            value="{{ old('hora_inicio_atencion', $servicio->hora_inicio_atencion) }}"
+                            value="{{ old('hora_inicio_atencion', $servicio->hora_inicio_atencion ? \Carbon\Carbon::parse($servicio->hora_inicio_atencion)->format('H:i') : '') }}"
                             required>
                         @error('hora_inicio_atencion')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -122,7 +122,7 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Hora de Fin de Atención *</label>
                         <input type="time" name="hora_fin_atencion" 
                             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            value="{{ old('hora_fin_atencion', $servicio->hora_fin_atencion) }}"
+                            value="{{ old('hora_fin_atencion', $servicio->hora_fin_atencion ? \Carbon\Carbon::parse($servicio->hora_fin_atencion)->format('H:i') : '') }}"
                             required>
                         @error('hora_fin_atencion')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -179,48 +179,92 @@
                 </div>
             </div>
 
-            <!-- DESCRIPCIÓN DE LA SOLICITUD -->
+            <!-- EQUIPOS EN LA MISMA UBICACIÓN -->
             <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-red-500">📝 Descripción de la Solicitud</h2>
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-orange-500">🧰 Equipos en la Misma Ubicación</h2>
+                <p class="text-sm text-gray-600 mb-4">Seleccione los equipos que se revisaron durante la visita en esta misma ubicación.</p>
+
+                @php
+                    $equiposSeleccionados = collect(old('equipos_adicionales', $servicio->equipos_adicionales_atendidos ?? []))
+                        ->map(fn($id) => (int) $id)
+                        ->all();
+                @endphp
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th class="px-3 py-2 text-left w-16">Sel.</th>
+                                <th class="px-3 py-2 text-left">Código</th>
+                                <th class="px-3 py-2 text-left">Tipo</th>
+                                <th class="px-3 py-2 text-left">Marca / Modelo</th>
+                                <th class="px-3 py-2 text-left">Serial</th>
+                                <th class="px-3 py-2 text-left">Contrato</th>
+                                <th class="px-3 py-2 text-left">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($equiposAdicionales as $equipoUbicacion)
+                                @php
+                                    $esPrincipal = $equipoUbicacion->id === $servicio->equipo_id;
+                                @endphp
+                                <tr class="border-t {{ $esPrincipal ? 'bg-blue-50' : 'bg-white' }}">
+                                    <td class="px-3 py-2">
+                                        @if($esPrincipal)
+                                            <span class="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 font-semibold">Principal</span>
+                                        @else
+                                            <input type="checkbox" name="equipos_adicionales[]" value="{{ $equipoUbicacion->id }}"
+                                                class="w-4 h-4"
+                                                {{ in_array($equipoUbicacion->id, $equiposSeleccionados, true) ? 'checked' : '' }}>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 font-semibold text-gray-900">{{ $equipoUbicacion->codigo_activo_cliente ?? ('EQ-' . $equipoUbicacion->id) }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $equipoUbicacion->tipoEquipo->nombre ?? 'N/A' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $equipoUbicacion->marca->nombre ?? 'N/A' }} {{ $equipoUbicacion->modelo ?? '' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $equipoUbicacion->serial ?? 'N/A' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $equipoUbicacion->contrato->numero_contrato ?? 'Sin contrato' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $equipoUbicacion->estado_operativo ?? 'N/A' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-3 py-4 text-center text-gray-500">No hay equipos registrados en esta ubicación.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @error('equipos_adicionales')
+                    <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- DESCRIPCIÓN DEL PROBLEMA (SOLO LECTURA) -->
+            <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-red-500">📝 Descripción del Problema (Solicitud Registrada)</h2>
                 
                 <div>
-                    <label for="descripcion_solicitud" class="block text-sm font-semibold text-gray-700 mb-2">Descripción Detallada *</label>
-                    <textarea name="descripcion_solicitud" id="descripcion_solicitud" rows="4"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        placeholder="Describe detalladamente la solicitud del cliente..."
-                        required>{{ old('descripcion_solicitud', $servicio->descripcion_solicitud) }}</textarea>
-                    @error('descripcion_solicitud')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Campo informativo (no editable)</label>
+                    <div class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-800 min-h-[96px] whitespace-pre-wrap">{{ $servicio->descripcion_problema ?? 'N/A' }}</div>
                 </div>
             </div>
 
             <!-- DIAGNÓSTICO Y VALIDACIÓN -->
             <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-indigo-500">🔍 Diagnóstico / Validación del Servicio</h2>
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-indigo-500">🔍 Diagnóstico / Validación / Labor realizada</h2>
                 
                 <div>
-                    <label for="diagnostico_validacion" class="block text-sm font-semibold text-gray-700 mb-2">Diagnóstico y Validación *</label>
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <label for="diagnostico_validacion" class="block text-sm font-semibold text-gray-700">Diagnóstico / Validación / Labor realizada *</label>
+                        <button type="button" data-dictation-target="diagnostico_validacion" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-300 text-indigo-700 hover:bg-indigo-50 transition">
+                            🎤 Dictar
+                        </button>
+                    </div>
                     <textarea name="diagnostico_validacion" id="diagnostico_validacion" rows="4"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Describe el diagnóstico realizado y la validación del servicio..."
                         required>{{ old('diagnostico_validacion', $servicio->diagnostico_validacion) }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1" data-dictation-status-for="diagnostico_validacion">Haz clic en Dictar para iniciar reconocimiento de voz.</p>
                     @error('diagnostico_validacion')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-
-            <!-- PENDIENTES -->
-            <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
-                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-yellow-500">⚠️ Actividades Pendientes</h2>
-                
-                <div>
-                    <label for="pendientes" class="block text-sm font-semibold text-gray-700 mb-2">Pendientes (Opcional)</label>
-                    <textarea name="pendientes" id="pendientes" rows="3"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                        placeholder="Indica qué actividades quedaron pendientes...">{{ old('pendientes', $servicio->pendientes) }}</textarea>
-                    @error('pendientes')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -231,10 +275,16 @@
                 <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-cyan-500">📌 Observaciones</h2>
                 
                 <div>
-                    <label for="observaciones_informe" class="block text-sm font-semibold text-gray-700 mb-2">Observaciones Adicionales (Opcional)</label>
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <label for="observaciones_informe" class="block text-sm font-semibold text-gray-700">Observaciones Adicionales (Opcional)</label>
+                        <button type="button" data-dictation-target="observaciones_informe" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-cyan-300 text-cyan-700 hover:bg-cyan-50 transition">
+                            🎤 Dictar
+                        </button>
+                    </div>
                     <textarea name="observaciones_informe" id="observaciones_informe" rows="3"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         placeholder="Notas, recomendaciones, comentarios...">{{ old('observaciones_informe', $servicio->observaciones_informe) }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1" data-dictation-status-for="observaciones_informe"></p>
                     @error('observaciones_informe')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -486,6 +536,154 @@ document.addEventListener('DOMContentLoaded', function() {
     if (finInput) finInput.addEventListener('change', calcularDuracion);
     
     setTimeout(calcularDuracion, 100);
+});
+
+// Dictado por voz (Web Speech API)
+document.addEventListener('DOMContentLoaded', function() {
+    const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const buttons = document.querySelectorAll('[data-dictation-target]');
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const isSecureSpeechContext = window.isSecureContext || isLocalHost;
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+
+    if (!buttons.length) {
+        return;
+    }
+
+    function disableDictationButtons(message) {
+        buttons.forEach((button) => {
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            const target = button.dataset.dictationTarget;
+            const status = document.querySelector('[data-dictation-status-for="' + target + '"]');
+            if (status) {
+                status.textContent = message;
+            }
+        });
+    }
+
+    if (!SpeechRecognitionApi) {
+        disableDictationButtons('Dictado no disponible en este navegador. Usa Chrome en Android o navegador compatible.');
+        return;
+    }
+
+    if (!isSecureSpeechContext) {
+        disableDictationButtons('En moviles el microfono por voz requiere HTTPS. Abre el sistema con dominio/HTTPS (no solo IP local).');
+        return;
+    }
+
+    const recognition = new SpeechRecognitionApi();
+    recognition.lang = 'es-CO';
+    recognition.interimResults = true;
+    recognition.continuous = !isMobile;
+    recognition.maxAlternatives = 1;
+
+    let activeTargetId = null;
+    let activeButton = null;
+
+    function setStatus(targetId, message) {
+        const status = document.querySelector('[data-dictation-status-for="' + targetId + '"]');
+        if (status) {
+            status.textContent = message;
+        }
+    }
+
+    function appendTextToTarget(targetId, text) {
+        const target = document.getElementById(targetId);
+        if (!target || !text.trim()) {
+            return;
+        }
+
+        const current = target.value.trim();
+        target.value = current ? (current + ' ' + text.trim()) : text.trim();
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    recognition.onresult = function(event) {
+        if (!activeTargetId) {
+            return;
+        }
+
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        if (finalTranscript) {
+            appendTextToTarget(activeTargetId, finalTranscript);
+        }
+
+        setStatus(activeTargetId, interimTranscript ? ('Escuchando: ' + interimTranscript) : 'Escuchando...');
+    };
+
+    recognition.onerror = function(event) {
+        if (activeTargetId) {
+            const errorMap = {
+                'not-allowed': 'Permiso de microfono denegado. Habilitalo en el navegador.',
+                'service-not-allowed': 'Servicio de voz bloqueado por el navegador/dispositivo.',
+                'audio-capture': 'No se detecta microfono disponible en este dispositivo.',
+                'network': 'Error de red en reconocimiento de voz. Verifica conexion.',
+                'no-speech': 'No se detecto voz. Intenta hablar mas cerca al microfono.',
+                'aborted': 'Dictado interrumpido. Puedes iniciar nuevamente.'
+            };
+            setStatus(activeTargetId, errorMap[event?.error] || 'No se pudo reconocer audio. Intenta nuevamente.');
+        }
+    };
+
+    recognition.onend = function() {
+        if (activeButton) {
+            activeButton.textContent = '🎤 Dictar';
+            activeButton.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+        }
+        if (activeTargetId) {
+            setStatus(activeTargetId, 'Dictado detenido. Puedes volver a iniciar.');
+        }
+        activeButton = null;
+        activeTargetId = null;
+    };
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', function() {
+            const targetId = button.dataset.dictationTarget;
+
+            if (!navigator.onLine) {
+                setStatus(targetId, 'Sin conexion. El dictado por voz requiere internet.');
+                return;
+            }
+
+            if (activeTargetId && activeTargetId === targetId) {
+                recognition.stop();
+                return;
+            }
+
+            if (activeTargetId && activeTargetId !== targetId) {
+                recognition.stop();
+            }
+
+            activeTargetId = targetId;
+            activeButton = button;
+            button.textContent = '⏹️ Detener';
+            button.classList.add('bg-red-600', 'text-white', 'border-red-600');
+            setStatus(targetId, 'Escuchando... habla ahora.');
+
+            try {
+                recognition.start();
+            } catch (e) {
+                setStatus(targetId, 'No se pudo iniciar el micrófono.');
+                button.textContent = '🎤 Dictar';
+                button.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+                activeButton = null;
+                activeTargetId = null;
+            }
+        });
+    });
 });
 </script>
 

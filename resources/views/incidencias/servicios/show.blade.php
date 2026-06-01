@@ -24,13 +24,48 @@
 
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Diagnóstico</h3>
-            <p class="text-gray-700 text-sm leading-relaxed">{{ $servicio->diagnostico ?? 'Pendiente' }}</p>
+            @php
+                $diagnosticoTecnico = $servicio->diagnostico_validacion
+                    ?: ($servicio->descripcion_atencion
+                        ?: $servicio->diagnostico);
+            @endphp
+            <p class="text-gray-700 text-sm leading-relaxed">{{ $diagnosticoTecnico ?: 'Pendiente' }}</p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">Solución Aplicada</h3>
-            <p class="text-gray-700 text-sm leading-relaxed">{{ $servicio->solucion_aplicada ?? 'Pendiente' }}</p>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Archivos Adjuntos</h3>
+
+            @if($servicio->documentosAdjuntos->isEmpty())
+                <p class="text-sm text-gray-500">Este servicio no tiene archivos adjuntos.</p>
+            @else
+                <div class="space-y-4">
+                    @foreach($servicio->documentosAdjuntos as $doc)
+                        @php
+                            $esImagen = str_starts_with((string) ($doc->mime_type ?? ''), 'image/');
+                        @endphp
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">{{ $doc->nombre_archivo }}</p>
+                                    <p class="text-xs text-gray-500">{{ $doc->mime_type ?? 'Archivo' }} - {{ number_format(($doc->tamaño_bytes ?? 0) / 1024, 1) }} KB</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('incidencias.servicios.documento.ver', ['servicio' => $servicio->id, 'documento' => $doc->id]) }}" target="_blank" class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs font-semibold">Ver</a>
+                                    <a href="{{ route('incidencias.servicios.documento.descargar', ['servicio' => $servicio->id, 'documento' => $doc->id]) }}" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded text-xs font-semibold">Descargar</a>
+                                </div>
+                            </div>
+
+                            @if($esImagen)
+                                <div class="border rounded bg-gray-50 p-2">
+                                    <img src="{{ route('incidencias.servicios.documento.ver', ['servicio' => $servicio->id, 'documento' => $doc->id]) }}" alt="{{ $doc->nombre_archivo }}" class="max-h-56 w-auto rounded mx-auto">
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
+
     </div>
 
     <div class="space-y-6">
@@ -91,17 +126,29 @@
                 @endif
 
                 {{-- Editar --}}
-                <a href="{{ route('incidencias.servicios.edit', $servicio) }}" class="block w-full px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-semibold transition text-center">
-                    <i class="fas fa-edit mr-2"></i> Editar
-                </a>
+                @if($servicio->estado === 'CERRADO')
+                    <button type="button" class="block w-full px-4 py-2 bg-gray-100 text-gray-400 rounded font-semibold text-center cursor-not-allowed" disabled>
+                        <i class="fas fa-edit mr-2"></i> Editar (Inactivo)
+                    </button>
+                @else
+                    <a href="{{ route('incidencias.servicios.edit', $servicio) }}" class="block w-full px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-semibold transition text-center">
+                        <i class="fas fa-edit mr-2"></i> Editar
+                    </a>
+                @endif
 
                 {{-- Eliminar --}}
-                <form action="{{ route('incidencias.servicios.destroy', $servicio) }}" method="POST" onsubmit="return confirm('¿Eliminar este servicio?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="w-full px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded font-semibold transition text-sm">
-                        <i class="fas fa-trash mr-2"></i> Eliminar
+                @if($servicio->estado === 'CERRADO')
+                    <button type="button" class="w-full px-4 py-2 bg-gray-100 text-gray-400 rounded font-semibold transition text-sm cursor-not-allowed" disabled>
+                        <i class="fas fa-trash mr-2"></i> Eliminar (Inactivo)
                     </button>
-                </form>
+                @else
+                    <form action="{{ route('incidencias.servicios.destroy', $servicio) }}" method="POST" onsubmit="return confirm('¿Eliminar este servicio?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="w-full px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded font-semibold transition text-sm">
+                            <i class="fas fa-trash mr-2"></i> Eliminar
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
 
@@ -127,3 +174,14 @@
     </div>
 </div>
 @endsection
+
+@if(session('whatsapp_url'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const whatsappUrl = @json(session('whatsapp_url'));
+            if (whatsappUrl) {
+                window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            }
+        });
+    </script>
+@endif

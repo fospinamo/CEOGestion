@@ -12,10 +12,15 @@
             baseUrl: "{{ url('/') }}"
         };
     </script>
+    <!-- jQuery - Cargar temprano para que esté disponible -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        [x-cloak] { display: none !important; }
+
         @media (max-width: 768px) {
             body {
                 font-size: 14px;
@@ -90,154 +95,240 @@
                 </div>
             </div>
 
-            <nav class="mt-6 space-y-2 px-3 flex-1">
-                {{-- Dashboard y menú base --}}
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-700' : '' }}">
-                    <i class="fas fa-chart-line w-5"></i>
-                    <span>Dashboard</span>
-                </a>
+            <nav class="mt-6 space-y-2 px-3 flex-1" x-data="sidebarMenuState()" x-cloak>
+                {{-- Dashboard --}}
+                <div class="space-y-1">
+                    <button type="button" @click="toggle('dashboard')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                        <span class="flex items-center gap-3 font-semibold">
+                            <span>📊</span>
+                            <span>Dashboard</span>
+                        </span>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.dashboard ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="sections.dashboard" x-transition.duration.300ms class="pl-3 space-y-1">
+                        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('dashboard') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span>Inicio</span>
+                        </a>
+                        @if(auth()->check() && auth()->user()->hasRole('tecnico'))
+                            <a href="{{ route('incidencias.servicios.mi-panel') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.mi-panel') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-tasks w-5"></i>
+                                <span>Mis Servicios</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
 
-                {{-- Panel Técnico (solo para Técnicos) --}}
-                @if(auth()->check() && auth()->user()->hasRole('tecnico'))
-                    <a href="{{ route('incidencias.servicios.mi-panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.mi-panel') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-tasks w-5"></i>
-                        <span>Mis Servicios</span>
-                    </a>
+                {{-- Clientes --}}
+                @if(auth()->check() && (auth()->user()->hasPermission('empresas.ver') || auth()->user()->hasPermission('sedes.ver') || auth()->user()->hasPermission('clientes.ver') || auth()->user()->hasPermission('areas.ver') || auth()->user()->hasPermission('equipos.ver') || auth()->user()->hasPermission('marcas.ver') || auth()->user()->hasPermission('tipos-equipos.ver') || auth()->user()->hasPermission('parametros.categorias.ver')))
+                    <div class="space-y-1">
+                        <button type="button" @click="toggle('clientes')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>👥</span>
+                                <span>Clientes</span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.clientes ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sections.clientes" x-transition.duration.300ms class="pl-3 space-y-1">
+                            @if(auth()->user()->hasPermission('empresas.ver'))
+                                <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-industry w-5"></i>
+                                    <span>Empresas</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('sedes.ver'))
+                                <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-map-marker-alt w-5"></i>
+                                    <span>Sedes</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('clientes.ver'))
+                                <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-handshake w-5"></i>
+                                    <span>Clientes</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('areas.ver'))
+                                <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-th w-5"></i>
+                                    <span>Áreas</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('equipos.ver'))
+                                <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-laptop w-5"></i>
+                                    <span>Equipos</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('marcas.ver'))
+                                <a href="{{ route('parametros.marcas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.marcas.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-copyright w-5"></i>
+                                    <span>Marcas</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('tipos-equipos.ver'))
+                                <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-list w-5"></i>
+                                    <span>Tipos de Equipos</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('parametros.categorias.ver'))
+                                <a href="{{ route('parametros.categorias.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.categorias.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-tags w-5"></i>
+                                    <span>Categorías</span>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
                 @endif
 
-                {{-- Gestión de Seguridad (solo Admin) --}}
-                @if(auth()->check() && auth()->user()->hasRole('admin'))
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Seguridad</h3>
-                    </div>
-                    <a href="{{ route('seguridad.usuarios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.usuarios.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-users w-5"></i>
-                        <span>Usuarios</span>
-                    </a>
-                    <a href="{{ route('seguridad.roles.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.roles.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-lock w-5"></i>
-                        <span>Roles</span>
-                    </a>
-                    <a href="{{ route('seguridad.permissions.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.permissions.*') ? 'bg-blue-700' : '' }}">
-                        <i class="fas fa-shield-alt w-5"></i>
-                        <span>Permisos</span>
-                    </a>
-                @endif
-
-                {{-- Gestión Administrativa (Admin, Gerente) --}}
-                @if(auth()->check() && (auth()->user()->hasPermission('empresas.ver')))
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión Principal</h3>
-                    </div>
-                    @if(auth()->user()->hasPermission('empresas.ver'))
-                        <a href="{{ route('parametros.empresas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.empresas.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-industry w-5"></i>
-                            <span>Empresas</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('sedes.ver'))
-                        <a href="{{ route('parametros.sedes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.sedes.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-map-marker-alt w-5"></i>
-                            <span>Sedes</span>
-                        </a>
-                    @endif
-
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Ubicación DANE</h3>
-                    </div>
-                    @if(auth()->user()->hasPermission('paises.ver'))
-                        <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-globe w-5"></i>
-                            <span>Países</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('departamentos.ver'))
-                        <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-map w-5"></i>
-                            <span>Departamentos</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('municipios.ver'))
-                        <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-city w-5"></i>
-                            <span>Municipios</span>
-                        </a>
-                    @endif
-                @endif
-
-                {{-- Gestión TI (Admin, Gerente, Supervisor, Agente) --}}
-                @if(auth()->check() && (auth()->user()->hasPermission('equipos.ver') || auth()->user()->hasPermission('servicios.ver')))
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Gestión TI</h3>
-                    </div>
-                    @if(auth()->user()->hasPermission('clientes.ver'))
-                        <a href="{{ route('parametros.clientes.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.clientes.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-handshake w-5"></i>
-                            <span>Clientes</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('areas.ver'))
-                        <a href="{{ route('parametros.areas.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.areas.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-th w-5"></i>
-                            <span>Áreas</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('equipos.ver'))
-                        <a href="{{ route('parametros.equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.equipos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-laptop w-5"></i>
-                            <span>Equipos</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('tipos-equipos.ver'))
-                        <a href="{{ route('parametros.tipos-equipos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.tipos-equipos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-list w-5"></i>
-                            <span>Tipos de Equipos</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('parametros.categorias.ver'))
-                        <a href="{{ route('parametros.categorias.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.categorias.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-tags w-5"></i>
-                            <span>Categorías</span>
-                        </a>
-                    @endif
-                @endif
-
-                {{-- Gestión de Contratos (Admin) --}}
+                {{-- Contratos --}}
                 @if(auth()->check() && auth()->user()->hasPermission('contratos.ver'))
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Contratos y Servicios</h3>
+                    <div class="space-y-1">
+                        <button type="button" @click="toggle('contratos')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>📄</span>
+                                <span>Contratos</span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.contratos ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sections.contratos" x-transition.duration.300ms class="pl-3 space-y-1">
+                            <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-file-contract w-5"></i>
+                                <span>Contratos</span>
+                            </a>
+                        </div>
                     </div>
-                    @if(auth()->user()->hasPermission('contratos.ver'))
-                        <a href="{{ route('parametros.contratos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.contratos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-file-contract w-5"></i>
-                            <span>Contratos</span>
-                        </a>
-                    @endif
                 @endif
 
-                {{-- Incidencias (Admin, Técnico, Agente) --}}
-                @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
-                    <div class="pt-4 pb-2">
-                        <h3 class="px-4 py-2 text-xs font-bold text-blue-300 uppercase">Incidencias</h3>
+                {{-- Ubicación DANE --}}
+                @if(auth()->check() && (auth()->user()->hasPermission('paises.ver') || auth()->user()->hasPermission('departamentos.ver') || auth()->user()->hasPermission('municipios.ver')))
+                    <div class="space-y-1">
+                        <button type="button" @click="toggle('ubicacion')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>🗺️</span>
+                                <span>Ubicación DANE</span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.ubicacion ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sections.ubicacion" x-transition.duration.300ms class="pl-3 space-y-1">
+                            @if(auth()->user()->hasPermission('paises.ver'))
+                                <a href="{{ route('administrativo.paises.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.paises.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-globe w-5"></i>
+                                    <span>Países</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('departamentos.ver'))
+                                <a href="{{ route('administrativo.departamentos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.departamentos.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-map w-5"></i>
+                                    <span>Departamentos</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('municipios.ver'))
+                                <a href="{{ route('administrativo.municipios.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('administrativo.municipios.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-city w-5"></i>
+                                    <span>Municipios</span>
+                                </a>
+                            @endif
+                        </div>
                     </div>
-                    @if(auth()->user()->hasPermission('servicios.ver'))
-                        <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.index') || (request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel')) ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-tools w-5"></i>
-                            <span>Servicios</span>
+                @endif
+
+                {{-- Incidencias --}}
+                @if(auth()->check() && auth()->user()->hasPermission('servicios.ver'))
+                    <div class="space-y-1">
+                        <button type="button" @click="toggle('incidencias')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>⚠️</span>
+                                <span>Incidencias</span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.incidencias ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sections.incidencias" x-transition.duration.300ms class="pl-3 space-y-1">
+                            @if(auth()->user()->hasPermission('servicios.ver'))
+                                <a href="{{ route('incidencias.servicios.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.index') || (request()->routeIs('incidencias.servicios.*') && !request()->routeIs('incidencias.servicios.technician-panel')) ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-tools w-5"></i>
+                                    <span>Servicios</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('servicios.panel-admin'))
+                                <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-tasks w-5"></i>
+                                    <span>Servicios Asignados</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('servicios.estadisticas'))
+                                <a href="{{ route('incidencias.servicios.estadisticas') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.estadisticas') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-chart-bar w-5"></i>
+                                    <span>Estadísticas</span>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Documentacion --}}
+                <div class="space-y-1">
+                    <button type="button" @click="toggle('documentacion')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                        <span class="flex items-center gap-3 font-semibold">
+                            <span>📚</span>
+                            <span>Documentacion</span>
+                        </span>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.documentacion ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="sections.documentacion" x-transition.duration.300ms class="pl-3 space-y-1">
+                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                            <i class="fas fa-sliders-h w-5"></i>
+                            <span>Parametros</span>
+                        </span>
+                        <a href="{{ route('parametros.procesos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.procesos.*') ? 'bg-blue-700' : '' }}">
+                            <i class="fas fa-project-diagram w-5"></i>
+                            <span>Procesos</span>
                         </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('servicios.panel-admin'))
-                        <a href="{{ route('incidencias.servicios.panel') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.panel') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-tasks w-5"></i>
-                            <span>Servicios Asignados</span>
-                        </a>
-                    @endif
-                    @if(auth()->user()->hasPermission('servicios.estadisticas'))
-                        <a href="{{ route('incidencias.servicios.estadisticas') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.estadisticas') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-chart-bar w-5"></i>
-                            <span>Estadísticas</span>
-                        </a>
-                    @endif
+                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                            <i class="fas fa-envelope-open-text w-5"></i>
+                            <span>Correspondencia</span>
+                        </span>
+                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                            <i class="fas fa-archive w-5"></i>
+                            <span>Archivo</span>
+                        </span>
+                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                            <i class="fas fa-file-image w-5"></i>
+                            <span>Digitalizacion</span>
+                        </span>
+                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                            <i class="fas fa-eye w-5"></i>
+                            <span>Visualizacion</span>
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Configuración --}}
+                @if(auth()->check() && auth()->user()->hasRole('admin'))
+                    <div class="space-y-1">
+                        <button type="button" @click="toggle('configuracion')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>⚙️</span>
+                                <span>Configuración</span>
+                            </span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.configuracion ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sections.configuracion" x-transition.duration.300ms class="pl-3 space-y-1">
+                            <a href="{{ route('seguridad.usuarios.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.usuarios.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-users w-5"></i>
+                                <span>Usuarios</span>
+                            </a>
+                            <a href="{{ route('seguridad.roles.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.roles.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-lock w-5"></i>
+                                <span>Roles</span>
+                            </a>
+                            <a href="{{ route('seguridad.permissions.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('seguridad.permissions.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-shield-alt w-5"></i>
+                                <span>Permisos</span>
+                            </a>
+                        </div>
+                    </div>
                 @endif
             </nav>
 
@@ -315,11 +406,38 @@
         </main>
     </div>
     
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     
     <script>
+        function sidebarMenuState() {
+            return {
+                sections: {
+                    dashboard: {{ request()->routeIs('dashboard') || request()->routeIs('incidencias.servicios.mi-panel') ? 'true' : 'false' }},
+                    clientes: {{ request()->routeIs('parametros.empresas.*') || request()->routeIs('parametros.sedes.*') || request()->routeIs('parametros.clientes.*') || request()->routeIs('parametros.areas.*') || request()->routeIs('parametros.equipos.*') || request()->routeIs('parametros.marcas.*') || request()->routeIs('parametros.tipos-equipos.*') || request()->routeIs('parametros.categorias.*') ? 'true' : 'false' }},
+                    contratos: {{ request()->routeIs('parametros.contratos.*') ? 'true' : 'false' }},
+                    ubicacion: {{ request()->routeIs('administrativo.paises.*') || request()->routeIs('administrativo.departamentos.*') || request()->routeIs('administrativo.municipios.*') ? 'true' : 'false' }},
+                    incidencias: {{ request()->routeIs('incidencias.servicios.*') ? 'true' : 'false' }},
+                    configuracion: {{ request()->routeIs('seguridad.usuarios.*') || request()->routeIs('seguridad.roles.*') || request()->routeIs('seguridad.permissions.*') ? 'true' : 'false' }}
+                    ,documentacion: false
+                },
+                init() {
+                    try {
+                        const saved = localStorage.getItem('ceogestion-sidebar-sections');
+                        if (saved) {
+                            this.sections = JSON.parse(saved);
+                        }
+                    } catch (e) {
+                        // Fallback to defaults if storage is not available.
+                    }
+                },
+                toggle(section) {
+                    this.sections[section] = !this.sections[section];
+                    localStorage.setItem('ceogestion-sidebar-sections', JSON.stringify(this.sections));
+                }
+            };
+        }
+
         // Funciones para el sidebar
         function closeSidebar() {
             const sidebar = document.getElementById('sidebar');

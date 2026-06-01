@@ -60,14 +60,14 @@
                     @enderror
                 </div>
 
-                <!-- Fecha de Asignación -->
+                <!-- Fecha y hora de Asignación -->
                 <div>
                     <label for="fecha_asignacion" class="block text-sm font-semibold text-gray-700 mb-2">
-                        📅 Fecha de Asignación *
+                        📅 Fecha y Hora de Asignación *
                     </label>
-                    <input type="date" name="fecha_asignacion" id="fecha_asignacion" 
+                    <input type="datetime-local" name="fecha_asignacion" id="fecha_asignacion" 
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value="{{ old('fecha_asignacion', $servicio->fecha_asignacion?->format('Y-m-d') ?? now()->format('Y-m-d')) }}"
+                        value="{{ old('fecha_asignacion', $servicio->fecha_asignacion?->format('Y-m-d\\TH:i') ?? now()->format('Y-m-d\\TH:i')) }}"
                         required>
                     @error('fecha_asignacion')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -82,6 +82,16 @@
                     <textarea name="observaciones" id="observaciones" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Notas adicionales para el técnico..."></textarea>
+                </div>
+
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-green-900">
+                        <input type="checkbox" name="enviar_whatsapp" value="1" class="rounded border-green-400 text-green-600" {{ old('enviar_whatsapp', '1') ? 'checked' : '' }}>
+                        Enviar notificación por WhatsApp al técnico después de asignar
+                    </label>
+                    <p class="text-xs text-green-800 mt-2">
+                        Se abrirá WhatsApp Web/App con el mensaje prellenado usando el teléfono registrado del técnico.
+                    </p>
                 </div>
 
                 <!-- Botones de Acción -->

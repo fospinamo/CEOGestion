@@ -1,0 +1,60 @@
+# OpenSpec SDD configuration
+schema: spec-driven
+
+context: |
+  Tech stack: PHP 8.2, Laravel 12, Blade, jQuery, Tailwind CSS v4 via Vite, Axios.
+  Architecture: Laravel MVC with module-based controllers and views; route files per module.
+  Testing: PHPUnit via php artisan test; Unit + Feature suites; sqlite in-memory.
+  Quality: Laravel Pint for linting/formatting.
+  Style: Prefer minimal, targeted changes; follow CRUD protocol and route conventions in AGENTS.md.
+
+rules:
+  proposal:
+    - Align with existing modules and route naming conventions.
+  specs:
+    - Use Given/When/Then for scenarios.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+  design:
+    - Document architecture decisions and module placement.
+  tasks:
+    - Group by phase, keep tasks small and testable.
+  apply:
+    - Follow existing code patterns and module structure.
+    tdd: true
+    test_command: "php artisan test"
+  verify:
+    test_command: "php artisan test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
+
+testing:
+  strict_tdd: true
+  detected: "2026-05-27"
+  test_runner:
+    command: "php artisan test"
+    framework: "PHPUnit (Laravel test runner)"
+  layers:
+    unit:
+      available: true
+      tool: "PHPUnit"
+    integration:
+      available: true
+      tool: "PHPUnit Feature tests"
+    e2e:
+      available: false
+      tool: "-"
+  coverage:
+    available: false
+    command: "-"
+  quality_tools:
+    linter:
+      available: true
+      command: "./vendor/bin/pint"
+    type_checker:
+      available: false
+      command: "-"
+    formatter:
+      available: true
+      command: "./vendor/bin/pint"

@@ -112,6 +112,7 @@
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Tipo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Marca / Modelo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Ubicación</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Contrato</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Empresa/Cliente</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
                     <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
@@ -121,7 +122,7 @@
                 @forelse($equipos as $equipo)
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-3">
-                            <p class="font-semibold text-gray-900">{{ $equipo->codigo_interno }}</p>
+                            <p class="font-semibold text-gray-900">{{ $equipo->codigo_activo_cliente }}</p>
                             <p class="text-xs text-gray-500">SN: {{ $equipo->serial }}</p>
                         </td>
                         <td class="px-6 py-3">
@@ -130,7 +131,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-3">
-                            <p class="text-sm text-gray-900">{{ $equipo->marca }} {{ $equipo->modelo }}</p>
+                            <p class="text-sm text-gray-900">{{ $equipo->marca?->nombre ?? 'N/A' }} {{ $equipo->modelo }}</p>
                             @if($equipo->descripcion)
                                 <p class="text-xs text-gray-600 mt-1 italic truncate" title="{{ $equipo->descripcion }}">
                                     {{ substr($equipo->descripcion, 0, 60) }}{{ strlen($equipo->descripcion) > 60 ? '...' : '' }}
@@ -140,6 +141,16 @@
                         <td class="px-6 py-3">
                             <p class="text-sm text-gray-700">{{ $equipo->area?->nombre ?? 'N/A' }}</p>
                             <p class="text-xs text-gray-500">{{ $equipo->area?->sede?->nombre ?? 'N/A' }}</p>
+                        </td>
+                        <td class="px-6 py-3">
+                            @if($equipo->contrato)
+                                <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ $equipo->contrato->numero_contrato }}
+                                </span>
+                                <p class="text-xs text-gray-600 mt-1">{{ substr($equipo->contrato->tipo_contrato, 0, 15) }}</p>
+                            @else
+                                <span class="text-gray-400 text-xs italic">Sin contrato</span>
+                            @endif
                         </td>
                         <td class="px-6 py-3">
                             <p class="text-sm text-gray-900 font-semibold">

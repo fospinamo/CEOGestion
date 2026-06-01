@@ -180,6 +180,14 @@ class Servicio extends Model
     }
 
     /**
+     * Mantenimiento programado asociado (si proviene de cronograma)
+     */
+    public function mantenimientoProgramado()
+    {
+        return $this->belongsTo(MantenimientoProgramado::class, 'id', 'servicio_id');
+    }
+
+    /**
      * Documentos adjuntos (polimórficos)
      */
     public function documentosAdjuntos()

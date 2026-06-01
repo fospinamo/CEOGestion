@@ -136,6 +136,7 @@
                                     'BAJA' => ['bg' => '#dcfce7', 'text' => '#166534'],
                                     'MEDIA' => ['bg' => '#fef3c7', 'text' => '#92400e'],
                                     'ALTA' => ['bg' => '#fed7aa', 'text' => '#92400e'],
+                                    'URGENTE' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
                                     'CRITICA' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
                                 ];
                                 $colors = $priorityMap[$servicio->prioridad] ?? ['bg' => '#f3f4f6', 'text' => '#374151'];

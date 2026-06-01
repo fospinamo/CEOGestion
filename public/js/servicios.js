@@ -18,6 +18,13 @@ $(document).ready(function() {
         form_servicio: $('#form-servicio'),
         contrato_info: $('#contrato_info')
     };
+
+    const editState = {
+        isEdit: String(elementos.form_servicio.data('is-edit') || '') === '1',
+        selectedEquipoId: String(elementos.form_servicio.data('selected-equipo-id') || ''),
+        selectedTipoServicio: String(elementos.form_servicio.data('selected-tipo-servicio') || ''),
+        applyingInitialState: false
+    };
     
     console.log('🔍 Elementos encontrados:', {
         cliente_id: elementos.cliente_id.length,
@@ -141,6 +148,7 @@ $(document).ready(function() {
     // Función handler para cambio de área (reutilizable)
     function handleAreaChange() {
         const areaId = elementos.area_id.val();
+        const selectedEquipoForLoad = editState.applyingInitialState ? editState.selectedEquipoId : '';
         console.log('🔍 FILTRO 3: Area seleccionada -', areaId);
         
         if (areaId) {
@@ -160,12 +168,18 @@ $(document).ready(function() {
                         $equipoSelect.append('<option value="">No hay equipos en esta área</option>').prop('disabled', true);
                     } else {
                         equipos.forEach(equipo => {
+                            const isSelected = selectedEquipoForLoad && String(equipo.id) === String(selectedEquipoForLoad);
                             $equipoSelect.append(`
-                                <option value="${equipo.id}">
+                                <option value="${equipo.id}" ${isSelected ? 'selected' : ''}>
                                     ${equipo.codigo_interno} - ${equipo.marca} ${equipo.modelo} (${equipo.estado_operativo})
                                 </option>
                             `);
                         });
+                    }
+
+                    if (selectedEquipoForLoad) {
+                        $equipoSelect.val(String(selectedEquipoForLoad));
+                        $equipoSelect.trigger('change');
                     }
                     
                     elementos.tipo_servicio.empty().append('<option value="">Seleccione equipo primero</option>').prop('disabled', true);
@@ -255,6 +269,10 @@ $(document).ready(function() {
                             }
                         });
                     }
+
+                    if (editState.applyingInitialState && editState.selectedTipoServicio) {
+                        $tipoServicio.val(editState.selectedTipoServicio);
+                    }
                     
                     // Guardar datos del contrato en campos ocultos
                     $('#contrato_id').val(data.contrato.id);
@@ -288,6 +306,10 @@ $(document).ready(function() {
                     todosTipos.forEach(tipo => {
                         $tipoServicio.append(`<option value="${tipo}">${tipo}</option>`);
                     });
+
+                    if (editState.applyingInitialState && editState.selectedTipoServicio) {
+                        $tipoServicio.val(editState.selectedTipoServicio);
+                    }
                     
                     // Limpiar contrato ID para indicar que es fuera de contrato
                     $('#contrato_id').val('');
@@ -400,6 +422,34 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Rehidratar cascada en edición para mostrar valores existentes
+    function hydrateEditForm() {
+        if (!editState.isEdit) {
+            return;
+        }
+
+        const clienteId = elementos.cliente_id.val();
+        const sedeId = elementos.sede_id.val();
+        const areaId = elementos.area_id.val();
+
+        if (!clienteId || !sedeId || !areaId) {
+            return;
+        }
+
+        editState.applyingInitialState = true;
+
+        elementos.cliente_id.val(clienteId).trigger('change');
+        elementos.sede_id.val(sedeId).trigger('change');
+        elementos.area_id.val(areaId).trigger('change');
+
+        // Después de inicializar, desactivar modo de hidratación.
+        setTimeout(function() {
+            editState.applyingInitialState = false;
+        }, 1200);
+    }
+
+    hydrateEditForm();
     
     console.log('✅ Todos los event listeners configurados correctamente');
 });

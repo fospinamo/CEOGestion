@@ -119,6 +119,14 @@ class Contrato extends Model
     }
 
     /**
+     * Equipos asociados al contrato
+     */
+    public function equipos()
+    {
+        return $this->hasMany(Equipo::class);
+    }
+
+    /**
      * Documentos adjuntos (polimórficos)
      */
     public function documentosAdjuntos()

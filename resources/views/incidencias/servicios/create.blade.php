@@ -18,8 +18,19 @@
     </div>
 
     <div class="bg-white shadow rounded-lg p-6">
+        @php
+            $selectedEquipoId = old('equipo_id', (isset($isEdit) && $isEdit && $servicio) ? $servicio->equipo_id : '');
+            $selectedTipoServicio = old('tipo_servicio', (isset($isEdit) && $isEdit && $servicio) ? $servicio->tipo_servicio : '');
+            $selectedContratoId = old('contrato_id', (isset($isEdit) && $isEdit && $servicio) ? $servicio->contrato_id : '');
+            $selectedSlaRespuesta = old('sla_respuesta', (isset($isEdit) && $isEdit && $servicio) ? $servicio->sla_horas_respuesta : '');
+            $selectedSlaSolucion = old('sla_solucion', (isset($isEdit) && $isEdit && $servicio) ? $servicio->sla_horas_solucion : '');
+        @endphp
+
         <form id="form-servicio" method="POST" 
             action="@if(isset($isEdit) && $isEdit){{ route('incidencias.servicios.update', $servicio) }}@else{{ route('incidencias.servicios.store') }}@endif" 
+            data-is-edit="{{ isset($isEdit) && $isEdit ? '1' : '0' }}"
+            data-selected-equipo-id="{{ $selectedEquipoId }}"
+            data-selected-tipo-servicio="{{ $selectedTipoServicio }}"
             enctype="multipart/form-data">
             @csrf
             @if(isset($isEdit) && $isEdit)
@@ -41,7 +52,7 @@
                             @foreach($clientes as $cliente)
                                 @php
                                     $isSelected = old('cliente_id') == $cliente->id || 
-                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo && $servicio->equipo->area->sede->cliente_id == $cliente->id);
+                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo?->area?->sede?->cliente_id == $cliente->id);
                                 @endphp
                                 <option value="{{ $cliente->id }}" {{ $isSelected ? 'selected' : '' }}>
                                     {{ $cliente->razon_social }} ({{ $cliente->documento }})
@@ -66,7 +77,7 @@
                             @foreach($sedes as $sede)
                                 @php
                                     $isSelected = old('sede_id') == $sede->id || 
-                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo && $servicio->equipo->area->sede_id == $sede->id);
+                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo?->area?->sede_id == $sede->id);
                                 @endphp
                                 <option value="{{ $sede->id }}" 
                                     data-cliente-id="{{ $sede->cliente_id }}"
@@ -92,7 +103,7 @@
                             @foreach($areas as $area)
                                 @php
                                     $isSelected = old('area_id') == $area->id || 
-                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo && $servicio->equipo->area_id == $area->id);
+                                                  (isset($isEdit) && $isEdit && $servicio && $servicio->equipo?->area_id == $area->id);
                                 @endphp
                                 <option value="{{ $area->id }}" 
                                     data-sede-id="{{ $area->sede_id }}"
@@ -115,8 +126,14 @@
                             ➕ Crear Equipo
                         </button>
                     </label>
-                    <select name="equipo_id" id="equipo_id" class="w-full border rounded px-3 py-2 @error('equipo_id') border-red-500 @enderror" required disabled>
-                        <option value="">Seleccione área primero</option>
+                    <select name="equipo_id" id="equipo_id" class="w-full border rounded px-3 py-2 @error('equipo_id') border-red-500 @enderror" required @if(!old('area_id') && !(isset($isEdit) && $isEdit && $servicio?->equipo_id)) disabled @endif>
+                        @if(isset($isEdit) && $isEdit && $servicio?->equipo && $selectedEquipoId)
+                            <option value="{{ $selectedEquipoId }}" selected>
+                                {{ $servicio->equipo->codigo_activo_cliente }} - {{ $servicio->equipo->marca?->nombre ?? '' }} {{ $servicio->equipo->modelo }} ({{ $servicio->equipo->estado_operativo }})
+                            </option>
+                        @else
+                            <option value="">Seleccione área primero</option>
+                        @endif
                     </select>
                     @error('equipo_id')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -144,8 +161,12 @@
                 <!-- Tipo de Servicio -->
                 <div class="mb-4">
                     <label class="block text-sm font-bold mb-2">Tipo de Servicio *</label>
-                    <select name="tipo_servicio" id="tipo_servicio" class="w-full border rounded px-3 py-2 @error('tipo_servicio') border-red-500 @enderror" required disabled>
-                        <option value="">Primero seleccione un cliente</option>
+                    <select name="tipo_servicio" id="tipo_servicio" class="w-full border rounded px-3 py-2 @error('tipo_servicio') border-red-500 @enderror" required @if(!old('equipo_id') && !(isset($isEdit) && $isEdit && $servicio?->equipo_id)) disabled @endif>
+                        @if(isset($isEdit) && $isEdit && $selectedTipoServicio)
+                            <option value="{{ $selectedTipoServicio }}" selected>{{ $selectedTipoServicio }}</option>
+                        @else
+                            <option value="">Primero seleccione un cliente</option>
+                        @endif
                     </select>
                     @error('tipo_servicio')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -162,7 +183,7 @@
                         <option value="BAJA" {{ $currentPrioridad === 'BAJA' ? 'selected' : '' }}>BAJA 🟢</option>
                         <option value="MEDIA" {{ $currentPrioridad === 'MEDIA' ? 'selected' : '' }}>MEDIA 🟡</option>
                         <option value="ALTA" {{ $currentPrioridad === 'ALTA' ? 'selected' : '' }}>ALTA 🟠</option>
-                        <option value="CRITICA" {{ $currentPrioridad === 'CRITICA' ? 'selected' : '' }}>CRITICA 🔴</option>
+                        <option value="URGENTE" {{ in_array($currentPrioridad, ['URGENTE', 'CRITICA']) ? 'selected' : '' }}>URGENTE 🔴</option>
                     </select>
                     @error('prioridad')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -243,6 +264,19 @@
                     <p class="text-gray-500 text-xs mt-1">
                         Soportes del servicio (PDF, Word, Excel, Imágenes, ZIP). Máximo 5MB por archivo. Opcional.
                     </p>
+                    @if(isset($isEdit) && $isEdit && $servicio && $servicio->documentosAdjuntos->count() > 0)
+                        <div class="mt-3 p-3 bg-gray-50 border rounded">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">Archivos ya cargados:</p>
+                            <ul class="text-xs text-gray-600 space-y-1">
+                                @foreach($servicio->documentosAdjuntos as $doc)
+                                    <li>
+                                        • {{ $doc->nombre_archivo }}
+                                        ({{ number_format(($doc->tamaño_bytes ?? 0) / 1024, 1) }} KB)
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     @error('documentos_adjuntos.*')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -250,9 +284,9 @@
             </div>
 
             <!-- Campos ocultos para datos del contrato -->
-            <input type="hidden" name="contrato_id" id="contrato_id" value="">
-            <input type="hidden" name="sla_respuesta" id="sla_respuesta" value="">
-            <input type="hidden" name="sla_solucion" id="sla_solucion" value="">
+            <input type="hidden" name="contrato_id" id="contrato_id" value="{{ $selectedContratoId }}">
+            <input type="hidden" name="sla_respuesta" id="sla_respuesta" value="{{ $selectedSlaRespuesta }}">
+            <input type="hidden" name="sla_solucion" id="sla_solucion" value="{{ $selectedSlaSolucion }}">
 
             <!-- Botones -->
             <div class="flex justify-end space-x-2 mt-6 pt-4 border-t">
@@ -284,7 +318,7 @@
 
                     <div>
                         <label class="block text-sm font-bold mb-1">Código Interno *</label>
-                        <input type="text" name="codigo_interno" id="modal-codigo_interno" class="w-full border rounded px-3 py-2" placeholder="ej: EQ-001" required>
+                        <input type="text" name="codigo_activo_cliente" id="modal-codigo_interno" class="w-full border rounded px-3 py-2" placeholder="ej: EQ-001" required>
                         <p class="text-xs text-gray-500 mt-1">Identificador único del equipo</p>
                     </div>
 

@@ -51,24 +51,31 @@ class HomeController extends Controller
             'incidencias_por_mes' => [],
             'incidencias_por_estado' => [],
             'incidencias_por_año' => [],
+            'servicios_completados' => 0,
         ];
         
         if ($empresa) {
             // 1. Cantidad de clientes
             $dashboard['clientes'] = Cliente::where('empresa_id', $empresa->id)->count();
             
-            // 2. Contratos vigentes y valor
-            $contratos = Contrato::whereHas('cliente', function ($query) use ($empresa) {
+            // 2. Contratos vigentes y valor - OPTIMIZADO: usar count() y sum() directamente en queries
+            $dashboard['contratos_vigentes'] = Contrato::whereHas('cliente', function ($query) use ($empresa) {
                 $query->where('empresa_id', $empresa->id);
             })
             ->where('estado', 'ACTIVO')
             ->where('fecha_inicio', '<=', now())
             ->where('fecha_fin', '>=', now())
-            ->get();
+            ->count();  // ← Usar count() en lugar de get()->count()
             
-            $dashboard['contratos_vigentes'] = $contratos->count();
-            $dashboard['valor_total_contratos'] = $contratos->sum('valor_contrato');
-            $dashboard['pago_mensual'] = $dashboard['valor_total_contratos'] / 12;
+            $dashboard['valor_total_contratos'] = Contrato::whereHas('cliente', function ($query) use ($empresa) {
+                $query->where('empresa_id', $empresa->id);
+            })
+            ->where('estado', 'ACTIVO')
+            ->where('fecha_inicio', '<=', now())
+            ->where('fecha_fin', '>=', now())
+            ->sum('valor_contrato');  // ← Usar sum() en lugar de get()->sum()
+            
+            $dashboard['pago_mensual'] = $dashboard['valor_total_contratos'] > 0 ? $dashboard['valor_total_contratos'] / 12 : 0;
             
             // 3. Cantidad de equipos
             $dashboard['equipos_totales'] = Equipo::whereHas('cliente', function ($query) use ($empresa) {
@@ -76,30 +83,36 @@ class HomeController extends Controller
             })->count();
             
             // 4. Incidencias (Servicios) totales
-            $servicios = Servicio::whereHas('equipo.cliente', function ($query) use ($empresa) {
+            $dashboard['incidencias_totales'] = Servicio::whereHas('equipo.cliente', function ($query) use ($empresa) {
                 $query->where('empresa_id', $empresa->id);
-            })->get();
+            })->count();  // ← Usar count() directamente sin get()
             
-            $dashboard['incidencias_totales'] = $servicios->count();
-            
-            // 5. Incidencias por mes (últimos 12 meses)
-            $dashboard['incidencias_por_mes'] = $this->getIncidenciasPorMes($servicios);
-            
-            // 6. Incidencias por estado
-            $dashboard['incidencias_por_estado'] = $servicios->groupBy('estado')
+            // Solo traer servicios si hay incidencias para hacer estadísticas
+            if ($dashboard['incidencias_totales'] > 0) {
+                $servicios = Servicio::whereHas('equipo.cliente', function ($query) use ($empresa) {
+                    $query->where('empresa_id', $empresa->id);
+                })->get();
+                
+                // 5. Incidencias por mes (últimos 12 meses)
+                $dashboard['incidencias_por_mes'] = $this->getIncidenciasPorMes($servicios);
+                
+                // 6. Incidencias por estado
+                $dashboard['incidencias_por_estado'] = $servicios->groupBy('estado')
+                    ->map(function ($items) {
+                        return $items->count();
+                    })
+                    ->toArray();
+                
+                // 7. Incidencias por año
+                $dashboard['incidencias_por_año'] = $servicios->groupBy(function ($item) {
+                    return $item->created_at->year;
+                })
                 ->map(function ($items) {
                     return $items->count();
                 })
                 ->toArray();
-            
-            // 7. Incidencias por año
-            $dashboard['incidencias_por_año'] = $servicios->groupBy(function ($item) {
-                return $item->created_at->year;
-            })
-            ->map(function ($items) {
-                return $items->count();
-            })
-            ->toArray();
+                $dashboard['servicios_completados'] = $servicios->where('estado', 'COMPLETADO')->count();
+            }
         }
         
         return view('home', compact('dashboard', 'empresas', 'empresa'));
@@ -107,33 +120,42 @@ class HomeController extends Controller
     
     /**
      * Dashboard específico para técnicos
-     * Muestra solo los servicios asignados al técnico actual
+     * Muestra solo los servicios asignados al técnico actual - OPTIMIZADO
      */
     private function dashboardTecnico(): View
     {
         $tecnico = auth()->user();
         
-        // Obtener servicios del técnico actual
+        // Estadísticas - primero contar sin traer todos los registros
+        $dashboard = [
+            'tecnico' => $tecnico,
+            'servicios_totales' => Servicio::where('tecnico_id', $tecnico->id)->count(),
+            'servicios_pendientes' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'PENDIENTE')->count(),
+            'servicios_en_proceso' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'EN_PROCESO')->count(),
+            'servicios_resueltos' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'RESUELTO')->count(),
+            'servicios_cerrados' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'CERRADO')->count(),
+            'servicios_pendientes_repuesto' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'PENDIENTE_REPUESTO')->count(),
+        ];
+
+        // Compatibilidad con la vista técnico-dashboard: "completados" = resueltos + cerrados.
+        $dashboard['servicios_completados'] = $dashboard['servicios_resueltos'] + $dashboard['servicios_cerrados'];
+        
+        // Solo traer servicios si hay datos (para gráficos y listados)
         $servicios = Servicio::where('tecnico_id', $tecnico->id)
             ->with(['equipo.area.sede.cliente', 'estadoServicio'])
             ->get();
         
-        // Estadísticas del técnico
-        $dashboard = [
-            'tecnico' => $tecnico,
-            'servicios_totales' => $servicios->count(),
-            'servicios_pendientes' => $servicios->where('estado', 'PENDIENTE')->count(),
-            'servicios_en_proceso' => $servicios->where('estado', 'EN_PROCESO')->count(),
-            'servicios_resueltos' => $servicios->where('estado', 'RESUELTO')->count(),
-            'servicios_cerrados' => $servicios->where('estado', 'CERRADO')->count(),
-            'servicios_pendientes_repuesto' => $servicios->where('estado', 'PENDIENTE_REPUESTO')->count(),
-            'servicios_por_mes' => $this->getIncidenciasPorMes($servicios),
-            'servicios_por_prioridad' => $servicios->groupBy('prioridad')
+        if ($servicios->count() > 0) {
+            $dashboard['servicios_por_mes'] = $this->getIncidenciasPorMes($servicios);
+            $dashboard['servicios_por_prioridad'] = $servicios->groupBy('prioridad')
                 ->map(function ($items) {
                     return $items->count();
                 })
-                ->toArray(),
-        ];
+                ->toArray();
+        } else {
+            $dashboard['servicios_por_mes'] = [];
+            $dashboard['servicios_por_prioridad'] = [];
+        }
         
         return view('home.tecnico-dashboard', compact('dashboard', 'servicios', 'tecnico'));
     }

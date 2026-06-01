@@ -154,33 +154,34 @@
     <!-- Resumen -->
     <div class="summary">
         <p><strong>Resumen:</strong> Este reporte contiene el listado completo de {{ $total_equipos }} equipos registrados en el sistema.</p>
-        <p><strong>Columnas:</strong> ID | Código | Marca | Modelo | Serie | Estado | Tipo | Área | Sede | Cliente/Empresa</p>
+        <p><strong>Columnas:</strong> ID | Código | Marca | Modelo | Serie | Estado | Tipo | Área | Sede | Contrato | Cliente/Empresa</p>
     </div>
 
     <!-- Tabla de equipos -->
     <table>
         <thead>
             <tr>
-                <th style="width: 5%;">ID</th>
-                <th style="width: 8%;">Código</th>
-                <th style="width: 10%;">Marca</th>
-                <th style="width: 10%;">Modelo</th>
-                <th style="width: 12%;">Serie</th>
-                <th style="width: 8%;">Estado</th>
-                <th style="width: 10%;">Tipo Equipo</th>
-                <th style="width: 10%;">Área</th>
-                <th style="width: 10%;">Sede</th>
-                <th style="width: 17%;">Cliente/Empresa</th>
+                <th style="width: 4%;">ID</th>
+                <th style="width: 7%;">Código</th>
+                <th style="width: 9%;">Marca</th>
+                <th style="width: 9%;">Modelo</th>
+                <th style="width: 11%;">Serie</th>
+                <th style="width: 7%;">Estado</th>
+                <th style="width: 9%;">Tipo Equipo</th>
+                <th style="width: 9%;">Área</th>
+                <th style="width: 9%;">Sede</th>
+                <th style="width: 8%;">Contrato</th>
+                <th style="width: 12%;">Cliente/Empresa</th>
             </tr>
         </thead>
         <tbody>
             @forelse($equipos as $equipo)
                 <tr>
                     <td class="text-center">{{ $equipo->id }}</td>
-                    <td>{{ $equipo->codigo_interno }}</td>
-                    <td>{{ $equipo->marca }}</td>
+                    <td>{{ $equipo->codigo_activo_cliente }}</td>
+                    <td>{{ $equipo->marca?->nombre ?? 'N/A' }}</td>
                     <td>{{ $equipo->modelo }}</td>
-                    <td>{{ $equipo->serie }}</td>
+                    <td>{{ $equipo->serial }}</td>
                     <td class="text-center">
                         @if($equipo->estado_operativo === 'OPERATIVO')
                             <span class="badge badge-success">OPERATIVO</span>
@@ -193,6 +194,7 @@
                     <td>{{ $equipo->tipoEquipo->nombre ?? 'N/A' }}</td>
                     <td>{{ $equipo->area->nombre ?? 'N/A' }}</td>
                     <td>{{ $equipo->area->sede->nombre ?? 'N/A' }}</td>
+                    <td>{{ $equipo->contrato?->numero_contrato ?? 'N/A' }}</td>
                     <td>
                         @if($equipo->area && $equipo->area->sede)
                             @if($equipo->area->sede->cliente_id)
@@ -207,7 +209,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" class="text-center">No hay equipos registrados</td>
+                    <td colspan="11" class="text-center">No hay equipos registrados</td>
                 </tr>
             @endforelse
         </tbody>

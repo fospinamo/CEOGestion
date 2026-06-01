@@ -52,6 +52,12 @@ Route::middleware(['auth'])->group(function () {
         
         Route::get('servicios/{servicio}/panel', [ServicioController::class, 'panel'])
             ->name('servicios.panel-detail');
+
+        Route::get('servicios/{servicio}/documentos/{documento}/ver', [ServicioController::class, 'verDocumentoAdjunto'])
+            ->name('servicios.documento.ver');
+
+        Route::get('servicios/{servicio}/documentos/{documento}/descargar', [ServicioController::class, 'descargarDocumentoAdjunto'])
+            ->name('servicios.documento.descargar');
         
         Route::get('servicios/{servicio}/informe-pdf/descargar', [ServicioController::class, 'downloadInformePDF'])
             ->name('servicios.download-informe-pdf');

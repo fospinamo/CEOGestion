@@ -103,6 +103,14 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'equipos.editar', 'module' => 'Parámetros', 'resource' => 'equipos', 'action' => 'editar', 'description' => 'Editar equipo'],
             ['name' => 'equipos.eliminar', 'module' => 'Parámetros', 'resource' => 'equipos', 'action' => 'eliminar', 'description' => 'Eliminar equipo'],
             ['name' => 'equipos.exportar', 'module' => 'Parámetros', 'resource' => 'equipos', 'action' => 'exportar', 'description' => 'Exportar equipos a Excel'],
+            ['name' => 'marcas.ver', 'module' => 'Parámetros', 'resource' => 'marcas', 'action' => 'ver', 'description' => 'Ver marcas'],
+            ['name' => 'marcas.crear', 'module' => 'Parámetros', 'resource' => 'marcas', 'action' => 'crear', 'description' => 'Crear marca'],
+            ['name' => 'marcas.editar', 'module' => 'Parámetros', 'resource' => 'marcas', 'action' => 'editar', 'description' => 'Editar marca'],
+            ['name' => 'marcas.eliminar', 'module' => 'Parámetros', 'resource' => 'marcas', 'action' => 'eliminar', 'description' => 'Eliminar marca'],
+            ['name' => 'procesos.ver', 'module' => 'Parámetros', 'resource' => 'procesos', 'action' => 'ver', 'description' => 'Ver procesos'],
+            ['name' => 'procesos.crear', 'module' => 'Parámetros', 'resource' => 'procesos', 'action' => 'crear', 'description' => 'Crear proceso'],
+            ['name' => 'procesos.editar', 'module' => 'Parámetros', 'resource' => 'procesos', 'action' => 'editar', 'description' => 'Editar proceso'],
+            ['name' => 'procesos.eliminar', 'module' => 'Parámetros', 'resource' => 'procesos', 'action' => 'eliminar', 'description' => 'Eliminar proceso'],
         ];
 
         // MÓDULO INCIDENCIAS

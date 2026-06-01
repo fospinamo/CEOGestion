@@ -2,643 +2,449 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Informe Técnico - Servicio {{ $servicio->id }}</title>
+    <title>Informe Servicio Tecnico - Servicio {{ $servicio->id }}</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.5;
-            color: #333;
-            background-color: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9px;
+            line-height: 1.2;
+            color: #111;
+            background: #fff;
         }
-        
+
         .page {
-            width: 100%;
-            padding: 20px;
-            page-break-after: always;
+            padding: 12px 14px;
         }
-        
-        /* ENCABEZADO */
+
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #0066cc;
-            padding-bottom: 15px;
+            display: table;
+            width: 100%;
+            margin-bottom: 6px;
         }
-        
-        .header-left {
-            flex: 1;
+
+        .header .cell {
+            display: table-cell;
+            vertical-align: middle;
         }
-        
-        .company-logo {
-            font-size: 20px;
-            font-weight: 900;
-            color: #0066cc;
-            letter-spacing: 1px;
+
+        .header .cell.left {
+            width: 25%;
         }
-        
-        .company-tagline {
-            font-size: 9px;
-            color: #666;
-            margin-top: 2px;
+
+        .header .cell.center {
+            width: 50%;
+            text-align: center;
         }
-        
-        .header-right {
+
+        .header .cell.right {
+            width: 25%;
             text-align: right;
-            flex: 1;
-            padding-right: 20px;
+            font-size: 8px;
         }
-        
-        .report-title {
-            font-size: 16px;
+
+        .logo {
+            height: 34px;
+            width: auto;
+        }
+
+        .title {
             font-weight: bold;
-            color: #0066cc;
-            margin-bottom: 5px;
-        }
-        
-        .report-number {
             font-size: 12px;
-            color: #333;
-            font-weight: bold;
+            letter-spacing: 0.3px;
         }
-        
-        /* TABLA DE INFO GENERAL */
-        .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            background-color: #f5f5f5;
+
+        .line {
+            border-top: 1px solid #000;
+            height: 0;
+            margin: 2px 0;
         }
-        
-        .info-row {
-            display: table-row;
-        }
-        
-        .info-row.header {
-            background-color: #0066cc;
-            color: white;
-        }
-        
-        .info-cell {
-            display: table-cell;
-            padding: 6px 8px;
-            border-right: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            font-size: 9px;
-        }
-        
-        .info-cell.label {
-            font-weight: bold;
-            width: 25%;
-            background-color: #e8f0ff;
-            color: #0066cc;
-        }
-        
-        .info-cell.value {
-            width: 25%;
-        }
-        
-        .info-cell:last-child {
-            border-right: none;
-        }
-        
-        /* SECCIONES */
-        .section {
-            margin-bottom: 15px;
-            border: 1px solid #0066cc;
-        }
-        
-        .section-header {
-            background-color: #0066cc;
-            color: white;
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .section-header::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: white;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .section-content {
-            padding: 10px;
-            background-color: #fafafa;
-        }
-        
-        /* TABLA DE EQUIPOS */
-        .equipment-table {
+
+        .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
+            margin-top: 4px;
         }
-        
-        .equipment-table th {
-            background-color: #0066cc;
-            color: white;
-            padding: 6px;
-            text-align: left;
-            font-size: 9px;
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .table th {
             font-weight: bold;
-        }
-        
-        .equipment-table td {
-            padding: 6px;
-            border-bottom: 1px solid #ddd;
-            font-size: 9px;
-        }
-        
-        .equipment-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .equipment-table tr:hover {
-            background-color: #f0f5ff;
-        }
-        
-        /* TEXTO LARGO */
-        .long-text {
-            background-color: white;
-            border: 1px solid #e0e0e0;
-            padding: 8px;
-            border-radius: 3px;
-            font-size: 9px;
-            line-height: 1.6;
-            text-align: justify;
-        }
-        
-        /* FIRMA */
-        .signature-box {
             text-align: center;
-            border: 1px solid #ddd;
-            padding: 20px 10px;
-            background-color: #fff;
-            margin: 10px 0;
+            background: #f2f2f2;
         }
-        
-        .signature-image {
-            max-height: 80px;
-            margin: 10px 0;
-        }
-        
-        .signature-line {
-            border-top: 1px solid #333;
-            margin-top: 5px;
-            padding-top: 5px;
+
+        .label {
             font-weight: bold;
-            font-size: 9px;
-        }
-        
-        /* IMAGEN GALERÍA */
-        .image-gallery {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        
-        .image-item {
-            display: table-cell;
-            width: 33.33%;
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ddd;
-        }
-        
-        .image-item img {
-            max-width: 100%;
-            max-height: 100px;
-        }
-        
-        /* PIE DE PÁGINA */
-        .footer {
-            margin-top: 20px;
-            border-top: 2px solid #0066cc;
-            padding-top: 10px;
-            font-size: 8px;
-            text-align: center;
-            color: #666;
-        }
-        
-        .footer-info {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-        
-        .footer-cell {
-            display: table-cell;
-            width: 33.33%;
-            padding: 5px;
-            text-align: center;
-            border-right: 1px solid #ddd;
             font-size: 8px;
         }
-        
-        .footer-cell:last-child {
-            border-right: none;
+
+        .value {
+            font-size: 9px;
         }
-        
-        /* UTILIDADES */
-        .text-center {
+
+        .section-title {
+            font-weight: bold;
             text-align: center;
+            border: 1px solid #000;
+            padding: 3px 4px;
+            margin-top: 4px;
+            background: #f2f2f2;
         }
-        
-        .text-right {
-            text-align: right;
+
+        .box {
+            border: 1px solid #000;
+            padding: 4px;
+            min-height: 26px;
+            margin-bottom: 4px;
         }
-        
-        .bold {
-            font-weight: bold;
+
+        .box.small {
+            min-height: 20px;
         }
-        
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 8px;
-            margin: 2px;
-        }
-        
-        .badge-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .badge-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .badge-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .badge-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        /* DOS COLUMNAS */
-        .two-column {
+
+        .grid-2 {
             display: table;
             width: 100%;
             border-collapse: collapse;
         }
-        
-        .column {
+
+        .grid-2 .cell {
             display: table-cell;
             width: 50%;
             vertical-align: top;
-            padding-right: 10px;
         }
-        
-        .column:last-child {
-            padding-right: 0;
+
+        .grid-2 .cell + .cell {
+            border-left: 1px solid #000;
         }
-        
-        .field-group {
-            margin-bottom: 8px;
+
+        .radio {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #000;
+            margin-right: 3px;
+            vertical-align: middle;
         }
-        
-        .field-label {
-            font-weight: bold;
-            color: #0066cc;
-            font-size: 9px;
+
+        .radio.checked {
+            background: #000;
         }
-        
-        .field-value {
+
+        .checkbox {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border: 1px solid #000;
+            margin-right: 3px;
+            vertical-align: middle;
+        }
+
+        .checkbox.checked {
+            background: #000;
+        }
+
+        .signature {
+            border-top: 1px solid #000;
+            margin-top: 18px;
+            text-align: center;
+            padding-top: 2px;
+        }
+
+        .signature img {
+            max-height: 60px;
+            display: block;
+            margin: 6px auto 0;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 8px;
+            margin-top: 6px;
+        }
+
+        .muted {
             color: #333;
-            font-size: 9px;
         }
-        
-        /* PÁGINA 2 */
-        .page2 {
-            border-top: 2px solid #0066cc;
-            padding-top: 20px;
+
+        .nowrap {
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <!-- PÁGINA 1 -->
     <div class="page">
-        <!-- ENCABEZADO -->
         <div class="header">
-            <div class="header-left">
-                <div class="company-logo">CEOGestión</div>
-                <div class="company-tagline">Gestión Profesional de Servicios TI</div>
-            </div>
-            <div class="header-right">
-                <div class="report-title">INFORME SERVICIO TÉCNICO</div>
-                <div class="report-number">No. {{ $servicio->id }}</div>
-            </div>
-        </div>
-
-        <!-- INFO GENERAL EN 4 COLUMNAS -->
-        <div class="info-grid">
-            <div class="info-row header">
-                <div class="info-cell" style="width: 25%; border-right: 1px solid #fff;">Fecha Solicitud</div>
-                <div class="info-cell" style="width: 25%; border-right: 1px solid #fff;">Fecha Atención</div>
-                <div class="info-cell" style="width: 25%; border-right: 1px solid #fff;">Contrato</div>
-                <div class="info-cell" style="width: 25%;">Estado</div>
-            </div>
-            <div class="info-row">
-                <div class="info-cell" style="width: 25%;">{{ $servicio->fecha_solicitud->format('d/m/Y') }}</div>
-                <div class="info-cell" style="width: 25%;">{{ $servicio->fecha_atencion?->format('d/m/Y') ?? 'N/A' }}</div>
-                <div class="info-cell" style="width: 25%;">{{ $servicio->contrato->codigo ?? 'N/A' }}</div>
-                <div class="info-cell" style="width: 25%;">
-                    @if($servicio->estadoServicio)
-                        <span class="badge badge-info">{{ $servicio->estadoServicio->nombre }}</span>
-                    @else
-                        <span>{{ $servicio->estado }}</span>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- INFORMACIÓN DEL CLIENTE -->
-        <div class="section">
-            <div class="section-header">👥 INFORMACIÓN DEL CLIENTE</div>
-            <div class="section-content">
-                <div class="two-column">
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Razón Social:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->sede->cliente->razon_social }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">NIT:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->sede->cliente->nit }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Dirección:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->sede->direccion }}</div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Ciudad:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->sede->ciudad }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Sede:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->sede->nombre }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Área:</div>
-                            <div class="field-value">{{ $servicio->equipo->area->nombre }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- INFORMACIÓN DEL EQUIPO -->
-        <div class="section">
-            <div class="section-header">🖥️ EQUIPO ATENDIDO</div>
-            <div class="section-content">
-                <div class="two-column">
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Código:</div>
-                            <div class="field-value">{{ $servicio->equipo->codigo_interno }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Descripción:</div>
-                            <div class="field-value">{{ $servicio->equipo->descripcion }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Modelo:</div>
-                            <div class="field-value">{{ $servicio->equipo->modelo ?? 'N/A' }}</div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Marca:</div>
-                            <div class="field-value">{{ $servicio->equipo->marca ?? 'N/A' }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Serie:</div>
-                            <div class="field-value">{{ $servicio->equipo->serie ?? 'N/A' }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Tipo de Servicio:</div>
-                            <div class="field-value">
-                                @switch($servicio->tipo_servicio_informe)
-                                    @case('INSTALACION')
-                                        <span class="badge badge-success">Instalación</span>
-                                    @break
-                                    @case('MANTENIMIENTO_PREVENTIVO')
-                                        <span class="badge badge-info">Mtto. Preventivo</span>
-                                    @break
-                                    @case('MANTENIMIENTO_CORRECTIVO')
-                                        <span class="badge badge-warning">Mtto. Correctivo</span>
-                                    @break
-                                    @case('SOPORTE')
-                                        <span class="badge badge-danger">Soporte</span>
-                                    @break
-                                @endswitch
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DESCRIPCIÓN DEL SERVICIO SOLICITADO -->
-        <div class="section">
-            <div class="section-header">📋 DESCRIPCIÓN DEL SERVICIO SOLICITADO</div>
-            <div class="section-content">
-                <div class="long-text">
-                    {{ $servicio->descripcion_problema ?? 'No especificado' }}
-                </div>
-            </div>
-        </div>
-
-        <!-- DIAGNÓSTICO -->
-        <div class="section">
-            <div class="section-header">🔍 DIAGNÓSTICO / VALIDACIÓN</div>
-            <div class="section-content">
-                <div class="long-text">
-                    {{ $servicio->diagnostico ?? 'Pendiente' }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PÁGINA 2 -->
-    <div class="page page2">
-        <!-- DESCRIPCIÓN DEL SERVICIO PRESTADO -->
-        <div class="section">
-            <div class="section-header">✅ DESCRIPCIÓN DEL SERVICIO PRESTADO</div>
-            <div class="section-content">
-                <div class="long-text">
-                    {{ $servicio->descripcion_atencion ?? 'Pendiente' }}
-                </div>
-            </div>
-        </div>
-
-        <!-- DURACIÓN Y HORAS -->
-        @if($servicio->hora_inicio_atencion && $servicio->hora_fin_atencion)
-        <div class="section">
-            <div class="section-header">⏱️ TIEMPO INVERTIDO</div>
-            <div class="section-content">
-                <div class="two-column">
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Hora Inicio:</div>
-                            <div class="field-value">{{ \Carbon\Carbon::parse($servicio->hora_inicio_atencion)->format('H:i') }}</div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Hora Fin:</div>
-                            <div class="field-value">{{ \Carbon\Carbon::parse($servicio->hora_fin_atencion)->format('H:i') }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-                    <div class="field-group">
-                        <div class="field-label">Duración Total:</div>
-                        <div class="field-value bold">
-                            {{ \Carbon\Carbon::createFromFormat('H:i:s', $servicio->hora_inicio_atencion)->diff(\Carbon\Carbon::createFromFormat('H:i:s', $servicio->hora_fin_atencion))->format('%H:%I horas') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <!-- IMÁGENES -->
-        @if(!empty($imagenesBase64) && count($imagenesBase64) > 0)
-        <div class="section">
-            <div class="section-header">📸 IMÁGENES DEL SERVICIO</div>
-            <div class="section-content">
-                <div class="image-gallery">
-                    @foreach($imagenesBase64 as $imagen)
-                        <div class="image-item">
-                            <img src="{{ $imagen }}" alt="Imagen del servicio">
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <!-- FIRMA DEL RECEPTOR -->
-        <div class="section">
-            <div class="section-header">✍️ FIRMA DEL RECEPTOR</div>
-            <div class="section-content">
-                <div class="two-column">
-                    <div class="column">
-                        <div class="signature-box">
-                            @if($firmaBase64)
-                                <img src="{{ $firmaBase64 }}" alt="Firma" class="signature-image">
-                            @else
-                                <p style="color: #999; font-style: italic;">Sin firma registrada</p>
-                            @endif
-                            <div class="signature-line">
-                                {{ $servicio->persona_receptora_nombre }} {{ $servicio->persona_receptora_apellido }}
-                            </div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">
-                                Cédula: {{ $servicio->persona_receptora_documento }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="signature-box">
-                            @if($servicio->tecnicoResponsable)
-                                <div style="height: 80px;"></div>
-                            @endif
-                            <div class="signature-line">
-                                {{ $servicio->tecnicoResponsable->name ?? 'Técnico' }}
-                            </div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">
-                                @if($servicio->tecnicoResponsable)
-                                    {{ $servicio->tecnicoResponsable->email }}
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- INFORMACIÓN DEL TÉCNICO -->
-        <div class="section">
-            <div class="section-header">👨‍🔧 DATOS DEL TÉCNICO RESPONSABLE</div>
-            <div class="section-content">
-                @if($servicio->tecnicoResponsable)
-                <div class="two-column">
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Nombre:</div>
-                            <div class="field-value">{{ $servicio->tecnicoResponsable->name }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Email:</div>
-                            <div class="field-value">{{ $servicio->tecnicoResponsable->email }}</div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field-group">
-                            <div class="field-label">Teléfono:</div>
-                            <div class="field-value">{{ $servicio->tecnicoResponsable->telefono ?? 'N/A' }}</div>
-                        </div>
-                        <div class="field-group">
-                            <div class="field-label">Cédula:</div>
-                            <div class="field-value">{{ $servicio->tecnicoResponsable->cedula ?? 'N/A' }}</div>
-                        </div>
-                    </div>
-                </div>
-                @else
-                    <p style="color: #999; font-style: italic;">Sin técnico asignado</p>
+            <div class="cell left">
+                @if(!empty($empresaLogoBase64))
+                    <img src="{{ $empresaLogoBase64 }}" alt="Logo" class="logo">
+                @elseif(!empty($empresaLogoPath) && file_exists($empresaLogoPath))
+                    <img src="{{ $empresaLogoPath }}" alt="Logo" class="logo">
                 @endif
             </div>
+            <div class="cell center">
+                <div class="title">INFORME TECNICO</div>
+            </div>
+            <div class="cell right">
+                <div><span class="label">No. Informe</span></div>
+                <div class="value">{{ $servicio->id }}</div>
+            </div>
         </div>
 
-        <!-- PIE DE PÁGINA -->
+        <table class="table">
+            <tr>
+                <td style="width: 18%"><span class="label">FECHA REPORTE INCIDENCIA</span></td>
+                <td style="width: 17%" class="value">{{ $servicio->fecha_solicitud->format('d/m/Y') }}</td>
+                <td style="width: 18%"><span class="label">FECHA ATENCION (INFORME)</span></td>
+                <td style="width: 17%" class="value">{{ $servicio->fecha_atencion?->format('d/m/Y') ?? 'N/A' }}</td>
+                <td style="width: 15%"><span class="label">HORA INICIO</span></td>
+                <td style="width: 15%" class="value">{{ $servicio->hora_inicio_atencion ? \Carbon\Carbon::parse($servicio->hora_inicio_atencion)->format('H:i') : 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><span class="label">HORA FIN</span></td>
+                <td class="value">{{ $servicio->hora_fin_atencion ? \Carbon\Carbon::parse($servicio->hora_fin_atencion)->format('H:i') : 'N/A' }}</td>
+                <td><span class="label">DURACION SERVICIO</span></td>
+                <td class="value" colspan="3">
+                    @if($servicio->hora_inicio_atencion && $servicio->hora_fin_atencion)
+                        {{ \Carbon\Carbon::parse($servicio->hora_inicio_atencion)
+                            ->diff(\Carbon\Carbon::parse($servicio->hora_fin_atencion))
+                            ->format('%H:%I') }}
+                    @else
+                        N/A
+                    @endif
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">DATOS DEL CLIENTE</div>
+        <table class="table">
+            <tr>
+                <td style="width: 16%"><span class="label">IDENTIFICACION</span></td>
+                <td style="width: 20%" class="value">{{ $servicio->equipo->area->sede->cliente->documento_formateado ?? $servicio->equipo->area->sede->cliente->documento ?? 'N/A' }}</td>
+                <td style="width: 12%"><span class="label">NOMBRE</span></td>
+                <td style="width: 22%" class="value">{{ $servicio->equipo->area->sede->cliente->razon_social }}</td>
+                <td style="width: 12%"><span class="label">SEDE</span></td>
+                <td style="width: 18%" class="value">{{ $servicio->equipo->area->sede->nombre }}</td>
+            </tr>
+            <tr>
+                <td><span class="label">DIRECCION</span></td>
+                <td class="value" colspan="5">
+                    @php
+                        $sede = $servicio->equipo->area->sede ?? null;
+                        $departamento = $sede?->municipio?->departamento?->nombre;
+                        $municipio = $sede?->municipio?->nombre;
+                        $barrio = $sede?->barrio?->nombre;
+                        $direccion = $sede?->direccion;
+                        $direccionPartes = array_filter([$departamento, $municipio, $barrio, $direccion]);
+                    @endphp
+                    {{ !empty($direccionPartes) ? implode(', ', $direccionPartes) : 'N/A' }}
+                </td>
+            </tr>
+            <tr>
+                <td><span class="label">TELEFONO</span></td>
+                <td class="value">{{ $servicio->equipo->area->sede->telefono ?? 'N/A' }}</td>
+                <td><span class="label">CODIGO CONTRATO</span></td>
+                <td class="value" colspan="3">{{ $servicio->contrato ? ($servicio->contrato->numero_contrato ?? $servicio->contrato->codigo ?? 'N/A') : 'SIN CONTRATO' }}</td>
+            </tr>
+        </table>
+
+        <table class="table">
+            <tr>
+                <th style="width: 25%">INSTALACION</th>
+                <th style="width: 25%">MANTENIMIENTO PREVENTIVO</th>
+                <th style="width: 25%">SOPORTE</th>
+                <th style="width: 25%">MANTENIMIENTO CORRECTIVO</th>
+            </tr>
+            <tr>
+                <td class="value">
+                    <span class="label">FACTURAR</span>
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'INSTALACION' ? 'checked' : '' }}"></span> SI
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'INSTALACION' ? '' : 'checked' }}"></span> NO
+                </td>
+                <td class="value">
+                    <span class="label">FACTURAR</span>
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'MANTENIMIENTO_PREVENTIVO' ? 'checked' : '' }}"></span> SI
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'MANTENIMIENTO_PREVENTIVO' ? '' : 'checked' }}"></span> NO
+                </td>
+                <td class="value">
+                    <span class="label">FACTURAR</span>
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'SOPORTE' ? 'checked' : '' }}"></span> SI
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'SOPORTE' ? '' : 'checked' }}"></span> NO
+                </td>
+                <td class="value">
+                    <span class="label">FACTURAR</span>
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'MANTENIMIENTO_CORRECTIVO' ? 'checked' : '' }}"></span> SI
+                    <span class="checkbox {{ $servicio->tipo_servicio_informe === 'MANTENIMIENTO_CORRECTIVO' ? '' : 'checked' }}"></span> NO
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">EQUIPOS ATENDIDOS</div>
+        <table class="table">
+            <tr>
+                <th style="width: 14%">CODIGO EQUIPO</th>
+                <th style="width: 24%">DESCRIPCION</th>
+                <th style="width: 14%">MODELO</th>
+                <th style="width: 16%">MARCA</th>
+                <th style="width: 14%">SERIE</th>
+                <th style="width: 18%">CONTRATO</th>
+            </tr>
+            @forelse(($equiposAtendidos ?? collect()) as $equipoAtendido)
+                <tr>
+                    <td class="value">{{ $equipoAtendido->codigo_activo_cliente ?? ('EQ-' . $equipoAtendido->id) }}</td>
+                    <td class="value">{{ $equipoAtendido->descripcion ?? 'N/A' }}</td>
+                    <td class="value">{{ $equipoAtendido->modelo ?? 'N/A' }}</td>
+                    <td class="value">{{ $equipoAtendido->marca->nombre ?? 'N/A' }}</td>
+                    <td class="value">{{ $equipoAtendido->serial ?? 'N/A' }}</td>
+                    <td class="value">{{ $equipoAtendido->contrato->numero_contrato ?? 'Sin contrato' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td class="value" colspan="6">No se registraron equipos atendidos.</td>
+                </tr>
+            @endforelse
+        </table>
+
+        <div class="section-title">DESCRIPCION DEL SERVICIO SOLICITADO</div>
+        <div class="box">{{ $servicio->descripcion_solicitud ?? $servicio->descripcion_problema ?? 'N/A' }}</div>
+
+        <div class="section-title">DIAGNOSTICO / VALIDACION DEL SERVICIO SOLICITADO</div>
+        <div class="box">{{ $servicio->diagnostico_validacion ?? $servicio->diagnostico ?? 'N/A' }}</div>
+
+        <div class="section-title">LABOR REALIZADA</div>
+        <div class="box">{{ $servicio->descripcion_atencion ?? 'N/A' }}</div>
+
+        <div class="section-title">OBSERVACIONES DEL INFORME</div>
+        <div class="box small">{{ $servicio->observaciones_informe ?? '' }}</div>
+
+        <table class="table">
+            <tr>
+                <td style="width: 25%"><span class="label">FUNCIONALIDAD APROBADA</span></td>
+                <td style="width: 25%" class="value">
+                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> SI
+                </td>
+                <td style="width: 25%" class="value">
+                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 1 && ($servicio->calificacion_cliente ?? 0) < 4 ? 'checked' : '' }}"></span> NO
+                </td>
+                <td style="width: 25%" class="value">
+                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) === 0 ? 'checked' : '' }}"></span> N/A
+                </td>
+            </tr>
+        </table>
+
+        <table class="table">
+            <tr>
+                <th colspan="6">COMPLEMENTOS / REPUESTOS</th>
+                <th colspan="4">FACTURAR</th>
+            </tr>
+            <tr>
+                <th style="width: 10%">CODIGO</th>
+                <th style="width: 28%">DESCRIPCION</th>
+                <th style="width: 12%">SERIE</th>
+                <th style="width: 10%">CANTIDAD</th>
+                <th style="width: 10%">CODIGO</th>
+                <th style="width: 20%">DESCRIPCION</th>
+                <th style="width: 5%">SI</th>
+                <th style="width: 5%">NO</th>
+                <th style="width: 5%">SERIE</th>
+                <th style="width: 5%">CANTIDAD</th>
+            </tr>
+            @php
+                $repuestos = is_array($servicio->repuestos_utilizados ?? null) ? $servicio->repuestos_utilizados : [];
+                $maxRows = 4;
+            @endphp
+            @for($i = 0; $i < $maxRows; $i++)
+                @php
+                    $row = $repuestos[$i] ?? null;
+                @endphp
+                <tr>
+                    <td class="value">{{ $row['codigo'] ?? '' }}</td>
+                    <td class="value">{{ $row['descripcion'] ?? '' }}</td>
+                    <td class="value">{{ $row['serie'] ?? '' }}</td>
+                    <td class="value">{{ $row['cantidad'] ?? '' }}</td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                </tr>
+            @endfor
+        </table>
+
+        <div class="section-title">ESPACIO PARA USO EXCLUSIVO DEL CLIENTE</div>
+        <table class="table">
+            <tr>
+                <td style="width: 60%">
+                    <span class="label">CONSIDERA UD QUE ESTE SERVICIO TECNICO FUE CERRADO SATISFACTORIAMENTE?</span>
+                    <div style="margin-top: 6px;">
+                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> SI
+                        <span style="margin-left: 16px;"></span>
+                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) > 0 && ($servicio->calificacion_cliente ?? 0) < 4 ? 'checked' : '' }}"></span> NO
+                        <span style="font-size: 8px; margin-left: 6px;">(Amplie la respuesta en comentarios y/o sugerencias)</span>
+                    </div>
+                </td>
+                <td style="width: 40%">
+                    <span class="label">CALIFIQUE EL SERVICIO PRESTADO</span>
+                    <div style="margin-top: 6px;">
+                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> BUENO
+                        <span style="margin-left: 10px;"></span>
+                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) === 3 ? 'checked' : '' }}"></span> REGULAR
+                        <span style="margin-left: 10px;"></span>
+                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) > 0 && ($servicio->calificacion_cliente ?? 0) <= 2 ? 'checked' : '' }}"></span> MALO
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="label">COMENTARIOS Y/O SUGERENCIAS:</span>
+                    <div class="box small">{{ $servicio->comentarios_cliente ?? '' }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="table">
+            <tr>
+                <td style="width: 40%">
+                    <span class="label">RECIBE CLIENTE A SATISFACCION</span>
+                    <div style="margin-top: 4px;">
+                        <span class="label">NOMBRE</span> <span class="value">{{ $servicio->persona_receptora_nombre }} {{ $servicio->persona_receptora_apellido }}</span><br>
+                        <span class="label">CARGO</span> <span class="value">N/A</span><br>
+                        <span class="label">FECHA</span> <span class="value">{{ $servicio->fecha_atencion?->format('d/m/Y') ?? 'N/A' }}</span>
+                    </div>
+                </td>
+                <td style="width: 30%">
+                    <span class="label">ENTREGA</span>
+                    <div class="signature">
+                        @if($firmaBase64)
+                            <img src="{{ $firmaBase64 }}" alt="Firma receptor">
+                        @endif
+                        {{ $servicio->persona_receptora_documento ?? 'N/A' }}
+                    </div>
+                </td>
+                <td style="width: 30%">
+                    <span class="label">TECNICO RESPONSABLE</span>
+                    <div class="signature">
+                        <div>{{ $servicio->tecnicoResponsable->name ?? 'Tecnico' }}</div>
+                        <div class="muted">{{ $servicio->tecnicoResponsable->email ?? '' }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
         <div class="footer">
-            <div style="margin-bottom: 5px;">
-                <strong>Informe generado el {{ now()->format('d/m/Y') }} a las {{ now()->format('H:i:s') }}</strong>
-            </div>
-            <div class="footer-info">
-                <div class="footer-cell">
-                    <strong>CEOGestión</strong><br>
-                    Gestión Profesional de Servicios TI
-                </div>
-                <div class="footer-cell">
-                    <strong>Servicio #{{ $servicio->id }}</strong><br>
-                    {{ $servicio->estadoServicio->nombre ?? $servicio->estado }}
-                </div>
-                <div class="footer-cell">
-                    <strong>Cliente:</strong><br>
-                    {{ $servicio->equipo->area->sede->cliente->razon_social }}
-                </div>
-            </div>
+            Derechos reservados a CEO GESTION 2026 Ver 1
         </div>
     </div>
 </body>
