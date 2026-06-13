@@ -15,13 +15,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property int $area_id Área donde se encuentra
  * @property int $tipo_equipo_id Tipo de equipo
- * @property int|null $marca_id Marca/Fabricante
  * @property int|null $cliente_id Cliente propietario
- * @property int|null $sede_id Sede donde se ubica
  * @property int|null $contrato_id Contrato de servicios asociado
- * @property string $codigo_activo_cliente Código de activo del cliente
+ * @property string $codigo_interno Código único interno
+ * @property string|null $marca Marca
  * @property string|null $modelo Modelo
- * @property string|null $serial Número de serie (único)
+ * @property string|null $serial Número de serie
  * @property \Illuminate\Support\Carbon|null $fecha_compra Fecha de compra
  * @property \Illuminate\Support\Carbon|null $fecha_instalacion Instalación
  * @property \Illuminate\Support\Carbon|null $fecha_garantia Vencimiento de garantía
@@ -50,8 +49,8 @@ class Equipo extends Model
         'sede_id',
         'area_id',
         'tipo_equipo_id',
-        'marca_id',
-        'codigo_activo_cliente',
+        'codigo_interno',
+        'marca',
         'modelo',
         'serial',
         'fecha_compra',
@@ -65,12 +64,11 @@ class Equipo extends Model
         'usuario_asignado',
         'descripcion',
         'observaciones',
-        'mantenimientos_anuales',
-        'calibraciones_anuales',
-        'fecha_ultimo_mantenimiento',
-        'fecha_ultima_calibracion',
-        'proxima_fecha_mantenimiento',
-        'proxima_fecha_calibracion',
+        'mantenimientos_por_ano',
+        'calibraciones_por_ano',
+        'ultimo_mantenimiento_at',
+        'ultimo_calibracion_at',
+        'proximo_mantenimiento_at',
     ];
 
     /**
@@ -82,10 +80,9 @@ class Equipo extends Model
         'fecha_garantia' => 'date',
         'valor_compra' => 'float',
         'especificaciones_tecnicas' => 'array',
-        'fecha_ultimo_mantenimiento' => 'date',
-        'fecha_ultima_calibracion' => 'date',
-        'proxima_fecha_mantenimiento' => 'date',
-        'proxima_fecha_calibracion' => 'date',
+        'ultimo_mantenimiento_at' => 'datetime',
+        'ultimo_calibracion_at' => 'datetime',
+        'proximo_mantenimiento_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -137,14 +134,6 @@ class Equipo extends Model
     }
 
     /**
-     * Marca del equipo
-     */
-    public function marca()
-    {
-        return $this->belongsTo(Marca::class, 'marca_id');
-    }
-
-    /**
      * Servicios asociados
      */
     public function servicios()
@@ -158,22 +147,6 @@ class Equipo extends Model
     public function mantenimientosProgramados()
     {
         return $this->hasMany(MantenimientoProgramado::class, 'equipo_id');
-    }
-
-    /**
-     * Documentos del equipo
-     */
-    public function documentos()
-    {
-        return $this->hasMany(EquipoDocumento::class, 'equipo_id');
-    }
-
-    /**
-     * Mantenimientos y calibraciones programadas
-     */
-    public function mantenimientosCalibraciónes()
-    {
-        return $this->hasMany(MantenimientoCalibración::class, 'equipo_id');
     }
 
     /**

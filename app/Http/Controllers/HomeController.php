@@ -51,7 +51,6 @@ class HomeController extends Controller
             'incidencias_por_mes' => [],
             'incidencias_por_estado' => [],
             'incidencias_por_año' => [],
-            'servicios_completados' => 0,
         ];
         
         if ($empresa) {
@@ -111,7 +110,6 @@ class HomeController extends Controller
                     return $items->count();
                 })
                 ->toArray();
-                $dashboard['servicios_completados'] = $servicios->where('estado', 'COMPLETADO')->count();
             }
         }
         
@@ -134,11 +132,9 @@ class HomeController extends Controller
             'servicios_en_proceso' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'EN_PROCESO')->count(),
             'servicios_resueltos' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'RESUELTO')->count(),
             'servicios_cerrados' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'CERRADO')->count(),
+            'servicios_completados' => Servicio::where('tecnico_id', $tecnico->id)->whereIn('estado', ['RESUELTO', 'CERRADO'])->count(),
             'servicios_pendientes_repuesto' => Servicio::where('tecnico_id', $tecnico->id)->where('estado', 'PENDIENTE_REPUESTO')->count(),
         ];
-
-        // Compatibilidad con la vista técnico-dashboard: "completados" = resueltos + cerrados.
-        $dashboard['servicios_completados'] = $dashboard['servicios_resueltos'] + $dashboard['servicios_cerrados'];
         
         // Solo traer servicios si hay datos (para gráficos y listados)
         $servicios = Servicio::where('tecnico_id', $tecnico->id)

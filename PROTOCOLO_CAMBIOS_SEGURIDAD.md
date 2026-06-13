@@ -9,11 +9,12 @@
 
 ### Antes de hacer cualquier cambio:
 
-1. **INVESTIGACIÓN**
-   - [ ] Revisar bitácora de errores (este archivo)
-   - [ ] Buscar en documentación existente
+1. **INVESTIGACIÓN** (OBLIGATORIO - no saltar este paso)
+   - [ ] **PRIMERO:** Buscar en la bitácora de errores (sección 2 de este archivo) por síntomas similares
+   - [ ] Si el error ya está documentado → replicar la solución implementada (NO reinventar)
+   - [ ] Si no está en bitácora → buscar en documentación existente
    - [ ] Identificar raíz del problema
-   - [ ] Revisar si ya fue corregido antes
+   - [ ] Revisar si ya fue corregido antes (puede ser regresión)
 
 2. **ANÁLISIS DE SEGURIDAD**
    - [ ] ¿Afecta rutas API?
@@ -514,6 +515,11 @@ ANTES DE PRODUCCIÓN:
 **Regla preventiva (obligatoria):**
 - Cuando una vista consume un array tipo `dashboard`, toda clave usada en Blade debe definirse explícitamente en el controlador, incluso en escenarios sin datos.
 - Antes de cerrar un cambio de dashboard, verificar contrato vista-controlador (keys esperadas vs keys retornadas).
+
+**REGRESIÓN detectada (13 Junio 2026):**
+- Este mismo error volvió a ocurrir porque la corrección previa se perdió (posible revert o migración parcial).
+- **Lección:** Cuando un error se repite, verificar en git si la corrección fue eliminada antes de asumir que es un bug nuevo.
+- Solución replicada del registro existente: `servicios_completados = whereIn(['RESUELTO', 'CERRADO'])`.
 
 ### ACTUALIZACIÓN: Equipos - Mantenimientos, Calibraciones y Documentos (27 Mayo 2026)
 

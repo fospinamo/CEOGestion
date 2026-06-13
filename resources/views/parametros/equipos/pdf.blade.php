@@ -178,10 +178,10 @@
             @forelse($equipos as $equipo)
                 <tr>
                     <td class="text-center">{{ $equipo->id }}</td>
-                    <td>{{ $equipo->codigo_activo_cliente }}</td>
-                    <td>{{ $equipo->marca?->nombre ?? 'N/A' }}</td>
+                    <td>{{ $equipo->codigo_interno }}</td>
+                    <td>{{ $equipo->marca }}</td>
                     <td>{{ $equipo->modelo }}</td>
-                    <td>{{ $equipo->serial }}</td>
+                    <td>{{ $equipo->serie }}</td>
                     <td class="text-center">
                         @if($equipo->estado_operativo === 'OPERATIVO')
                             <span class="badge badge-success">OPERATIVO</span>

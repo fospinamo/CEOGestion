@@ -13,50 +13,26 @@ return new class extends Migration
     {
         // Agregar campos de mantenimiento a tabla equipos
         Schema::table('equipos', function (Blueprint $table) {
-            // Renombrar campos existentes si es necesario
-            if (Schema::hasColumn('equipos', 'mantenimientos_por_ano')) {
-                $table->renameColumn('mantenimientos_por_ano', 'mantenimientos_anuales');
-            } else {
-                $table->unsignedTinyInteger('mantenimientos_anuales')->default(1)->after('contrato_id')
-                    ->comment('Cantidad de mantenimientos programados por año');
-            }
+            // Cantidad de mantenimientos y calibraciones por año
+            $table->unsignedTinyInteger('mantenimientos_por_ano')->default(0)->after('contrato_id')
+                ->comment('Cantidad de mantenimientos programados por año');
             
-            if (Schema::hasColumn('equipos', 'calibraciones_por_ano')) {
-                $table->renameColumn('calibraciones_por_ano', 'calibraciones_anuales');
-            } else {
-                $table->unsignedTinyInteger('calibraciones_anuales')->default(0)->after('mantenimientos_anuales')
-                    ->comment('Cantidad de calibraciones programadas por año');
-            }
+            $table->unsignedTinyInteger('calibraciones_por_ano')->default(0)->after('mantenimientos_por_ano')
+                ->comment('Cantidad de calibraciones programadas por año');
             
-            // Agregar nuevos campos de fechas si no existen
-            if (!Schema::hasColumn('equipos', 'fecha_ultimo_mantenimiento')) {
-                $table->date('fecha_ultimo_mantenimiento')->nullable()->after('calibraciones_anuales')
-                    ->comment('Fecha del último mantenimiento realizado');
-            }
+            // Fechas informativas de último mantenimiento
+            $table->timestamp('ultimo_mantenimiento_at')->nullable()->after('calibraciones_por_ano')
+                ->comment('Fecha del último mantenimiento realizado');
             
-            if (!Schema::hasColumn('equipos', 'fecha_ultima_calibracion')) {
-                $table->date('fecha_ultima_calibracion')->nullable()->after('fecha_ultimo_mantenimiento')
-                    ->comment('Fecha de la última calibración realizada');
-            }
+            $table->timestamp('ultimo_calibracion_at')->nullable()->after('ultimo_mantenimiento_at')
+                ->comment('Fecha de la última calibración realizada');
             
-            if (!Schema::hasColumn('equipos', 'proxima_fecha_mantenimiento')) {
-                $table->date('proxima_fecha_mantenimiento')->nullable()->after('fecha_ultima_calibracion')
-                    ->comment('Fecha del próximo mantenimiento programado (calculada)');
-            }
-            
-            if (!Schema::hasColumn('equipos', 'proxima_fecha_calibracion')) {
-                $table->date('proxima_fecha_calibracion')->nullable()->after('proxima_fecha_mantenimiento')
-                    ->comment('Fecha de la próxima calibración programada (calculada)');
-            }
+            $table->timestamp('proximo_mantenimiento_at')->nullable()->after('ultimo_calibracion_at')
+                ->comment('Fecha del próximo mantenimiento programado (calculada)');
             
             // Índices para búsquedas rápidas
-            if (!Schema::hasIndex('equipos', 'equipos_mantenimientos_anuales_index')) {
-                $table->index('mantenimientos_anuales');
-            }
-            
-            if (!Schema::hasIndex('equipos', 'equipos_proxima_fecha_mantenimiento_index')) {
-                $table->index('proxima_fecha_mantenimiento');
-            }
+            $table->index('mantenimientos_por_ano');
+            $table->index('proximo_mantenimiento_at');
         });
     }
 

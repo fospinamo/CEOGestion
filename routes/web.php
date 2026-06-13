@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ContratoController;
@@ -36,6 +37,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/register', function () {
     return view('auth.register');
 })->name('register')->middleware('guest');
+
+// =======================================
+// RECUPERACIÓN DE CONTRASEÑA
+// =======================================
+Route::get('/password/forgot', [PasswordRecoveryController::class, 'showForgotForm'])->name('password.forgot')->middleware('guest');
+Route::post('/password/send-link', [PasswordRecoveryController::class, 'sendResetLink'])->name('password.send-link')->middleware('guest');
+Route::get('/password/reset/{token}/{email}', [PasswordRecoveryController::class, 'showResetForm'])->name('password.reset.form')->middleware('guest');
+Route::post('/password/reset', [PasswordRecoveryController::class, 'resetPassword'])->name('password.reset')->middleware('guest');
 
 Route::post('/register', function (\Illuminate\Http\Request $request) {
     $data = $request->validate([

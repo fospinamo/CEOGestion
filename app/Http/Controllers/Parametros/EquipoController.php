@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Parametros;
 
 use App\Models\Equipo;
 use App\Models\Area;
-use App\Models\Marca;
 use App\Models\TipoEquipo;
-use App\Models\Contrato;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -62,7 +60,6 @@ class EquipoController extends Controller
             ->get();
 
         $tipos = TipoEquipo::orderBy('nombre')->get();
-        $marcas = Marca::where('estado', true)->orderBy('nombre')->get();
         
         $empresas = \App\Models\Empresa::where('estado', true)
             ->orderBy('nombre')
@@ -78,25 +75,23 @@ class EquipoController extends Controller
             ->get();
 
         // Cargar todos los contratos activos, agrupados por cliente
-        $contratos = Contrato::where('estado', 'ACTIVO')
+        $contratos = \App\Models\Contrato::where('estado', 'ACTIVO')
             ->orderBy('cliente_id')
             ->orderBy('numero_contrato')
             ->get();
 
-        return view('parametros.equipos.create', compact('equipo', 'areas', 'tipos', 'marcas', 'empresas', 'clientes', 'sedes', 'contratos'));
+        return view('parametros.equipos.create', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'cliente_id' => 'nullable|exists:clientes,id',
-            'sede_id' => 'nullable|exists:sedes,id',
             'area_id' => 'required|exists:areas,id',
             'tipo_equipo_id' => 'required|exists:tipos_equipos,id',
-            'marca_id' => 'required|exists:marcas,id',
             'contrato_id' => 'nullable|exists:contratos,id',
-            'codigo_activo_cliente' => 'required|string|unique:equipos,codigo_activo_cliente',
+            'codigo_interno' => 'required|string|unique:equipos,codigo_interno',
             'serial' => 'nullable|string|unique:equipos,serial',
+            'marca' => 'required|string|max:100',
             'modelo' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
             'especificaciones_tecnicas' => 'nullable|json',
@@ -109,12 +104,8 @@ class EquipoController extends Controller
             'mac_address' => 'nullable|string|max:17',
             'usuario_asignado' => 'nullable|string|max:255',
             'observaciones' => 'nullable|string',
-            'mantenimientos_anuales' => 'nullable|integer|min:0|max:12',
-            'calibraciones_anuales' => 'nullable|integer|min:0|max:12',
-            'fecha_ultimo_mantenimiento' => 'nullable|date',
-            'fecha_ultima_calibracion' => 'nullable|date',
-            'proxima_fecha_mantenimiento' => 'nullable|date',
-            'proxima_fecha_calibracion' => 'nullable|date',
+            'mantenimientos_por_ano' => 'nullable|integer|min:0|max:12',
+            'calibraciones_por_ano' => 'nullable|integer|min:0|max:12',
         ]);
 
         Equipo::create($validated);
@@ -132,85 +123,44 @@ class EquipoController extends Controller
 
     public function edit(Equipo $equipo): View
     {
-        $equipo->load('area.sede.cliente.empresa', 'contrato.cliente');
-
-        $currentAreaId = $equipo->area_id;
-        $currentSedeId = $equipo->sede_id ?? $equipo->area?->sede_id;
-        $currentClienteId = $equipo->cliente_id ?? $equipo->area?->sede?->cliente_id;
-        $currentEmpresaId = $equipo->area?->sede?->empresa_id;
-        $currentContratoId = $equipo->contrato_id;
-
         $areas = Area::with('sede.cliente.empresa')
-            ->where(function ($q) use ($currentAreaId) {
-                $q->where('estado', true);
-
-                if ($currentAreaId) {
-                    $q->orWhere('id', $currentAreaId);
-                }
-            })
+            ->where('estado', true)
             ->orderBy('nombre')
             ->get();
 
         $tipos = TipoEquipo::orderBy('nombre')->get();
-        $marcas = Marca::where('estado', true)->orderBy('nombre')->get();
         
-        $empresas = \App\Models\Empresa::where(function ($q) use ($currentEmpresaId) {
-                $q->where('estado', true);
-
-                if ($currentEmpresaId) {
-                    $q->orWhere('id', $currentEmpresaId);
-                }
-            })
+        $empresas = \App\Models\Empresa::where('estado', true)
             ->orderBy('nombre')
             ->get();
         
-        $clientes = \App\Models\Cliente::where(function ($q) use ($currentClienteId) {
-                $q->where('estado', true);
-
-                if ($currentClienteId) {
-                    $q->orWhere('id', $currentClienteId);
-                }
-            })
+        $clientes = \App\Models\Cliente::where('estado', true)
             ->orderBy('razon_social')
             ->get();
         
         $sedes = \App\Models\Sede::with('cliente.empresa')
-            ->where(function ($q) use ($currentSedeId) {
-                $q->where('estado', true);
-
-                if ($currentSedeId) {
-                    $q->orWhere('id', $currentSedeId);
-                }
-            })
+            ->where('estado', true)
             ->orderBy('nombre')
             ->get();
 
-        // Cargar contratos activos + el contrato ya asociado al equipo (si existe)
-        $contratos = Contrato::where(function ($q) use ($currentContratoId) {
-                $q->where('estado', 'ACTIVO');
-
-                if ($currentContratoId) {
-                    $q->orWhere('id', $currentContratoId);
-                }
-            })
+        // Cargar todos los contratos activos, agrupados por cliente
+        $contratos = \App\Models\Contrato::where('estado', 'ACTIVO')
             ->orderBy('cliente_id')
             ->orderBy('numero_contrato')
             ->get();
 
-        return view('parametros.equipos.edit', compact('equipo', 'areas', 'tipos', 'marcas', 'empresas', 'clientes', 'sedes', 'contratos'));
+        return view('parametros.equipos.edit', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos'));
     }
 
     public function update(Request $request, Equipo $equipo): RedirectResponse
     {
         $validated = $request->validate([
-            'cliente_id' => 'nullable|exists:clientes,id',
-            'sede_id' => 'nullable|exists:sedes,id',
             'area_id' => 'required|exists:areas,id',
             'tipo_equipo_id' => 'required|exists:tipos_equipos,id',
-            'marca_id' => 'required|exists:marcas,id',
             'contrato_id' => 'nullable|exists:contratos,id',
-            'codigo_activo_cliente' => 'required|string|unique:equipos,codigo_activo_cliente,' . $equipo->id,
+            'codigo_interno' => 'required|string|unique:equipos,codigo_interno,' . $equipo->id,
             'serial' => 'nullable|string|unique:equipos,serial,' . $equipo->id,
+            'marca' => 'required|string|max:100',
             'modelo' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
             'especificaciones_tecnicas' => 'nullable|json',
@@ -223,12 +173,8 @@ class EquipoController extends Controller
             'mac_address' => 'nullable|string|max:17',
             'usuario_asignado' => 'nullable|string|max:255',
             'observaciones' => 'nullable|string',
-            'mantenimientos_anuales' => 'nullable|integer|min:0|max:12',
-            'calibraciones_anuales' => 'nullable|integer|min:0|max:12',
-            'fecha_ultimo_mantenimiento' => 'nullable|date',
-            'fecha_ultima_calibracion' => 'nullable|date',
-            'proxima_fecha_mantenimiento' => 'nullable|date',
-            'proxima_fecha_calibracion' => 'nullable|date',
+            'mantenimientos_por_ano' => 'nullable|integer|min:0|max:12',
+            'calibraciones_por_ano' => 'nullable|integer|min:0|max:12',
         ]);
 
         $equipo->update($validated);

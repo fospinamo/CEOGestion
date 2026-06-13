@@ -1,16 +1,16 @@
 @extends('layouts.app')
-@section('title', 'Equipo - ' . $equipo->codigo_activo_cliente)
+@section('title', 'Equipo - ' . $equipo->codigo_interno)
 @section('page-title', 'Detalle de Equipo')
-@section('page-description', ($equipo->marca?->nombre ?? 'N/A') . ' ' . $equipo->modelo)
+@section('page-description', $equipo->marca . ' ' . $equipo->modelo)
 @section('content')
 <div class="grid grid-cols-3 gap-6">
     <div class="col-span-2 space-y-6">
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Información General</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
-                <div><span class="text-gray-600">Código Activo:</span> <p class="font-semibold">{{ $equipo->codigo_activo_cliente }}</p></div>
+                <div><span class="text-gray-600">Código:</span> <p class="font-semibold">{{ $equipo->codigo_interno }}</p></div>
                 <div><span class="text-gray-600">Serial:</span> <p class="font-semibold">{{ $equipo->serial }}</p></div>
-                <div><span class="text-gray-600">Marca:</span> <p class="font-semibold">{{ $equipo->marca?->nombre ?? 'N/A' }}</p></div>
+                <div><span class="text-gray-600">Marca:</span> <p class="font-semibold">{{ $equipo->marca }}</p></div>
                 <div><span class="text-gray-600">Modelo:</span> <p class="font-semibold">{{ $equipo->modelo }}</p></div>
                 <div><span class="text-gray-600">Tipo:</span> <p class="font-semibold">{{ $equipo->tipoEquipo->nombre }}</p></div>
                 <div><span class="text-gray-600">Estado:</span> <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $equipo->estado_operativo }}</span></div>
@@ -97,12 +97,6 @@
             <div class="space-y-2">
                 <a href="{{ route('parametros.equipos.edit', $equipo) }}" class="block px-4 py-2 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition text-center text-sm font-semibold">
                     <i class="fas fa-edit mr-2"></i> Editar
-                </a>
-                <a href="{{ route('parametros.equipos.documentos.index', $equipo->id) }}" class="block px-4 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition text-center text-sm font-semibold">
-                    📁 Documentos
-                </a>
-                <a href="{{ route('parametros.equipos.mantenimientos.index', $equipo->id) }}" class="block px-4 py-2 bg-purple-100 text-purple-800 rounded hover:bg-purple-200 transition text-center text-sm font-semibold">
-                    🔧 Mantenimientos
                 </a>
                 <form action="{{ route('parametros.equipos.destroy', $equipo) }}" method="POST" onsubmit="return confirm('¿Eliminar equipo?')">
                     @csrf @method('DELETE')

@@ -253,12 +253,6 @@
                             </span>
                         </div>
                     @endif
-                    
-                    <!-- Logo de CEO Gestion -->
-                    <div class="logo-container">
-                        <img src="{{ asset('images/playstore.png') }}" alt="Logo CEOGestion" class="logo-ceo" style="width: 60px; height: 60px;">
-                        <span style="font-size: 0.75rem; color: #666;">CEOGestion</span>
-                    </div>
                 </div>
                 
                 <h1 style="font-size: 1.875rem; font-weight: 700; color: #0D2A54; margin: 1rem 0 0 0;">CEOGestion</h1>
@@ -305,31 +299,14 @@
                 <button type="submit" class="submit-btn">
                     Ingresar
                 </button>
-            </form>
 
-            <!-- Divider -->
-            <div class="divider">
-                <div class="divider-line"></div>
-                <span class="divider-text">O</span>
-                <div class="divider-line"></div>
-            </div>
-
-            <!-- Demo Credentials -->
-            <div class="credentials-box">
-                <p><strong>Credenciales de Demostración:</strong></p>
-                <p>📧 Email: admin@ceogestion.com</p>
-                <p>🔐 Contraseña: password123</p>
-            </div>
-
-            <!-- Register Link -->
-            <div class="register-link">
-                <p>
-                    ¿No tienes cuenta? 
-                    <a href="{{ route('register', [], false) }}">
-                        Regístrate aquí
+                <!-- Forgot Password Link -->
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="{{ route('password.forgot') }}" style="color: #1A4B8E; font-size: 0.875rem; text-decoration: none; font-weight: 600;">
+                        ¿Olvidaste tu contraseña?
                     </a>
-                </p>
-            </div>
+                </div>
+            </form>
         </div>
         
         <!-- Footer -->
