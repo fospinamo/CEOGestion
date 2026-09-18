@@ -49,6 +49,7 @@ class Sede extends Model
         'codigo_postal',
         'telefono',
         'email',
+        'contacto',
         'estado'
     ];
 

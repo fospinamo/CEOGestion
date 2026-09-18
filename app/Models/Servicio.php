@@ -28,7 +28,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $repuestos_utilizados JSON de repuestos
  * @property float|null $horas_trabajadas Horas invertidas
  * @property string $tecnico_asignado Técnico
- * @property string|null $tecnico_cedula Cédula del técnico
  * @property string $estado Estado (PENDIENTE, EN_PROCESO, RESUELTO, CERRADO, CANCELADO)
  * @property int|null $calificacion_cliente Calificación 1-5
  * @property string|null $comentarios_cliente Feedback del cliente
@@ -60,6 +59,7 @@ class Servicio extends Model
         'descripcion_solicitud',
         'observaciones',
         'observaciones_informe',
+        'observaciones_asignacion',
         'diagnostico',
         'diagnostico_validacion',
         'pendientes',
@@ -67,7 +67,6 @@ class Servicio extends Model
         'repuestos_utilizados',
         'horas_trabajadas',
         'tecnico_asignado',
-        'tecnico_cedula',
         'estado',
         'calificacion_cliente',
         'comentarios_cliente',
@@ -77,7 +76,6 @@ class Servicio extends Model
         'sla_fecha_limite_solucion',
         'alerta_enviada_respuesta',
         'alerta_enviada_solucion',
-        'tecnico_asignado_id',
         'fecha_asignacion',
         'fecha_inicio_atencion',
         'fecha_resolucion',
@@ -148,17 +146,9 @@ class Servicio extends Model
     }
 
     /**
-     * Técnico asignado (relación antigua)
+     * Técnico responsable
      */
     public function tecnico()
-    {
-        return $this->belongsTo(User::class, 'tecnico_asignado_id');
-    }
-
-    /**
-     * Técnico responsable (nueva relación)
-     */
-    public function tecnicoResponsable()
     {
         return $this->belongsTo(User::class, 'tecnico_id');
     }
@@ -169,6 +159,14 @@ class Servicio extends Model
     public function estadoServicio()
     {
         return $this->belongsTo(EstadoServicio::class, 'estado_servicio_id');
+    }
+
+    /**
+     * Repuestos instalados en el servicio
+     */
+    public function repuestos()
+    {
+        return $this->hasMany(RepuestoServicio::class);
     }
 
     /**

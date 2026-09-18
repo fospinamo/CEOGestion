@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Administrativo;
 use App\Models\Pais;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * PaisController - Módulo Administrativo
@@ -13,11 +14,13 @@ use App\Http\Controllers\Controller;
  */
 class PaisController extends Controller
 {
+    use PermissionCheckTrait;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        $this->checkPermission('paises.ver');
         $paises = Pais::with('departamentos')->paginate(15);
         return view('administrativo.paises.index', compact('paises'));
     }
@@ -27,6 +30,7 @@ class PaisController extends Controller
      */
     public function create()
     {
+        $this->checkPermission('paises.crear');
         return view('administrativo.paises.create');
     }
 
@@ -35,6 +39,7 @@ class PaisController extends Controller
      */
     public function store(Request $request)
     {
+        $this->checkPermission('paises.crear');
         $validated = $request->validate([
             'codigo_dane' => 'required|unique:paises',
             'nombre' => 'required|string|max:100|unique:paises',
@@ -52,6 +57,7 @@ class PaisController extends Controller
      */
     public function show(Pais $paise)
     {
+        $this->checkPermission('paises.ver');
         $paise->load('departamentos');
         return view('administrativo.paises.show', compact('paise'));
     }
@@ -61,6 +67,7 @@ class PaisController extends Controller
      */
     public function edit(Pais $paise)
     {
+        $this->checkPermission('paises.editar');
         return view('administrativo.paises.edit', compact('paise'));
     }
 
@@ -69,6 +76,7 @@ class PaisController extends Controller
      */
     public function update(Request $request, Pais $paise)
     {
+        $this->checkPermission('paises.editar');
         $validated = $request->validate([
             'codigo_dane' => 'required|unique:paises,codigo_dane,' . $paise->id,
             'nombre' => 'required|string|max:100|unique:paises,nombre,' . $paise->id,
@@ -86,6 +94,7 @@ class PaisController extends Controller
      */
     public function destroy(Pais $paise)
     {
+        $this->checkPermission('paises.eliminar');
         if ($paise->departamentos()->count() > 0) {
             return redirect()
                 ->back()

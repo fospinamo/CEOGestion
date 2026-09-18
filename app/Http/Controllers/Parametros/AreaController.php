@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * AreaController - Módulo Parámetros
@@ -16,8 +17,12 @@ use App\Http\Controllers\Controller;
  */
 class AreaController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index(Request $request): View
     {
+        $this->checkPermission('areas.ver');
+
         $empresaId = $request->query('empresa_id');
         $clienteId = $request->query('cliente_id');
 
@@ -50,6 +55,8 @@ class AreaController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('areas.crear');
+
         $area = null;
         $sedes = Sede::with('cliente.empresa')
             ->where('estado', true)
@@ -69,6 +76,8 @@ class AreaController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('areas.crear');
+
         $validated = $request->validate([
             'sede_id' => 'required|exists:sedes,id',
             'nombre' => 'required|string|max:255',
@@ -87,6 +96,8 @@ class AreaController extends Controller
 
     public function show(Area $area): View
     {
+        $this->checkPermission('areas.ver');
+
         $area->load('sede.cliente.empresa', 'equipos');
 
         return view('parametros.areas.show', compact('area'));
@@ -94,6 +105,8 @@ class AreaController extends Controller
 
     public function edit(Area $area): View
     {
+        $this->checkPermission('areas.editar');
+
         $sedes = Sede::with('cliente.empresa')
             ->where('estado', true)
             ->orderBy('nombre')
@@ -112,6 +125,8 @@ class AreaController extends Controller
 
     public function update(Request $request, Area $area): RedirectResponse
     {
+        $this->checkPermission('areas.editar');
+
         $validated = $request->validate([
             'sede_id' => 'required|exists:sedes,id',
             'nombre' => 'required|string|max:255',
@@ -130,6 +145,8 @@ class AreaController extends Controller
 
     public function destroy(Area $area): RedirectResponse
     {
+        $this->checkPermission('areas.eliminar');
+
         $area->delete();
 
         return redirect()->route('parametros.areas.index')

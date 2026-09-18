@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * ServicioController
@@ -29,11 +30,15 @@ use Barryvdh\DomPDF\Facade\Pdf;
  */
 class ServicioController extends Controller
 {
+    use PermissionCheckTrait;
+
     /**
      * Listar todos los servicios con paginación y filtros
      */
     public function index(): View
     {
+        $this->checkPermission('servicios.ver');
+
         // Obtener parámetros de filtro
         $clienteFilter = request('cliente_id');
         $fechaDesde = request('fecha_desde');
@@ -44,7 +49,7 @@ class ServicioController extends Controller
         $query = Servicio::with([
             'equipo.area.sede.cliente',
             'contrato.cliente',
-            'tecnicoResponsable',
+            'tecnico',
             'estadoServicio'
         ]);
 
@@ -90,6 +95,8 @@ class ServicioController extends Controller
      */
     public function create(): View
     {
+        $this->checkPermission('servicios.crear');
+
         try {
             $servicio = null;
             $clientes = Cliente::where('estado', true)
@@ -123,6 +130,8 @@ class ServicioController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('servicios.crear');
+
         // Compatibilidad con valores antiguos enviados por UI/cache previo.
         // La BD usa enum: BAJA, MEDIA, ALTA, URGENTE.
         if ($request->prioridad === 'CRITICA') {
@@ -237,8 +246,8 @@ class ServicioController extends Controller
             'tecnico_asignado' => 'SIN ASIGNAR',
             'sla_horas_respuesta' => $slaRespuesta,
             'sla_horas_solucion' => $slaSolucion,
-            'sla_fecha_limite_respuesta' => now()->addHours($slaRespuesta),
-            'sla_fecha_limite_solucion' => now()->addHours($slaSolucion),
+            'sla_fecha_limite_respuesta' => now()->addHours((int) $slaRespuesta),
+            'sla_fecha_limite_solucion' => now()->addHours((int) $slaSolucion),
         ]);
 
         // Procesar archivos adjuntos si existen
@@ -285,6 +294,8 @@ class ServicioController extends Controller
      */
     public function show(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.ver');
+
         $servicio->load([
             'equipo.area.sede.cliente.empresa',
             'contrato.cliente',
@@ -299,6 +310,8 @@ class ServicioController extends Controller
      */
     public function verDocumentoAdjunto(Servicio $servicio, DocumentoAdjunto $documento)
     {
+        $this->checkPermission('servicios.ver');
+
         if (
             $documento->entidad_type !== Servicio::class ||
             (int) $documento->entidad_id !== (int) $servicio->id
@@ -324,6 +337,8 @@ class ServicioController extends Controller
      */
     public function descargarDocumentoAdjunto(Servicio $servicio, DocumentoAdjunto $documento)
     {
+        $this->checkPermission('servicios.ver');
+
         if (
             $documento->entidad_type !== Servicio::class ||
             (int) $documento->entidad_id !== (int) $servicio->id
@@ -343,6 +358,8 @@ class ServicioController extends Controller
      */
     public function edit(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.editar');
+
         try {
             $servicio->load([
                 'equipo.marca',
@@ -378,6 +395,8 @@ class ServicioController extends Controller
      */
     public function update(Request $request, Servicio $servicio): RedirectResponse
     {
+        $this->checkPermission('servicios.editar');
+
         // Compatibilidad con valores antiguos enviados por UI/cache previo.
         if ($request->prioridad === 'CRITICA') {
             $request->merge(['prioridad' => 'URGENTE']);
@@ -479,8 +498,8 @@ class ServicioController extends Controller
             'observaciones' => $request->observaciones,
             'sla_horas_respuesta' => $slaRespuesta,
             'sla_horas_solucion' => $slaSolucion,
-            'sla_fecha_limite_respuesta' => now()->addHours($slaRespuesta),
-            'sla_fecha_limite_solucion' => now()->addHours($slaSolucion),
+            'sla_fecha_limite_respuesta' => now()->addHours((int) $slaRespuesta),
+            'sla_fecha_limite_solucion' => now()->addHours((int) $slaSolucion),
         ]);
 
         if ($request->hasFile('documentos_adjuntos')) {
@@ -512,6 +531,8 @@ class ServicioController extends Controller
      */
     public function destroy(Servicio $servicio): RedirectResponse
     {
+        $this->checkPermission('servicios.eliminar');
+
         $servicio->delete();
 
         return redirect()->route('incidencias.servicios.index')
@@ -523,11 +544,13 @@ class ServicioController extends Controller
      */
     public function getEquiposByCliente($cliente_id): JsonResponse
     {
+        $this->checkPermission('servicios.ver');
+
         $equipos = Equipo::with('marca')
             ->where('cliente_id', $cliente_id)
             ->where('estado_operativo', 'OPERATIVO')
             ->orderBy('codigo_activo_cliente')
-            ->get(['id', 'codigo_activo_cliente', 'marca_id', 'modelo', 'serial'])
+            ->get(['id', 'codigo_activo_cliente', 'modelo', 'serial'])
             ->map(fn($e) => [
                 'id'              => $e->id,
                 'codigo_interno'  => $e->codigo_activo_cliente,
@@ -544,6 +567,8 @@ class ServicioController extends Controller
      */
     public function getEquiposByArea($area_id): JsonResponse
     {
+        $this->checkPermission('servicios.ver');
+
         // Obtener equipos del área que NO están dados de baja ni obsoletos
         // Estados permitidos: OPERATIVO, MANTENIMIENTO, REPARACION
         // Estados NO permitidos: BAJA, OBSOLETO
@@ -551,7 +576,7 @@ class ServicioController extends Controller
             ->where('area_id', $area_id)
             ->whereNotIn('estado_operativo', ['BAJA', 'OBSOLETO'])
             ->orderBy('codigo_activo_cliente')
-            ->get(['id', 'codigo_activo_cliente', 'marca_id', 'modelo', 'serial', 'estado_operativo'])
+            ->get(['id', 'codigo_activo_cliente', 'modelo', 'serial', 'estado_operativo'])
             ->map(fn($e) => [
                 'id'              => $e->id,
                 'codigo_interno'  => $e->codigo_activo_cliente,
@@ -569,6 +594,8 @@ class ServicioController extends Controller
      */
     public function getContratoActivo($cliente_id): JsonResponse
     {
+        $this->checkPermission('servicios.ver');
+
         $contrato = Contrato::where('cliente_id', $cliente_id)
             ->where('estado', 'ACTIVO')
             ->where('fecha_inicio', '<=', now())
@@ -598,6 +625,8 @@ class ServicioController extends Controller
      */
     public function crearEquipo(Request $request): JsonResponse
     {
+        $this->checkPermission('servicios.crear');
+
         $validated = $request->validate([
             'area_id' => 'required|exists:areas,id',
             'codigo_activo_cliente' => 'required|string|max:50|unique:equipos,codigo_activo_cliente',
@@ -608,10 +637,13 @@ class ServicioController extends Controller
         ]);
 
         try {
+            $marcaObj = \App\Models\Marca::where('nombre', $validated['marca'])->first();
+
             $equipo = Equipo::create([
                 'area_id'              => $validated['area_id'],
                 'codigo_activo_cliente'=> $validated['codigo_activo_cliente'],
-                'marca_id'             => null,
+                'marca_id'             => $marcaObj?->id,
+                'marca'                => $validated['marca'],
                 'modelo'               => $validated['modelo'],
                 'serial'               => $validated['serial'] ?? null,
                 'descripcion'          => $validated['descripcion'] ?? null,
@@ -625,7 +657,7 @@ class ServicioController extends Controller
                 'equipo' => [
                     'id'              => $equipo->id,
                     'codigo_interno'  => $equipo->codigo_activo_cliente,
-                    'marca'           => $equipo->marca_id,
+                    'marca'           => $equipo->marca?->nombre ?? $equipo->marca,
                     'modelo'          => $equipo->modelo,
                     'serial'          => $equipo->serial,
                     'estado_operativo'=> $equipo->estado_operativo,
@@ -655,6 +687,8 @@ class ServicioController extends Controller
      */
     public function asignarTecnico(Request $request, $id): RedirectResponse
     {
+        $this->checkPermission('servicios.asignar');
+
         $servicio = Servicio::findOrFail($id);
         
         $request->validate([
@@ -664,7 +698,7 @@ class ServicioController extends Controller
         $tecnico = User::find($request->tecnico_id);
         
         $servicio->update([
-            'tecnico_asignado_id' => $request->tecnico_id,
+            'tecnico_id' => $tecnico->id,
             'tecnico_asignado' => $tecnico->name,
             'fecha_asignacion' => now(),
             'estado' => 'ASIGNADO'
@@ -688,6 +722,8 @@ class ServicioController extends Controller
      */
     public function cambiarEstado(Request $request, $id): RedirectResponse
     {
+        $this->checkPermission('servicios.editar');
+
         $servicio = Servicio::findOrFail($id);
         $estadoAnterior = $servicio->estado;
         
@@ -732,6 +768,8 @@ class ServicioController extends Controller
      */
     public function attend(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.editar');
+
         // Cargar equipos adicionales disponibles en la misma área
         $equiposAdicionalesDisponibles = $servicio->equiposAdicionalesDisponibles();
         
@@ -750,6 +788,8 @@ class ServicioController extends Controller
      */
     public function storeAttendance(Request $request, Servicio $servicio): RedirectResponse
     {
+        $this->checkPermission('servicios.reportar');
+
         $isDetailedReport = $request->hasAny([
             'fecha_atencion',
             'hora_inicio_atencion',
@@ -858,7 +898,6 @@ class ServicioController extends Controller
             'persona_receptora_documento' => $validated['persona_receptora_documento'],
             'firma_persona_receptora' => $validated['firma_persona_receptora'],
             'descripcion_atencion' => $descripcionAtencion,
-            'diagnostico_validacion' => $validated['diagnostico_validacion'] ?? $descripcionAtencion,
             'diagnostico' => $validated['diagnostico_validacion'] ?? $descripcionAtencion,
             'observaciones_informe' => $validated['observaciones_informe'] ?? null,
             'equipos_adicionales_atendidos' => $validated['equipos_adicionales'] ?? [],
@@ -922,6 +961,8 @@ class ServicioController extends Controller
      */
     public function technicianPanel(): View
     {
+        $this->checkPermission('servicios.panel-tech');
+
         $tecnicoId = auth()->id();
         
         // Obtener servicios por estado
@@ -968,12 +1009,7 @@ class ServicioController extends Controller
      */
     public function adminAssignedPanel(): View
     {
-        // Verificar que el usuario sea admin o coordinador
-        abort_if(
-            !auth()->user()->hasRole('admin') && !auth()->user()->hasRole('coordinador'),
-            403,
-            'No tienes permisos para acceder a este panel'
-        );
+        $this->checkPermission('servicios.panel-admin');
 
         // Obtener todos los técnicos con servicios asignados
         $tecnicos = User::whereRelation('role', 'slug', 'tecnico')
@@ -988,20 +1024,14 @@ class ServicioController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Contar servicios por estado
+        // Contar servicios por estado (usando la columna ENUM servicios.estado)
         $totalAsignados = Servicio::whereNotNull('tecnico_id')->count();
         $pendientes = Servicio::whereNotNull('tecnico_id')
-            ->whereHas('estadoServicio', function($q) {
-                $q->where('nombre', 'Asignado');
-            })->count();
+            ->whereIn('estado', ['PENDIENTE', 'ASIGNADO'])->count();
         $enProceso = Servicio::whereNotNull('tecnico_id')
-            ->whereHas('estadoServicio', function($q) {
-            $q->where('es_en_proceso', true);
-        })->count();
+            ->where('estado', 'EN_PROCESO')->count();
         $completados = Servicio::whereNotNull('tecnico_id')
-            ->whereHas('estadoServicio', function($q) {
-            $q->where('es_cierre', true);
-        })->count();
+            ->whereIn('estado', ['RESUELTO', 'CERRADO'])->count();
 
         return view('incidencias.servicios.admin-panel', compact(
             'tecnicos',
@@ -1017,10 +1047,12 @@ class ServicioController extends Controller
      */
     public function assign(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.asignar');
+
         $servicio->load([
             'equipo.area.sede.cliente',
             'contrato.cliente',
-            'tecnicoResponsable'
+            'tecnico'
         ]);
 
         // Obtener todos los técnicos activos (usando el nuevo sistema de roles)
@@ -1037,9 +1069,12 @@ class ServicioController extends Controller
      */
     public function storeAssign(Request $request, Servicio $servicio): RedirectResponse
     {
+        $this->checkPermission('servicios.asignar');
+
         $validated = $request->validate([
             'tecnico_id' => 'required|exists:users,id',
             'fecha_asignacion' => 'required|date_format:Y-m-d\\TH:i',
+            'observaciones' => 'nullable|string|max:1000',
             'enviar_whatsapp' => 'nullable|boolean',
         ], [
             'tecnico_id.required' => 'Debe seleccionar un técnico',
@@ -1064,6 +1099,7 @@ class ServicioController extends Controller
             'fecha_asignacion' => \Carbon\Carbon::createFromFormat('Y-m-d\\TH:i', $validated['fecha_asignacion'])
                 ->format('Y-m-d H:i:s'),
             'estado' => 'PENDIENTE', // Mantener estado ENUM válido
+            'observaciones_asignacion' => $validated['observaciones'] ?? null,
         ];
 
         // Si existe estado ASIGNADO, actualizar referencia
@@ -1085,6 +1121,7 @@ class ServicioController extends Controller
                 'tecnico_nombre' => $tecnico->name,
                 'tecnico_email' => $tecnico->email,
                 'tecnico_telefono' => $tecnico->telefono,
+                'observaciones_asignacion' => $validated['observaciones'] ?? null,
             ]
         ]);
 
@@ -1114,6 +1151,8 @@ class ServicioController extends Controller
      */
     public function report(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.reportar');
+
         // Validar que el servicio esté asignado
         if ($servicio->tecnico_id === null) {
             return redirect()->route('incidencias.servicios.index')
@@ -1125,7 +1164,7 @@ class ServicioController extends Controller
             'equipo.area.sede.municipio.departamento',
             'equipo.area.sede.barrio',
             'contrato.cliente.empresa',
-            'tecnicoResponsable',
+            'tecnico',
             'estadoServicio'
         ]);
 
@@ -1138,7 +1177,10 @@ class ServicioController extends Controller
         // Obtener estados disponibles
         $estadosDisponibles = EstadoServicio::activos()->get();
 
-        return view('incidencias.servicios.report-technician-v2', compact('servicio', 'equiposAdicionales', 'estadosDisponibles'));
+        // Obtener marcas para el select de repuestos
+        $marcas = \App\Models\Marca::orderBy('nombre')->get();
+
+        return view('incidencias.servicios.report-technician-v2', compact('servicio', 'equiposAdicionales', 'estadosDisponibles', 'marcas'));
     }
 
     /**
@@ -1146,6 +1188,8 @@ class ServicioController extends Controller
      */
     public function storeReport(Request $request, Servicio $servicio): RedirectResponse
     {
+        $this->checkPermission('servicios.reportar');
+
         $validated = $request->validate([
             // Fechas y tiempos
             'fecha_atencion' => 'required|date',
@@ -1257,7 +1301,7 @@ class ServicioController extends Controller
             'tipo_servicio_informe' => $validated['tipo_servicio_informe'],
             // Descripciones
             'descripcion_solicitud' => $validated['descripcion_solicitud'],
-            'diagnostico_validacion' => $validated['diagnostico_validacion'],
+            'diagnostico' => $validated['diagnostico_validacion'],
             'pendientes' => $validated['pendientes'],
             'observaciones_informe' => $validated['observaciones_informe'],
             // Repuestos y equipos
@@ -1303,6 +1347,8 @@ class ServicioController extends Controller
      */
     public function downloadInformePDF(Servicio $servicio)
     {
+        $this->checkPermission('servicios.imprimir-pdf');
+
         // Verificar que el servicio tenga informe registrado
         if (!$servicio->persona_receptora_nombre) {
             return redirect()->route('incidencias.servicios.show', $servicio)
@@ -1314,8 +1360,9 @@ class ServicioController extends Controller
             'equipo.area.sede.cliente.ciudadNotificacion',
             'equipo.area.sede.municipio',
             'contrato.cliente',
-            'tecnicoResponsable',
-            'estadoServicio'
+            'tecnico',
+            'estadoServicio',
+            'repuestos.marca',
         ]);
 
         // Procesar imágenes a base64 para evitar problemas con GD
@@ -1351,7 +1398,9 @@ class ServicioController extends Controller
         $empresaLogoPath = $this->resolverRutaLogoEmpresa($servicio);
         $empresaLogoBase64 = $this->convertirImagenABase64($empresaLogoPath);
 
-        $pdf = Pdf::loadView('incidencias.servicios.pdf.informe-tecnico-new', [
+        $template = $this->resolverTemplateInforme($servicio);
+
+        $pdf = Pdf::loadView($template, [
             'servicio' => $servicio,
             'imagenesBase64' => $imagenesBase64,
             'firmaBase64' => $firmaBase64,
@@ -1380,6 +1429,8 @@ class ServicioController extends Controller
      */
     public function viewInformePDF(Servicio $servicio)
     {
+        $this->checkPermission('servicios.imprimir-pdf');
+
         // Verificar que el servicio tenga informe registrado
         if (!$servicio->persona_receptora_nombre) {
             return redirect()->route('incidencias.servicios.show', $servicio)
@@ -1392,8 +1443,9 @@ class ServicioController extends Controller
             'equipo.area.sede.municipio.departamento',
             'equipo.area.sede.barrio',
             'contrato.cliente.empresa',
-            'tecnicoResponsable',
-            'estadoServicio'
+            'tecnico',
+            'estadoServicio',
+            'repuestos.marca',
         ]);
 
         // Procesar imágenes a base64 para evitar problemas con GD
@@ -1429,7 +1481,9 @@ class ServicioController extends Controller
         $empresaLogoPath = $this->resolverRutaLogoEmpresa($servicio);
         $empresaLogoBase64 = $this->convertirImagenABase64($empresaLogoPath);
 
-        $pdf = Pdf::loadView('incidencias.servicios.pdf.informe-tecnico-new', [
+        $template = $this->resolverTemplateInforme($servicio);
+
+        $pdf = Pdf::loadView($template, [
             'servicio' => $servicio,
             'imagenesBase64' => $imagenesBase64,
             'firmaBase64' => $firmaBase64,
@@ -1458,7 +1512,24 @@ class ServicioController extends Controller
      */
     public function panel(Servicio $servicio): View
     {
+        $this->checkPermission('servicios.panel-tech');
+
         return $this->technicianPanel();
+    }
+
+    /**
+     * Resuelve el template Blade del informe según el formato asignado a la empresa del servicio.
+     */
+    private function resolverTemplateInforme(Servicio $servicio): string
+    {
+        $empresa = $servicio->equipo?->area?->sede?->cliente?->empresa
+            ?? $servicio->contrato?->cliente?->empresa;
+
+        if ($empresa && $empresa->informeFormato && $empresa->informeFormato->activo) {
+            return $empresa->informeFormato->blade_template;
+        }
+
+        return 'incidencias.servicios.pdf.informe-tecnico-new';
     }
 
     /**
@@ -1560,8 +1631,7 @@ class ServicioController extends Controller
             ?? $servicio->equipo?->area?->sede?->cliente?->contacto_nombre
             ?? 'N/A';
 
-        $equipo = $servicio->equipo?->codigo_interno
-            ?? $servicio->equipo?->codigo_activo_cliente
+        $equipo = $servicio->equipo?->codigo_activo_cliente
             ?? ('Equipo #' . (string) $servicio->equipo_id);
 
         $fechaAsignacion = $servicio->fecha_asignacion?->format('d/m/Y H:i')
@@ -1691,6 +1761,8 @@ class ServicioController extends Controller
      */
     public function estadisticas(): View
     {
+        $this->checkPermission('servicios.estadisticas');
+
         // Total de servicios
         $totalServicios = Servicio::count();
         
@@ -1752,5 +1824,100 @@ class ServicioController extends Controller
             'tasaResolucion' => $tasaResolucion,
             'serviciosPorCliente' => $serviciosPorCliente,
         ]);
+    }
+
+    // ============================================
+    // REPUESTOS INSTALADOS
+    // ============================================
+
+    public function storeRepuesto(Request $request, Servicio $servicio)
+    {
+        $this->checkPermission('servicios.reportar');
+
+        try {
+            $validated = $request->validate([
+                'codigo' => 'nullable|string|max:100',
+                'descripcion' => 'required|string|max:255',
+                'marca_id' => 'nullable|exists:marcas,id',
+                'modelo' => 'nullable|string|max:150',
+                'serial' => 'nullable|string|max:150',
+                'cantidad' => 'required|integer|min:1',
+                'facturable' => 'nullable|boolean',
+                'numero_factura' => 'nullable|string|max:100',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            throw $e;
+        }
+
+        $validated['servicio_id'] = $servicio->id;
+        $validated['facturable'] = $request->boolean('facturable');
+
+        $repuesto = \App\Models\RepuestoServicio::create($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'repuesto' => $repuesto->load('marca'),
+                'message' => 'Repuesto registrado exitosamente',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Repuesto registrado exitosamente');
+    }
+
+    public function updateRepuesto(Request $request, Servicio $servicio, \App\Models\RepuestoServicio $repuesto)
+    {
+        $this->checkPermission('servicios.reportar');
+
+        if ($repuesto->servicio_id !== $servicio->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'codigo' => 'nullable|string|max:100',
+            'descripcion' => 'required|string|max:255',
+            'marca_id' => 'nullable|exists:marcas,id',
+            'modelo' => 'nullable|string|max:150',
+            'serial' => 'nullable|string|max:150',
+            'cantidad' => 'required|integer|min:1',
+            'facturable' => 'nullable|boolean',
+            'numero_factura' => 'nullable|string|max:100',
+        ]);
+
+        $validated['facturable'] = $request->boolean('facturable');
+        $repuesto->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'repuesto' => $repuesto->load('marca'),
+                'message' => 'Repuesto actualizado exitosamente',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Repuesto actualizado exitosamente');
+    }
+
+    public function destroyRepuesto(Request $request, Servicio $servicio, \App\Models\RepuestoServicio $repuesto)
+    {
+        $this->checkPermission('servicios.reportar');
+
+        if ($repuesto->servicio_id !== $servicio->id) {
+            abort(404);
+        }
+
+        $repuesto->delete();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Repuesto eliminado exitosamente',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Repuesto eliminado exitosamente');
     }
 }

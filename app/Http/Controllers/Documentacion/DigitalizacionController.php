@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Documentacion;
 
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 use App\Http\Requests\Documentacion\StoreDigitalizacionRequest;
 use App\Http\Requests\Documentacion\UpdateDigitalizacionRequest;
 use App\Models\Digitalizacion;
@@ -18,8 +19,10 @@ use Illuminate\View\View;
 
 class DigitalizacionController extends Controller
 {
+    use PermissionCheckTrait;
     public function index(): View
     {
+        $this->checkPermission('digitalizaciones.ver');
         $digitalizaciones = Digitalizacion::with([
             'empresa',
             'sede',
@@ -34,6 +37,7 @@ class DigitalizacionController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('digitalizaciones.crear');
         $digitalizacion = null;
         $empresas = Empresa::orderBy('nombre')->get();
         $sedes = Sede::orderBy('nombre')->get();
@@ -55,6 +59,7 @@ class DigitalizacionController extends Controller
 
     public function store(StoreDigitalizacionRequest $request): RedirectResponse
     {
+        $this->checkPermission('digitalizaciones.crear');
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
@@ -78,6 +83,7 @@ class DigitalizacionController extends Controller
 
     public function show(Digitalizacion $digitalizacion): View
     {
+        $this->checkPermission('digitalizaciones.ver');
         $digitalizacion->load(['empresa', 'sede', 'proceso', 'subproceso', 'documento', 'user', 'radicacion']);
 
         return view('documentacion.digitalizaciones.show', compact('digitalizacion'));
@@ -85,6 +91,7 @@ class DigitalizacionController extends Controller
 
     public function edit(Digitalizacion $digitalizacion): View
     {
+        $this->checkPermission('digitalizaciones.editar');
         $empresas = Empresa::orderBy('nombre')->get();
         $sedes = Sede::orderBy('nombre')->get();
         $procesos = Proceso::orderBy('proceso')->get();
@@ -105,6 +112,7 @@ class DigitalizacionController extends Controller
 
     public function update(UpdateDigitalizacionRequest $request, Digitalizacion $digitalizacion): RedirectResponse
     {
+        $this->checkPermission('digitalizaciones.editar');
         $data = $request->validated();
         $data['user_id'] = $digitalizacion->user_id ?? $request->user()->id;
 
@@ -132,6 +140,7 @@ class DigitalizacionController extends Controller
 
     public function destroy(Digitalizacion $digitalizacion): RedirectResponse
     {
+        $this->checkPermission('digitalizaciones.eliminar');
         if ($digitalizacion->ruta) {
             Storage::disk('private')->delete($digitalizacion->ruta);
         }

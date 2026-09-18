@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
+use App\Traits\PermissionCheckTrait;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -15,11 +16,15 @@ use Illuminate\Http\RedirectResponse;
  */
 class CategoriaController extends Controller
 {
+    use PermissionCheckTrait;
+
     /**
      * Listar todas las categorías
      */
     public function index(): View
     {
+        $this->checkPermission('categorias.ver');
+
         $categorias = Categoria::with('tiposEquipos')
             ->orderBy('nombre')
             ->get();
@@ -32,6 +37,8 @@ class CategoriaController extends Controller
      */
     public function create(): View
     {
+        $this->checkPermission('categorias.crear');
+
         return view('categorias.create');
     }
 
@@ -40,6 +47,8 @@ class CategoriaController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('categorias.crear');
+
         $validated = $request->validate([
             'nombre' => 'required|string|max:100|unique:categorias,nombre',
             'descripcion' => 'nullable|string|max:500',
@@ -66,6 +75,8 @@ class CategoriaController extends Controller
      */
     public function show(Categoria $categoria): View
     {
+        $this->checkPermission('categorias.ver');
+
         $categoria->load('tiposEquipos');
 
         return view('categorias.show', compact('categoria'));
@@ -76,6 +87,8 @@ class CategoriaController extends Controller
      */
     public function edit(Categoria $categoria): View
     {
+        $this->checkPermission('categorias.editar');
+
         return view('categorias.edit', compact('categoria'));
     }
 
@@ -84,6 +97,8 @@ class CategoriaController extends Controller
      */
     public function update(Request $request, Categoria $categoria): RedirectResponse
     {
+        $this->checkPermission('categorias.editar');
+
         $validated = $request->validate([
             'nombre' => 'required|string|max:100|unique:categorias,nombre,' . $categoria->id,
             'descripcion' => 'nullable|string|max:500',
@@ -113,6 +128,8 @@ class CategoriaController extends Controller
      */
     public function destroy(Categoria $categoria): RedirectResponse
     {
+        $this->checkPermission('categorias.eliminar');
+
         if ($categoria->tiposEquipos()->count() > 0) {
             return back()->withErrors([
                 'error' => 'No se puede eliminar una categoría que tiene tipos de equipos asociados'

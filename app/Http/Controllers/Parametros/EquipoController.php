@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * EquipoController - Módulo Parámetros
@@ -17,9 +18,12 @@ use App\Http\Controllers\Controller;
  */
 class EquipoController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index(Request $request): View
     {
-        $query = Equipo::with(['area.sede.cliente.empresa', 'area.sede.empresa', 'tipoEquipo', 'servicios']);
+        $this->checkPermission('equipos.ver');
+        $query = Equipo::with(['area.sede.cliente.empresa', 'area.sede.empresa', 'tipoEquipo', 'servicios', 'marca']);
 
         if ($request->filled('cliente_id')) {
             $query->whereHas('area.sede', function ($q) {
@@ -53,6 +57,7 @@ class EquipoController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('equipos.crear');
         $equipo = null;
         $areas = Area::with('sede.cliente.empresa')
             ->where('estado', true)
@@ -80,21 +85,38 @@ class EquipoController extends Controller
             ->orderBy('numero_contrato')
             ->get();
 
-        return view('parametros.equipos.create', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos'));
+        $marcas = \App\Models\Marca::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('parametros.equipos.create', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos', 'marcas'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('equipos.crear');
+
+        // Pre-procesar especificaciones_tecnicas: si no es JSON válido, nullificar
+        if ($request->filled('especificaciones_tecnicas')) {
+            $decoded = json_decode($request->especificaciones_tecnicas, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $request->merge(['especificaciones_tecnicas' => null]);
+            } else {
+                $request->merge(['especificaciones_tecnicas' => $decoded]);
+            }
+        }
+
         $validated = $request->validate([
             'area_id' => 'required|exists:areas,id',
             'tipo_equipo_id' => 'required|exists:tipos_equipos,id',
+            'cliente_id' => 'required|exists:clientes,id',
+            'sede_id' => 'nullable|exists:sedes,id',
             'contrato_id' => 'nullable|exists:contratos,id',
-            'codigo_interno' => 'required|string|unique:equipos,codigo_interno',
-            'serial' => 'nullable|string|unique:equipos,serial',
-            'marca' => 'required|string|max:100',
+            'serial' => 'nullable|string|max:100|unique:equipos,serial',
+            'marca_id' => 'required|exists:marcas,id',
             'modelo' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
-            'especificaciones_tecnicas' => 'nullable|json',
+            'especificaciones_tecnicas' => 'nullable|array',
             'estado_operativo' => 'required|in:OPERATIVO,MANTENIMIENTO,REPARACION,BAJA,OBSOLETO',
             'fecha_compra' => 'nullable|date',
             'fecha_instalacion' => 'nullable|date',
@@ -104,25 +126,34 @@ class EquipoController extends Controller
             'mac_address' => 'nullable|string|max:17',
             'usuario_asignado' => 'nullable|string|max:255',
             'observaciones' => 'nullable|string',
-            'mantenimientos_por_ano' => 'nullable|integer|min:0|max:12',
-            'calibraciones_por_ano' => 'nullable|integer|min:0|max:12',
+            'mantenimientos_anuales' => 'nullable|integer|min:0|max:12',
+            'calibraciones_anuales' => 'nullable|integer|min:0|max:12',
+            'fecha_ultimo_mantenimiento' => 'nullable|date',
+            'fecha_ultima_calibracion' => 'nullable|date',
+            'proxima_fecha_mantenimiento' => 'nullable|date',
+            'proxima_fecha_calibracion' => 'nullable|date',
         ]);
+
+        // Autogenerar código de activo basado en el prefijo del cliente
+        $validated['codigo_activo_cliente'] = Equipo::generarCodigoActivoCliente($validated['cliente_id']);
 
         Equipo::create($validated);
 
         return redirect()->route('parametros.equipos.index')
-            ->with('success', 'Equipo creado exitosamente');
+            ->with('success', 'Equipo creado exitosamente con código: ' . $validated['codigo_activo_cliente']);
     }
 
     public function show(Equipo $equipo): View
     {
-        $equipo->load('area.sede.cliente.empresa', 'tipoEquipo', 'servicios', 'contrato.cliente');
+        $this->checkPermission('equipos.ver');
+        $equipo->load('area.sede.cliente.empresa', 'tipoEquipo', 'servicios', 'contrato.cliente', 'marca');
 
         return view('parametros.equipos.show', compact('equipo'));
     }
 
     public function edit(Equipo $equipo): View
     {
+        $this->checkPermission('equipos.editar');
         $areas = Area::with('sede.cliente.empresa')
             ->where('estado', true)
             ->orderBy('nombre')
@@ -149,21 +180,39 @@ class EquipoController extends Controller
             ->orderBy('numero_contrato')
             ->get();
 
-        return view('parametros.equipos.edit', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos'));
+        $marcas = \App\Models\Marca::where('estado', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('parametros.equipos.edit', compact('equipo', 'areas', 'tipos', 'empresas', 'clientes', 'sedes', 'contratos', 'marcas'));
     }
 
     public function update(Request $request, Equipo $equipo): RedirectResponse
     {
+        $this->checkPermission('equipos.editar');
+
+        // Pre-procesar especificaciones_tecnicas: si no es JSON válido, nullificar
+        if ($request->filled('especificaciones_tecnicas')) {
+            $decoded = json_decode($request->especificaciones_tecnicas, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $request->merge(['especificaciones_tecnicas' => null]);
+            } else {
+                $request->merge(['especificaciones_tecnicas' => $decoded]);
+            }
+        }
+
         $validated = $request->validate([
             'area_id' => 'required|exists:areas,id',
             'tipo_equipo_id' => 'required|exists:tipos_equipos,id',
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'sede_id' => 'nullable|exists:sedes,id',
             'contrato_id' => 'nullable|exists:contratos,id',
-            'codigo_interno' => 'required|string|unique:equipos,codigo_interno,' . $equipo->id,
-            'serial' => 'nullable|string|unique:equipos,serial,' . $equipo->id,
-            'marca' => 'required|string|max:100',
+            'codigo_activo_cliente' => 'required|string|max:50|unique:equipos,codigo_activo_cliente,' . $equipo->id,
+            'serial' => 'nullable|string|max:100|unique:equipos,serial,' . $equipo->id,
+            'marca_id' => 'required|exists:marcas,id',
             'modelo' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
-            'especificaciones_tecnicas' => 'nullable|json',
+            'especificaciones_tecnicas' => 'nullable|array',
             'estado_operativo' => 'required|in:OPERATIVO,MANTENIMIENTO,REPARACION,BAJA,OBSOLETO',
             'fecha_compra' => 'nullable|date',
             'fecha_instalacion' => 'nullable|date',
@@ -173,8 +222,12 @@ class EquipoController extends Controller
             'mac_address' => 'nullable|string|max:17',
             'usuario_asignado' => 'nullable|string|max:255',
             'observaciones' => 'nullable|string',
-            'mantenimientos_por_ano' => 'nullable|integer|min:0|max:12',
-            'calibraciones_por_ano' => 'nullable|integer|min:0|max:12',
+            'mantenimientos_anuales' => 'nullable|integer|min:0|max:12',
+            'calibraciones_anuales' => 'nullable|integer|min:0|max:12',
+            'fecha_ultimo_mantenimiento' => 'nullable|date',
+            'fecha_ultima_calibracion' => 'nullable|date',
+            'proxima_fecha_mantenimiento' => 'nullable|date',
+            'proxima_fecha_calibracion' => 'nullable|date',
         ]);
 
         $equipo->update($validated);
@@ -185,6 +238,7 @@ class EquipoController extends Controller
 
     public function destroy(Equipo $equipo): RedirectResponse
     {
+        $this->checkPermission('equipos.eliminar');
         $equipo->delete();
 
         return redirect()->route('parametros.equipos.index')
@@ -196,8 +250,9 @@ class EquipoController extends Controller
      */
     public function exportarExcel()
     {
+        $this->checkPermission('equipos.exportar');
         // Obtener todos los equipos con relaciones
-        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo'])
+        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo', 'marca'])
             ->get();
 
         // Para ahora, devolver un archivo CSV simple
@@ -214,7 +269,7 @@ class EquipoController extends Controller
             foreach ($equipos as $equipo) {
                 fputcsv($file, [
                     $equipo->id,
-                    $equipo->codigo_interno,
+                    $equipo->codigo_activo_cliente,
                     $equipo->marca,
                     $equipo->modelo,
                     $equipo->serie,
@@ -245,9 +300,10 @@ class EquipoController extends Controller
      */
     public function exportarPdf()
     {
+        $this->checkPermission('equipos.exportar');
         // Obtener todos los equipos con relaciones
-        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo'])
-            ->orderBy('codigo_interno')
+        $equipos = Equipo::with(['area.sede.cliente', 'area.sede.empresa', 'tipoEquipo', 'marca'])
+            ->orderBy('codigo_activo_cliente')
             ->get();
 
         // Preparar datos para el PDF

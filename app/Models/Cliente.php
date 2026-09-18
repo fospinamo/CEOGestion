@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $telefono_whatsapp WhatsApp
  * @property string $direccion_notificacion Dirección
  * @property int|null $ciudad_notificacion_id Municipio
+ * @property string|null $prefijo Código corto para autogenerar códigos de activo (ej: "C", "EMP")
  * @property string|null $contacto_nombre Contacto principal
  * @property string|null $contacto_cargo Cargo del contacto
  * @property string|null $contacto_telefono Teléfono contacto
@@ -48,6 +49,7 @@ class Cliente extends Model
      */
     protected $fillable = [
         'empresa_id',
+        'prefijo',
         'tipo_documento',
         'documento',
         'digito_verificacion',
@@ -230,6 +232,18 @@ class Cliente extends Model
             // Si es NIT, debe tener dígito de verificación
             if ($cliente->tipo_documento === 'NIT' && !$cliente->digito_verificacion) {
                 throw new \Exception('El dígito de verificación es requerido para NIT');
+            }
+
+            // Normalizar prefijo a mayúsculas y trim
+            if (!empty($cliente->prefijo)) {
+                $cliente->prefijo = strtoupper(trim($cliente->prefijo));
+            }
+        });
+
+        static::updating(function ($cliente) {
+            // Normalizar prefijo a mayúsculas y trim
+            if (!empty($cliente->prefijo)) {
+                $cliente->prefijo = strtoupper(trim($cliente->prefijo));
             }
         });
     }

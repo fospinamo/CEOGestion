@@ -15,7 +15,7 @@ class EquipoDocumentoController extends Controller
      */
     public function index($equipoId)
     {
-        $equipo = Equipo::with('documentos')->findOrFail($equipoId);
+        $equipo = Equipo::with(['documentos', 'marca'])->findOrFail($equipoId);
         $documentos = $equipo->documentos()->orderBy('tipo')->orderBy('created_at', 'desc')->get();
         
         return view('parametros.equipos.documentos.index', compact('equipo', 'documentos'));

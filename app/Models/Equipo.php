@@ -50,7 +50,8 @@ class Equipo extends Model
         'area_id',
         'tipo_equipo_id',
         'codigo_interno',
-        'marca',
+        'codigo_activo_cliente',
+        'marca_id',
         'modelo',
         'serial',
         'fecha_compra',
@@ -69,6 +70,12 @@ class Equipo extends Model
         'ultimo_mantenimiento_at',
         'ultimo_calibracion_at',
         'proximo_mantenimiento_at',
+        'mantenimientos_anuales',
+        'calibraciones_anuales',
+        'fecha_ultimo_mantenimiento',
+        'fecha_ultima_calibracion',
+        'proxima_fecha_mantenimiento',
+        'proxima_fecha_calibracion',
     ];
 
     /**
@@ -78,6 +85,10 @@ class Equipo extends Model
         'fecha_compra' => 'date',
         'fecha_instalacion' => 'date',
         'fecha_garantia' => 'date',
+        'fecha_ultimo_mantenimiento' => 'date',
+        'fecha_ultima_calibracion' => 'date',
+        'proxima_fecha_mantenimiento' => 'date',
+        'proxima_fecha_calibracion' => 'date',
         'valor_compra' => 'float',
         'especificaciones_tecnicas' => 'array',
         'ultimo_mantenimiento_at' => 'datetime',
@@ -131,6 +142,14 @@ class Equipo extends Model
     public function tipoEquipo()
     {
         return $this->belongsTo(TipoEquipo::class);
+    }
+
+    /**
+     * Marca del equipo
+     */
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class);
     }
 
     /**
@@ -235,6 +254,43 @@ class Equipo extends Model
             'BAJA' => 'Baja',
             'OBSOLETO' => 'Obsoleto',
         ];
+    }
+
+    /**
+     * Autogenerar código de activo del cliente basado en su prefijo.
+     *
+     * Formato: {PREFIJO}-001, {PREFIJO}-002, etc.
+     * El número es secuencial por prefijo y nunca se repite.
+     *
+     * @param int $clienteId ID del cliente
+     * @return string Código generado (ej: "C-001")
+     * @throws \Exception Si el cliente no tiene prefijo
+     */
+    public static function generarCodigoActivoCliente(int $clienteId): string
+    {
+        $cliente = Cliente::find($clienteId);
+
+        if (!$cliente || empty($cliente->prefijo)) {
+            throw new \Exception('El cliente no tiene un prefijo asignado. Asigne un prefijo al cliente antes de crear equipos.');
+        }
+
+        $prefijo = $cliente->prefijo;
+
+        // Buscar el último número secuencial para este prefijo
+        $ultimoEquipo = static::where('codigo_activo_cliente', 'LIKE', "{$prefijo}-%")
+            ->orderByRaw("CAST(SUBSTRING_INDEX(codigo_activo_cliente, '-', -1) AS UNSIGNED) DESC")
+            ->first();
+
+        if ($ultimoEquipo) {
+            // Extraer el número del último código y sumar 1
+            $partes = explode('-', $ultimoEquipo->codigo_activo_cliente);
+            $ultimoNumero = (int) end($partes);
+            $siguienteNumero = $ultimoNumero + 1;
+        } else {
+            $siguienteNumero = 1;
+        }
+
+        return $prefijo . '-' . str_pad($siguienteNumero, 3, '0', STR_PAD_LEFT);
     }
 
     /**

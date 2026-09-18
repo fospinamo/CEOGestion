@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Empresa;
 use App\Models\Sede;
+use App\Models\Cargo;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -78,8 +79,9 @@ class UsuarioController extends Controller
         $roles = Role::all();
         $empresas = Empresa::all();
         $sedes = Sede::all();
+        $cargos = Cargo::where('estado', true)->orderBy('descripcion')->get();
 
-        return view('seguridad.usuarios.create', compact('roles', 'empresas', 'sedes'));
+        return view('seguridad.usuarios.create', compact('roles', 'empresas', 'sedes', 'cargos'));
     }
 
     /**
@@ -100,11 +102,13 @@ class UsuarioController extends Controller
             'role_id' => 'required|exists:roles,id',
             'empresa_id' => 'nullable|exists:empresas,id',
             'sede_id' => 'nullable|exists:sedes,id',
-            'cedula' => 'nullable|string|max:20',
+            'cargo_id' => 'nullable|exists:cargos,id',
+            'cedula' => 'nullable|string|max:20|unique:users,cedula',
             'telefono' => 'nullable|string|max:20',
             'estado' => 'nullable|boolean',
         ], [
             'email.unique' => 'Este email ya está registrado en el sistema',
+            'cedula.unique' => 'Esta cédula ya está registrada para otro usuario',
             'password.confirmed' => 'Las contraseñas no coinciden',
             'role_id.required' => 'Debe seleccionar un rol',
             'role_id.exists' => 'El rol seleccionado no existe',
@@ -151,8 +155,9 @@ class UsuarioController extends Controller
         $roles = Role::all();
         $empresas = Empresa::all();
         $sedes = Sede::all();
+        $cargos = Cargo::where('estado', true)->orderBy('descripcion')->get();
 
-        return view('seguridad.usuarios.edit', compact('usuario', 'roles', 'empresas', 'sedes'));
+        return view('seguridad.usuarios.edit', compact('usuario', 'roles', 'empresas', 'sedes', 'cargos'));
     }
 
     /**
@@ -175,7 +180,8 @@ class UsuarioController extends Controller
             'role_id' => 'required|exists:roles,id',
             'empresa_id' => 'nullable|exists:empresas,id',
             'sede_id' => 'nullable|exists:sedes,id',
-            'cedula' => 'nullable|string|max:20',
+            'cargo_id' => 'nullable|exists:cargos,id',
+            'cedula' => 'nullable|string|max:20|unique:users,cedula,' . $usuario->id,
             'telefono' => 'nullable|string|max:20',
             'estado' => 'nullable|boolean',
         ]);

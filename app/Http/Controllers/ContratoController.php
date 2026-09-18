@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * ContratoController
@@ -17,11 +18,15 @@ use Illuminate\Http\RedirectResponse;
  */
 class ContratoController extends Controller
 {
+    use PermissionCheckTrait;
+
     /**
      * Listar todos los contratos con paginación
      */
     public function index(): View
     {
+        $this->checkPermission('contratos.ver');
+
         $contratos = Contrato::with(['cliente.empresa', 'creadoPor'])
             ->get();
 
@@ -33,6 +38,8 @@ class ContratoController extends Controller
      */
     public function create(): View
     {
+        $this->checkPermission('contratos.crear');
+
         $contrato = null;
         $clientes = Cliente::with('empresa')->orderBy('razon_social')->get();
         $usuarios = User::where('estado', true)->orderBy('name')->get();
@@ -45,6 +52,8 @@ class ContratoController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('contratos.crear');
+
         $validated = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'numero_contrato' => 'required|string|unique:contratos,numero_contrato',
@@ -84,6 +93,8 @@ class ContratoController extends Controller
      */
     public function show(Contrato $contrato): View
     {
+        $this->checkPermission('contratos.ver');
+
         $contrato->load([
             'cliente.empresa',
             'creadoPor',
@@ -100,6 +111,8 @@ class ContratoController extends Controller
      */
     public function edit(Contrato $contrato): View
     {
+        $this->checkPermission('contratos.editar');
+
         $clientes = Cliente::with('empresa')->orderBy('razon_social')->get();
         $usuarios = User::where('estado', true)->orderBy('name')->get();
 
@@ -111,6 +124,8 @@ class ContratoController extends Controller
      */
     public function update(Request $request, Contrato $contrato): RedirectResponse
     {
+        $this->checkPermission('contratos.editar');
+
         $validated = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'numero_contrato' => 'required|string|unique:contratos,numero_contrato,' . $contrato->id,
@@ -153,6 +168,8 @@ class ContratoController extends Controller
      */
     public function destroy(Contrato $contrato): RedirectResponse
     {
+        $this->checkPermission('contratos.eliminar');
+
         $contrato->delete();
 
         return redirect()->route('parametros.contratos.index')

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * TipoEquipoController - Módulo Parámetros
@@ -16,8 +17,11 @@ use App\Http\Controllers\Controller;
  */
 class TipoEquipoController extends Controller
 {
+    use PermissionCheckTrait;
     public function index(): View
     {
+        $this->checkPermission('tipos-equipos.ver');
+
         $tipos = TipoEquipo::with('categoriaObj')
             ->withCount('equipos')
             ->orderBy('nombre')
@@ -28,6 +32,8 @@ class TipoEquipoController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('tipos-equipos.crear');
+
         $categorias = Categoria::activas()->orderBy('nombre')->get();
         $tipoEquipo = null;
         return view('parametros.tipos-equipos.create', compact('tipoEquipo', 'categorias'));
@@ -35,6 +41,8 @@ class TipoEquipoController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('tipos-equipos.crear');
+
         $validated = $request->validate([
             'nombre' => 'required|string|unique:tipos_equipos,nombre',
             'descripcion' => 'nullable|string|max:500',
@@ -52,6 +60,8 @@ class TipoEquipoController extends Controller
 
     public function show(TipoEquipo $tipoEquipo): View
     {
+        $this->checkPermission('tipos-equipos.ver');
+
         $tipoEquipo->load('categoriaObj', 'equipos');
 
         return view('parametros.tipos-equipos.show', compact('tipoEquipo'));
@@ -59,6 +69,8 @@ class TipoEquipoController extends Controller
 
     public function edit(TipoEquipo $tipoEquipo): View
     {
+        $this->checkPermission('tipos-equipos.editar');
+
         // Cargar relaciones necesarias para la vista
         $tipoEquipo->load('categoriaObj');
         $categorias = Categoria::activas()->orderBy('nombre')->get();
@@ -68,6 +80,8 @@ class TipoEquipoController extends Controller
 
     public function update(Request $request, TipoEquipo $tipoEquipo): RedirectResponse
     {
+        $this->checkPermission('tipos-equipos.editar');
+
         $validated = $request->validate([
             'nombre' => 'required|string|unique:tipos_equipos,nombre,' . $tipoEquipo->id,
             'descripcion' => 'nullable|string|max:500',
@@ -87,6 +101,8 @@ class TipoEquipoController extends Controller
 
     public function destroy(TipoEquipo $tipoEquipo): RedirectResponse
     {
+        $this->checkPermission('tipos-equipos.eliminar');
+
         $tipoEquipo->delete();
 
         return redirect()->route('parametros.tipos-equipos.index')

@@ -30,14 +30,11 @@ use Illuminate\Support\Str;
  * @property int|null $empresa_id Empresa a la que pertenece
  * @property int|null $sede_id Sede principal del usuario
  * @property int|null $cliente_id Cliente corporativo (solo para usuarios tipo 'cliente')
- * @property string $rol Rol heredado (deprecado, usar tipo_rol)
  * @property string $tipo_rol admin|tecnico|coordinador|operario|cliente
  * @property bool $estado Usuario activo
  * @property string|null $token_acceso Token para acceso al portal del cliente
  * @property \Illuminate\Support\Carbon|null $ultimo_acceso_portal Última vez que accedió
  * @property string|null $ip_ultimo_acceso IP de último acceso
- * @property array|null $permisos Permisos específicos en JSON
- * @property \Illuminate\Support\Carbon $email_verified_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -57,13 +54,12 @@ class User extends Authenticatable
         'empresa_id',
         'sede_id',
         'cliente_id',
-        'rol',
+        'cargo_id',
         'tipo_rol',
         'cedula',
         'telefono',
         'estado',
         'token_acceso',
-        'permisos',
     ];
 
     /**
@@ -71,7 +67,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
         'token_acceso',
     ];
 
@@ -81,10 +76,8 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'estado' => 'boolean',
-            'permisos' => 'array',
             'ultimo_acceso_portal' => 'datetime',
         ];
     }
@@ -127,6 +120,14 @@ class User extends Authenticatable
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    /**
+     * El usuario tiene un cargo asignado
+     */
+    public function cargo(): BelongsTo
+    {
+        return $this->belongsTo(Cargo::class);
     }
 
     /**
@@ -306,21 +307,6 @@ class User extends Authenticatable
         $this->token_acceso = Str::random(64);
         $this->save();
         return $this->token_acceso;
-    }
-
-    /**
-     * Valida si un permiso específico está disponible
-     * 
-     * @param string $permiso Nombre del permiso a validar
-     * @return bool True si tiene el permiso
-     */
-    public function tiene(string $permiso): bool
-    {
-        if ($this->esAdmin()) {
-            return true; // Admin tiene todos los permisos
-        }
-
-        return in_array($permiso, $this->permisos ?? []);
     }
 
     /**

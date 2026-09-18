@@ -40,7 +40,8 @@ class Empresa extends Model
         'tipo_contribuyente',
         'responsabilidades_fiscales',
         'direccion',
-        'estado'
+        'estado',
+        'informe_formato_id',
     ];
 
     protected $casts = [
@@ -75,6 +76,14 @@ class Empresa extends Model
     public function sedes(): HasManyThrough
     {
         return $this->hasManyThrough(Sede::class, Cliente::class);
+    }
+
+    /**
+     * Relación: Formato de informe técnico asignado a la empresa
+     */
+    public function informeFormato()
+    {
+        return $this->belongsTo(InformeFormato::class);
     }
 
     /**

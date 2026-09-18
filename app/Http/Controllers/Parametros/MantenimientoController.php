@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Equipo;
 use App\Models\MantenimientoProgramado;
 use App\Models\User;
+use App\Traits\PermissionCheckTrait;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Carbon\Carbon;
@@ -18,11 +19,15 @@ use Carbon\Carbon;
  */
 class MantenimientoController extends Controller
 {
+    use PermissionCheckTrait;
+
     /**
      * Listar todos los mantenimientos programados
      */
     public function index(Request $request): View
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $query = MantenimientoProgramado::with(['equipo.area.sede.cliente', 'tecnico'])
             ->orderByDesc('fecha_programada');
 
@@ -71,9 +76,11 @@ class MantenimientoController extends Controller
      */
     public function create(Request $request): View
     {
+        $this->checkPermission('mantenimientos.crear');
+
         $equipoId = $request->get('equipo_id');
         $equipo = $equipoId ? Equipo::findOrFail($equipoId) : null;
-        $equipos = Equipo::with('area.sede.cliente')->orderBy('codigo_interno')->get();
+        $equipos = Equipo::with(['area.sede.cliente', 'marca'])->orderBy('codigo_activo_cliente')->get();
         $tecnicos = User::where('estado', true)->orderBy('name')->get();
         $tipos = ['MANTENIMIENTO', 'CALIBRACION'];
 
@@ -90,6 +97,8 @@ class MantenimientoController extends Controller
      */
     public function store(Request $request)
     {
+        $this->checkPermission('mantenimientos.crear');
+
         $validated = $request->validate([
             'equipo_id' => 'required|exists:equipos,id',
             'tipo' => 'required|in:MANTENIMIENTO,CALIBRACION',
@@ -118,6 +127,8 @@ class MantenimientoController extends Controller
      */
     public function show(MantenimientoProgramado $mantenimiento): View
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $mantenimiento->load([
             'equipo.area.sede.cliente.empresa',
             'equipo.tipoEquipo',
@@ -133,7 +144,9 @@ class MantenimientoController extends Controller
      */
     public function edit(MantenimientoProgramado $mantenimiento): View
     {
-        $equipos = Equipo::with('area.sede.cliente')->orderBy('codigo_interno')->get();
+        $this->checkPermission('mantenimientos.editar');
+
+        $equipos = Equipo::with(['area.sede.cliente', 'marca'])->orderBy('codigo_activo_cliente')->get();
         $tecnicos = User::where('estado', true)->orderBy('name')->get();
         $tipos = ['MANTENIMIENTO', 'CALIBRACION'];
 
@@ -150,6 +163,8 @@ class MantenimientoController extends Controller
      */
     public function update(Request $request, MantenimientoProgramado $mantenimiento)
     {
+        $this->checkPermission('mantenimientos.editar');
+
         $validated = $request->validate([
             'tipo' => 'required|in:MANTENIMIENTO,CALIBRACION',
             'fecha_programada' => 'required|date',
@@ -169,6 +184,8 @@ class MantenimientoController extends Controller
      */
     public function realizarMantenimiento(Request $request, MantenimientoProgramado $mantenimiento)
     {
+        $this->checkPermission('mantenimientos.editar');
+
         $validated = $request->validate([
             'resultado' => 'required|string|max:1000',
             'fecha_realizacion' => 'required|date',
@@ -214,6 +231,8 @@ class MantenimientoController extends Controller
      */
     public function asignarTecnico(Request $request, MantenimientoProgramado $mantenimiento)
     {
+        $this->checkPermission('mantenimientos.editar');
+
         $validated = $request->validate([
             'tecnico_id' => 'required|exists:users,id',
             'descripcion' => 'nullable|string|max:500',
@@ -234,6 +253,8 @@ class MantenimientoController extends Controller
      */
     public function cancelar(Request $request, MantenimientoProgramado $mantenimiento)
     {
+        $this->checkPermission('mantenimientos.editar');
+
         $validated = $request->validate([
             'motivo' => 'nullable|string|max:500',
         ]);
@@ -250,6 +271,8 @@ class MantenimientoController extends Controller
      */
     public function destroy(MantenimientoProgramado $mantenimiento)
     {
+        $this->checkPermission('mantenimientos.eliminar');
+
         // No permitir eliminar si tiene servicio asociado
         if ($mantenimiento->servicio_id) {
             return redirect()
@@ -271,6 +294,8 @@ class MantenimientoController extends Controller
      */
     public function reporteProgramados(Request $request)
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $query = MantenimientoProgramado::with(['equipo.area.sede.cliente', 'tecnico'])
             ->where('estado', 'PENDIENTE');
 
@@ -291,6 +316,8 @@ class MantenimientoController extends Controller
      */
     public function reporteRealizados(Request $request)
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $query = MantenimientoProgramado::with(['equipo.area.sede.cliente', 'tecnico'])
             ->where('estado', 'REALIZADO');
 
@@ -311,6 +338,8 @@ class MantenimientoController extends Controller
      */
     public function reportePorEquipo(Request $request, Equipo $equipo)
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $mantenimientos = $equipo->mantenimientosProgramados()
             ->with('tecnico')
             ->orderByDesc('fecha_programada')
@@ -327,6 +356,8 @@ class MantenimientoController extends Controller
      */
     public function reportePorTecnico(Request $request, User $tecnico)
     {
+        $this->checkPermission('mantenimientos.ver');
+
         $mantenimientos = MantenimientoProgramado::where('tecnico_id', $tecnico->id)
             ->with('equipo.area.sede.cliente')
             ->orderByDesc('fecha_programada')

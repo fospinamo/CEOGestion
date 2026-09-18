@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * ClienteController - Módulo Parámetros
@@ -17,8 +18,12 @@ use App\Http\Controllers\Controller;
  */
 class ClienteController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index(): View
     {
+        $this->checkPermission('clientes.ver');
+
         $clientes = Cliente::with(['empresa', 'ciudadNotificacion'])
             ->get();
 
@@ -27,6 +32,8 @@ class ClienteController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('clientes.crear');
+
         $cliente = null;
         $empresas = Empresa::orderBy('nombre')->get();
         $municipios = Municipio::with('departamento')->orderBy('nombre')->get();
@@ -36,8 +43,11 @@ class ClienteController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('clientes.crear');
+
         $validated = $request->validate([
             'empresa_id' => 'required|exists:empresas,id',
+            'prefijo' => 'nullable|string|max:10|unique:clientes,prefijo,NULL,id,empresa_id,' . $request->empresa_id,
             'tipo_documento' => 'required|in:NIT,CC,CE,PASAPORTE',
             'documento' => 'required|string|unique:clientes,documento',
             'digito_verificacion' => 'nullable|string|size:1',
@@ -58,6 +68,8 @@ class ClienteController extends Controller
             'contacto_cargo' => 'nullable|string|max:100',
             'contacto_telefono' => 'required|string|max:20',
             'contacto_email' => 'required|email',
+        ], [
+            'prefijo.unique' => 'Ya existe un cliente con ese prefijo en esta empresa',
         ]);
 
         Cliente::create($validated);
@@ -68,6 +80,8 @@ class ClienteController extends Controller
 
     public function show(Cliente $cliente): View
     {
+        $this->checkPermission('clientes.ver');
+
         $cliente->load(['empresa', 'ciudadNotificacion.departamento.pais', 'contratos', 'sedes']);
 
         return view('parametros.clientes.show', compact('cliente'));
@@ -75,6 +89,8 @@ class ClienteController extends Controller
 
     public function edit(Cliente $cliente): View
     {
+        $this->checkPermission('clientes.editar');
+
         $empresas = Empresa::orderBy('nombre')->get();
         $municipios = Municipio::with('departamento')->orderBy('nombre')->get();
 
@@ -83,8 +99,11 @@ class ClienteController extends Controller
 
     public function update(Request $request, Cliente $cliente): RedirectResponse
     {
+        $this->checkPermission('clientes.editar');
+
         $validated = $request->validate([
             'empresa_id' => 'required|exists:empresas,id',
+            'prefijo' => 'nullable|string|max:10|unique:clientes,prefijo,' . $cliente->id . ',id,empresa_id,' . $request->empresa_id,
             'tipo_documento' => 'required|in:NIT,CC,CE,PASAPORTE',
             'documento' => 'required|string|unique:clientes,documento,' . $cliente->id,
             'digito_verificacion' => 'nullable|string|size:1',
@@ -105,6 +124,8 @@ class ClienteController extends Controller
             'contacto_cargo' => 'nullable|string|max:100',
             'contacto_telefono' => 'required|string|max:20',
             'contacto_email' => 'required|email',
+        ], [
+            'prefijo.unique' => 'Ya existe un cliente con ese prefijo en esta empresa',
         ]);
 
         $cliente->update($validated);
@@ -115,6 +136,8 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente): RedirectResponse
     {
+        $this->checkPermission('clientes.eliminar');
+
         $cliente->delete();
 
         return redirect()->route('parametros.clientes.index')

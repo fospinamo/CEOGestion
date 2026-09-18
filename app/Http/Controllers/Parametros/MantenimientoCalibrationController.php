@@ -16,7 +16,7 @@ class MantenimientoCalibrationController extends Controller
      */
     public function index($equipoId)
     {
-        $equipo = Equipo::with('mantenimientosCalibraciónes')->findOrFail($equipoId);
+        $equipo = Equipo::with(['mantenimientosCalibraciónes', 'marca'])->findOrFail($equipoId);
         $items = $equipo->mantenimientosCalibraciónes()
                         ->orderBy('fecha_programada', 'desc')
                         ->paginate(15);

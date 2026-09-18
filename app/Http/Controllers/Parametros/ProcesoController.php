@@ -7,14 +7,18 @@ use App\Models\Empresa;
 use App\Models\Proceso;
 use App\Models\Sede;
 use App\Models\Subproceso;
+use App\Traits\PermissionCheckTrait;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProcesoController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index(Request $request): View
     {
+        $this->checkPermission('procesos.ver');
         $query = Proceso::with(['empresa', 'sede.cliente', 'sede.empresa', 'subprocesos']);
 
         if ($request->filled('empresa_id')) {
@@ -34,6 +38,7 @@ class ProcesoController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('procesos.crear');
         $proceso = null;
         $empresas = Empresa::where('estado', true)->orderBy('nombre')->get();
         $sedes = Sede::with('cliente', 'empresa')->where('estado', true)->orderBy('nombre')->get();
@@ -43,6 +48,7 @@ class ProcesoController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('procesos.crear');
         $validated = $request->validate([
             'empresa_id' => 'required|exists:empresas,id',
             'sede_id' => 'required|exists:sedes,id',
@@ -81,6 +87,7 @@ class ProcesoController extends Controller
 
     public function show(Proceso $proceso): View
     {
+        $this->checkPermission('procesos.ver');
         $proceso->load(['empresa', 'sede.cliente', 'sede.empresa', 'subprocesos']);
 
         return view('parametros.procesos.show', compact('proceso'));
@@ -88,6 +95,7 @@ class ProcesoController extends Controller
 
     public function edit(Proceso $proceso): View
     {
+        $this->checkPermission('procesos.editar');
         $proceso->load(['empresa', 'sede', 'subprocesos']);
         $empresas = Empresa::where('estado', true)->orderBy('nombre')->get();
         $sedes = Sede::with('cliente', 'empresa')->where('estado', true)->orderBy('nombre')->get();
@@ -97,6 +105,7 @@ class ProcesoController extends Controller
 
     public function update(Request $request, Proceso $proceso): RedirectResponse
     {
+        $this->checkPermission('procesos.editar');
         $validated = $request->validate([
             'empresa_id' => 'required|exists:empresas,id',
             'sede_id' => 'required|exists:sedes,id',
@@ -136,6 +145,7 @@ class ProcesoController extends Controller
 
     public function destroy(Proceso $proceso): RedirectResponse
     {
+        $this->checkPermission('procesos.eliminar');
         $proceso->delete();
 
         return redirect()->route('parametros.procesos.index')

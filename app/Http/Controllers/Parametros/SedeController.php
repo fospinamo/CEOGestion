@@ -9,6 +9,7 @@ use App\Models\Municipio;
 use App\Models\Barrio;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * SedeController - Módulo Parámetros
@@ -17,14 +18,31 @@ use App\Http\Controllers\Controller;
  */
 class SedeController extends Controller
 {
-    public function index()
+    use PermissionCheckTrait;
+
+    public function index(Request $request)
     {
-        $sedes = Sede::with(['empresa', 'cliente', 'municipio', 'barrio'])->get();
-        return view('parametros.sedes.index', compact('sedes'));
+        $this->checkPermission('sedes.ver');
+        $query = Sede::with(['empresa', 'cliente', 'municipio', 'barrio']);
+
+        if ($request->filled('empresa_id')) {
+            $query->where('empresa_id', $request->empresa_id);
+        }
+
+        if ($request->filled('cliente_id')) {
+            $query->where('cliente_id', $request->cliente_id);
+        }
+
+        $sedes = $query->get();
+        $empresas = Empresa::where('estado', true)->orderBy('nombre')->get();
+        $clientes = Cliente::where('estado', true)->orderBy('razon_social')->get();
+
+        return view('parametros.sedes.index', compact('sedes', 'empresas', 'clientes'));
     }
 
     public function create()
     {
+        $this->checkPermission('sedes.crear');
         $sede = null;
         $empresas = Empresa::where('estado', true)->get();
         $clientes = Cliente::where('estado', true)->get();
@@ -36,6 +54,7 @@ class SedeController extends Controller
 
     public function store(Request $request)
     {
+        $this->checkPermission('sedes.crear');
         $request->validate([
             'empresa_id' => 'nullable|exists:empresas,id',
             'cliente_id' => 'nullable|exists:clientes,id',
@@ -47,6 +66,7 @@ class SedeController extends Controller
             'codigo_postal' => 'nullable|string|max:10',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'contacto' => 'nullable|string|max:150',
             'estado' => 'boolean',
         ], [
             'empresa_id.exists' => 'La empresa seleccionada no existe',
@@ -75,12 +95,14 @@ class SedeController extends Controller
 
     public function show(Sede $sede)
     {
+        $this->checkPermission('sedes.ver');
         $sede->load(['empresa', 'cliente', 'municipio.departamento.pais', 'barrio', 'areas']);
         return view('parametros.sedes.show', compact('sede'));
     }
 
     public function edit(Sede $sede)
     {
+        $this->checkPermission('sedes.editar');
         $empresas = Empresa::where('estado', true)->get();
         $clientes = Cliente::where('estado', true)->get();
         $departamentos = \App\Models\Departamento::with('municipios')->orderBy('nombre')->get();
@@ -91,6 +113,7 @@ class SedeController extends Controller
 
     public function update(Request $request, Sede $sede)
     {
+        $this->checkPermission('sedes.editar');
         $validated = $request->validate([
             'empresa_id' => 'nullable|exists:empresas,id',
             'cliente_id' => 'nullable|exists:clientes,id',
@@ -102,6 +125,7 @@ class SedeController extends Controller
             'codigo_postal' => 'nullable|string|max:10',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'contacto' => 'nullable|string|max:150',
             'estado' => 'boolean',
         ]);
 
@@ -125,6 +149,7 @@ class SedeController extends Controller
 
     public function destroy(Sede $sede)
     {
+        $this->checkPermission('sedes.eliminar');
         $sede->delete();
 
         return redirect()->route('parametros.sedes.index')

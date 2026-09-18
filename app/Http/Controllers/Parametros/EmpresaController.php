@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Parametros;
 
 use App\Models\Empresa;
+use App\Models\InformeFormato;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -14,19 +16,25 @@ use Illuminate\Support\Facades\Storage;
  */
 class EmpresaController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index()
     {
+        $this->checkPermission('empresas.ver');
         $empresas = Empresa::get();
         return view('parametros.empresas.index', compact('empresas'));
     }
 
     public function create()
     {
-        return view('parametros.empresas.create');
+        $this->checkPermission('empresas.crear');
+        $formatos = InformeFormato::activos()->orderBy('nombre')->get();
+        return view('parametros.empresas.create', compact('formatos'));
     }
 
     public function store(Request $request)
     {
+        $this->checkPermission('empresas.crear');
         $validated = $request->validate([
             'nombre' => 'required|string|unique:empresas|max:255',
             'nit' => 'required|string|unique:empresas|max:20',
@@ -40,9 +48,9 @@ class EmpresaController extends Controller
             'responsabilidades_fiscales' => 'nullable|array',
             'direccion' => 'nullable|string|max:500',
             'estado' => 'boolean',
+            'informe_formato_id' => 'nullable|exists:informe_formatos,id',
         ]);
 
-        // Manejar subida de logo
         if ($request->hasFile('logo')) {
             $logo = $request->file('logo');
             $filename = time() . '_' . $logo->getClientOriginalName();
@@ -58,16 +66,20 @@ class EmpresaController extends Controller
 
     public function show(Empresa $empresa)
     {
+        $this->checkPermission('empresas.ver');
         return view('parametros.empresas.show', compact('empresa'));
     }
 
     public function edit(Empresa $empresa)
     {
-        return view('parametros.empresas.edit', compact('empresa'));
+        $this->checkPermission('empresas.editar');
+        $formatos = InformeFormato::activos()->orderBy('nombre')->get();
+        return view('parametros.empresas.edit', compact('empresa', 'formatos'));
     }
 
     public function update(Request $request, Empresa $empresa)
     {
+        $this->checkPermission('empresas.editar');
         $validated = $request->validate([
             'nombre' => 'required|string|unique:empresas,nombre,' . $empresa->id . '|max:255',
             'nit' => 'required|string|unique:empresas,nit,' . $empresa->id . '|max:20',
@@ -81,6 +93,7 @@ class EmpresaController extends Controller
             'responsabilidades_fiscales' => 'nullable|array',
             'direccion' => 'nullable|string|max:500',
             'estado' => 'boolean',
+            'informe_formato_id' => 'nullable|exists:informe_formatos,id',
         ]);
 
         // Manejar subida de logo
@@ -105,6 +118,7 @@ class EmpresaController extends Controller
 
     public function destroy(Empresa $empresa)
     {
+        $this->checkPermission('empresas.eliminar');
         $empresa->delete();
 
         return redirect()->route('parametros.empresas.index')

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckTrait;
 
 /**
  * MarcaController - Módulo Parámetros
@@ -15,8 +16,11 @@ use App\Http\Controllers\Controller;
  */
 class MarcaController extends Controller
 {
+    use PermissionCheckTrait;
+
     public function index(): View
     {
+        $this->checkPermission('marcas.ver');
         $marcas = Marca::withCount('equipos')
             ->orderBy('nombre')
             ->get();
@@ -26,12 +30,14 @@ class MarcaController extends Controller
 
     public function create(): View
     {
+        $this->checkPermission('marcas.crear');
         $marca = null;
         return view('parametros.marcas.create', compact('marca'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->checkPermission('marcas.crear');
         $validated = $request->validate([
             'nombre' => 'required|string|max:100|unique:marcas,nombre',
             'descripcion' => 'nullable|string|max:255',
@@ -49,17 +55,20 @@ class MarcaController extends Controller
 
     public function show(Marca $marca): View
     {
+        $this->checkPermission('marcas.ver');
         $marca->load('equipos');
         return view('parametros.marcas.show', compact('marca'));
     }
 
     public function edit(Marca $marca): View
     {
+        $this->checkPermission('marcas.editar');
         return view('parametros.marcas.create', compact('marca'));
     }
 
     public function update(Request $request, Marca $marca): RedirectResponse
     {
+        $this->checkPermission('marcas.editar');
         $validated = $request->validate([
             'nombre' => 'required|string|max:100|unique:marcas,nombre,' . $marca->id,
             'descripcion' => 'nullable|string|max:255',
@@ -77,6 +86,7 @@ class MarcaController extends Controller
 
     public function destroy(Marca $marca): RedirectResponse
     {
+        $this->checkPermission('marcas.eliminar');
         if ($marca->equipos()->count() > 0) {
             return redirect()->route('parametros.marcas.index')
                 ->with('error', 'No se puede eliminar una marca que tiene equipos asociados');
