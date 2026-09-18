@@ -44,7 +44,6 @@ class ServicioSeeder extends Seeder
                 'descripcion_problema' => 'La pantalla no enciende, equipo sin respuesta',
                 'estado' => 'PENDIENTE',
                 'tecnico_asignado' => 'Pedro Guzmán',
-                'tecnico_cedula' => '1095000001',
             ]);
 
             // Servicio en proceso
@@ -60,7 +59,6 @@ class ServicioSeeder extends Seeder
                 'diagnostico' => 'Equipo con acumulación de polvo',
                 'estado' => 'EN_PROCESO',
                 'tecnico_asignado' => 'Luis Gómez',
-                'tecnico_cedula' => '1095000002',
             ]);
 
             // Servicio cerrado
@@ -79,7 +77,6 @@ class ServicioSeeder extends Seeder
                 'horas_trabajadas' => 2.5,
                 'estado' => 'CERRADO',
                 'tecnico_asignado' => 'Sofía Rodríguez',
-                'tecnico_cedula' => '1095000003',
                 'calificacion_cliente' => 5,
                 'comentarios_cliente' => 'Excelente servicio, muy profesional',
             ]);

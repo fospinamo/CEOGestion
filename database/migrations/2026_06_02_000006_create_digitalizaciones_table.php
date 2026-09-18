@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        if (Schema::hasTable('digitalizaciones')) {
+            return;
+        }
+
         Schema::create('digitalizaciones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('empresa_id')->constrained('empresas');

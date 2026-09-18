@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Equipo;
 use App\Models\Area;
 use App\Models\TipoEquipo;
+use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,10 +25,19 @@ class EquipoFactory extends Factory
         $area_id = Area::inRandomOrder()->first()->id ?? Area::factory()->create()->id;
         $tipo_equipo_id = TipoEquipo::inRandomOrder()->first()->id ?? TipoEquipo::factory()->create()->id;
 
+        // Obtener un cliente con prefijo para generar el código
+        $cliente = Cliente::whereNotNull('prefijo')->inRandomOrder()->first();
+        if ($cliente) {
+            $codigo_activo_cliente = Equipo::generarCodigoActivoCliente($cliente->id);
+        } else {
+            $codigo_activo_cliente = 'EQ-' . str_pad(mt_rand(1, 999), 3, '0', STR_PAD_LEFT);
+        }
+
         return [
             'area_id' => $area_id,
             'tipo_equipo_id' => $tipo_equipo_id,
-            'codigo_interno' => 'EQ-' . strtoupper($this->faker->unique()->bothify('??-######')),
+            'cliente_id' => $cliente?->id,
+            'codigo_activo_cliente' => $codigo_activo_cliente,
             'marca' => $this->faker->randomElement(['Dell', 'HP', 'Lenovo', 'ASUS', 'Cisco', 'Ubiquiti']),
             'modelo' => $this->faker->bothify('?#-###'),
             'serial' => strtoupper($this->faker->unique()->bothify('????-####-####')),

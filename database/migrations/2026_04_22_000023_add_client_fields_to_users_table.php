@@ -42,9 +42,6 @@ return new class extends Migration
                 'cliente'          // Usuario corporativo del cliente
             ])->default('operario');
             
-            // Permisos específicos (JSON para flexibilidad)
-            $table->json('permisos')->nullable();
-            
             // Índices
             $table->index('tipo_rol');
             $table->index('cliente_id');
@@ -64,7 +61,6 @@ return new class extends Migration
                 'ultimo_acceso_portal',
                 'ip_ultimo_acceso',
                 'tipo_rol',
-                'permisos',
             ]);
         });
     }

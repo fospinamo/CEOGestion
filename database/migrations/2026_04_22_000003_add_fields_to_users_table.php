@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('empresa_id')->nullable()->constrained('empresas')->onDelete('set null');
             $table->foreignId('sede_id')->nullable()->constrained('sedes')->onDelete('set null');
-            $table->enum('rol', ['admin', 'administrativo', 'conductor', 'pasajero'])->default('pasajero');
             $table->string('cedula')->unique()->nullable();
             $table->string('telefono')->nullable();
             $table->boolean('estado')->default(true);
@@ -29,7 +28,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['empresa_id']);
             $table->dropForeign(['sede_id']);
-            $table->dropColumn(['empresa_id', 'sede_id', 'rol', 'cedula', 'telefono', 'estado']);
+            $table->dropColumn(['empresa_id', 'sede_id', 'cedula', 'telefono', 'estado']);
         });
     }
 };

@@ -50,7 +50,6 @@ class ServicioFactory extends Factory
             ]),
             'horas_trabajadas' => $this->faker->optional(0.7)->randomFloat(1, 0.5, 8),
             'tecnico_asignado' => $this->faker->name(),
-            'tecnico_cedula' => $this->faker->numerify('#########'),
             'estado' => $this->faker->randomElement(['PENDIENTE', 'EN_PROCESO', 'RESUELTO', 'CERRADO']),
             'calificacion_cliente' => $this->faker->optional(0.5)->numberBetween(1, 5),
             'comentarios_cliente' => $this->faker->optional(0.4)->sentence(),

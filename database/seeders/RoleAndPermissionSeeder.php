@@ -127,7 +127,79 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'servicios.estadisticas', 'module' => 'Incidencias', 'resource' => 'servicios', 'action' => 'estadisticas', 'description' => 'Ver estadísticas de servicios'],
         ];
 
-        $allPermissions = array_merge($securityPermissions, $adminPermissions, $paramPermissions, $incidenciaPermissions);
+        // MÓDULO PARÁMETROS - Permisos faltantes
+        $paramExtraPermissions = [
+            ['name' => 'clientes.ver', 'module' => 'Parámetros', 'resource' => 'clientes', 'action' => 'ver', 'description' => 'Ver clientes'],
+            ['name' => 'clientes.crear', 'module' => 'Parámetros', 'resource' => 'clientes', 'action' => 'crear', 'description' => 'Crear cliente'],
+            ['name' => 'clientes.editar', 'module' => 'Parámetros', 'resource' => 'clientes', 'action' => 'editar', 'description' => 'Editar cliente'],
+            ['name' => 'clientes.eliminar', 'module' => 'Parámetros', 'resource' => 'clientes', 'action' => 'eliminar', 'description' => 'Eliminar cliente'],
+            ['name' => 'areas.ver', 'module' => 'Parámetros', 'resource' => 'areas', 'action' => 'ver', 'description' => 'Ver áreas'],
+            ['name' => 'areas.crear', 'module' => 'Parámetros', 'resource' => 'areas', 'action' => 'crear', 'description' => 'Crear área'],
+            ['name' => 'areas.editar', 'module' => 'Parámetros', 'resource' => 'areas', 'action' => 'editar', 'description' => 'Editar área'],
+            ['name' => 'areas.eliminar', 'module' => 'Parámetros', 'resource' => 'areas', 'action' => 'eliminar', 'description' => 'Eliminar área'],
+            ['name' => 'mantenimientos.ver', 'module' => 'Parámetros', 'resource' => 'mantenimientos', 'action' => 'ver', 'description' => 'Ver mantenimientos'],
+            ['name' => 'mantenimientos.crear', 'module' => 'Parámetros', 'resource' => 'mantenimientos', 'action' => 'crear', 'description' => 'Crear mantenimiento'],
+            ['name' => 'mantenimientos.editar', 'module' => 'Parámetros', 'resource' => 'mantenimientos', 'action' => 'editar', 'description' => 'Editar mantenimiento'],
+            ['name' => 'mantenimientos.eliminar', 'module' => 'Parámetros', 'resource' => 'mantenimientos', 'action' => 'eliminar', 'description' => 'Eliminar mantenimiento'],
+            ['name' => 'tipos-equipos.ver', 'module' => 'Parámetros', 'resource' => 'tipos-equipos', 'action' => 'ver', 'description' => 'Ver tipos de equipo'],
+            ['name' => 'tipos-equipos.crear', 'module' => 'Parámetros', 'resource' => 'tipos-equipos', 'action' => 'crear', 'description' => 'Crear tipo de equipo'],
+            ['name' => 'tipos-equipos.editar', 'module' => 'Parámetros', 'resource' => 'tipos-equipos', 'action' => 'editar', 'description' => 'Editar tipo de equipo'],
+            ['name' => 'tipos-equipos.eliminar', 'module' => 'Parámetros', 'resource' => 'tipos-equipos', 'action' => 'eliminar', 'description' => 'Eliminar tipo de equipo'],
+            ['name' => 'categorias.ver', 'module' => 'Parámetros', 'resource' => 'categorias', 'action' => 'ver', 'description' => 'Ver categorías'],
+            ['name' => 'categorias.crear', 'module' => 'Parámetros', 'resource' => 'categorias', 'action' => 'crear', 'description' => 'Crear categoría'],
+            ['name' => 'categorias.editar', 'module' => 'Parámetros', 'resource' => 'categorias', 'action' => 'editar', 'description' => 'Editar categoría'],
+            ['name' => 'categorias.eliminar', 'module' => 'Parámetros', 'resource' => 'categorias', 'action' => 'eliminar', 'description' => 'Eliminar categoría'],
+            ['name' => 'contratos.ver', 'module' => 'Parámetros', 'resource' => 'contratos', 'action' => 'ver', 'description' => 'Ver contratos'],
+            ['name' => 'contratos.crear', 'module' => 'Parámetros', 'resource' => 'contratos', 'action' => 'crear', 'description' => 'Crear contrato'],
+            ['name' => 'contratos.editar', 'module' => 'Parámetros', 'resource' => 'contratos', 'action' => 'editar', 'description' => 'Editar contrato'],
+            ['name' => 'contratos.eliminar', 'module' => 'Parámetros', 'resource' => 'contratos', 'action' => 'eliminar', 'description' => 'Eliminar contrato'],
+            ['name' => 'informe-formatos.ver', 'module' => 'Parámetros', 'resource' => 'informe-formatos', 'action' => 'ver', 'description' => 'Ver formatos de informe'],
+            ['name' => 'informe-formatos.crear', 'module' => 'Parámetros', 'resource' => 'informe-formatos', 'action' => 'crear', 'description' => 'Crear formato de informe'],
+            ['name' => 'informe-formatos.editar', 'module' => 'Parámetros', 'resource' => 'informe-formatos', 'action' => 'editar', 'description' => 'Editar formato de informe'],
+            ['name' => 'informe-formatos.eliminar', 'module' => 'Parámetros', 'resource' => 'informe-formatos', 'action' => 'eliminar', 'description' => 'Eliminar formato de informe'],
+        ];
+
+        // MÓDULO ADMINISTRATIVO - Permisos faltantes
+        $adminExtraPermissions = [
+            ['name' => 'paises.ver', 'module' => 'Administrativo', 'resource' => 'paises', 'action' => 'ver', 'description' => 'Ver países'],
+            ['name' => 'paises.crear', 'module' => 'Administrativo', 'resource' => 'paises', 'action' => 'crear', 'description' => 'Crear país'],
+            ['name' => 'paises.editar', 'module' => 'Administrativo', 'resource' => 'paises', 'action' => 'editar', 'description' => 'Editar país'],
+            ['name' => 'paises.eliminar', 'module' => 'Administrativo', 'resource' => 'paises', 'action' => 'eliminar', 'description' => 'Eliminar país'],
+            ['name' => 'departamentos.ver', 'module' => 'Administrativo', 'resource' => 'departamentos', 'action' => 'ver', 'description' => 'Ver departamentos'],
+            ['name' => 'departamentos.crear', 'module' => 'Administrativo', 'resource' => 'departamentos', 'action' => 'crear', 'description' => 'Crear departamento'],
+            ['name' => 'departamentos.editar', 'module' => 'Administrativo', 'resource' => 'departamentos', 'action' => 'editar', 'description' => 'Editar departamento'],
+            ['name' => 'departamentos.eliminar', 'module' => 'Administrativo', 'resource' => 'departamentos', 'action' => 'eliminar', 'description' => 'Eliminar departamento'],
+            ['name' => 'municipios.ver', 'module' => 'Administrativo', 'resource' => 'municipios', 'action' => 'ver', 'description' => 'Ver municipios'],
+            ['name' => 'municipios.crear', 'module' => 'Administrativo', 'resource' => 'municipios', 'action' => 'crear', 'description' => 'Crear municipio'],
+            ['name' => 'municipios.editar', 'module' => 'Administrativo', 'resource' => 'municipios', 'action' => 'editar', 'description' => 'Editar municipio'],
+            ['name' => 'municipios.eliminar', 'module' => 'Administrativo', 'resource' => 'municipios', 'action' => 'eliminar', 'description' => 'Eliminar municipio'],
+        ];
+
+        // MÓDULO DOCUMENTACIÓN - Permisos faltantes
+        $docPermissions = [
+            ['name' => 'digitalizaciones.ver', 'module' => 'Documentación', 'resource' => 'digitalizaciones', 'action' => 'ver', 'description' => 'Ver digitalizaciones'],
+            ['name' => 'digitalizaciones.crear', 'module' => 'Documentación', 'resource' => 'digitalizaciones', 'action' => 'crear', 'description' => 'Crear digitalización'],
+            ['name' => 'digitalizaciones.editar', 'module' => 'Documentación', 'resource' => 'digitalizaciones', 'action' => 'editar', 'description' => 'Editar digitalización'],
+            ['name' => 'digitalizaciones.eliminar', 'module' => 'Documentación', 'resource' => 'digitalizaciones', 'action' => 'eliminar', 'description' => 'Eliminar digitalización'],
+            ['name' => 'documentos.ver', 'module' => 'Documentación', 'resource' => 'documentos', 'action' => 'ver', 'description' => 'Ver documentos'],
+            ['name' => 'documentos.crear', 'module' => 'Documentación', 'resource' => 'documentos', 'action' => 'crear', 'description' => 'Crear documento'],
+            ['name' => 'documentos.editar', 'module' => 'Documentación', 'resource' => 'documentos', 'action' => 'editar', 'description' => 'Editar documento'],
+            ['name' => 'documentos.eliminar', 'module' => 'Documentación', 'resource' => 'documentos', 'action' => 'eliminar', 'description' => 'Eliminar documento'],
+            ['name' => 'radicaciones.ver', 'module' => 'Documentación', 'resource' => 'radicaciones', 'action' => 'ver', 'description' => 'Ver radicaciones'],
+            ['name' => 'radicaciones.crear', 'module' => 'Documentación', 'resource' => 'radicaciones', 'action' => 'crear', 'description' => 'Crear radicación'],
+            ['name' => 'radicaciones.editar', 'module' => 'Documentación', 'resource' => 'radicaciones', 'action' => 'editar', 'description' => 'Editar radicación'],
+            ['name' => 'radicaciones.eliminar', 'module' => 'Documentación', 'resource' => 'radicaciones', 'action' => 'eliminar', 'description' => 'Eliminar radicación'],
+        ];
+
+        $allPermissions = array_merge(
+            $securityPermissions,
+            $adminPermissions,
+            $adminExtraPermissions,
+            $paramPermissions,
+            $paramExtraPermissions,
+            $incidenciaPermissions,
+            $docPermissions
+        );
 
         $permissionMap = [];
         foreach ($allPermissions as $permData) {
@@ -148,11 +220,11 @@ class RoleAndPermissionSeeder extends Seeder
             $roleMap['admin']->grantPermission($permName);
         }
 
-        // ROLE TÉCNICO: Solo panel técnico y ver servicios
+        // ROLE TÉCNICO: Solo panel técnico, ver y editar servicios
         $tecnicoPermissions = [
             'servicios.ver',
             'servicios.panel-tech',
-            'servicios.editar', // Para registrar seguimiento
+            'servicios.editar',
         ];
         foreach ($tecnicoPermissions as $permName) {
             $roleMap['tecnico']->grantPermission($permName);
@@ -168,6 +240,14 @@ class RoleAndPermissionSeeder extends Seeder
             'servicios.reportar',
             'servicios.imprimir-pdf',
             'servicios.estadisticas',
+            'clientes.ver',
+            'clientes.crear',
+            'clientes.editar',
+            'areas.ver',
+            'equipos.ver',
+            'contratos.ver',
+            'empresas.ver',
+            'sedes.ver',
         ];
         foreach ($agentePermissions as $permName) {
             $roleMap['agente']->grantPermission($permName);

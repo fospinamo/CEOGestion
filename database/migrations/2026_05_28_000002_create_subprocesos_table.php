@@ -7,14 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('subprocesos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('proceso_id')->constrained('procesos')->cascadeOnDelete();
-            $table->string('nombre', 150);
-            $table->string('ruta', 255);
-            $table->boolean('estado')->default(true);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('subprocesos')) {
+            Schema::create('subprocesos', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('proceso_id')->constrained('procesos')->cascadeOnDelete();
+                $table->string('nombre', 150);
+                $table->string('ruta', 255);
+                $table->boolean('estado')->default(true);
+                $table->timestamps();
+            });
+        }
 
         Schema::table('procesos', function (Blueprint $table) {
             if (Schema::hasColumn('procesos', 'subproceso')) {
