@@ -133,7 +133,7 @@
             </div>
 
             <!-- Row 5: Código Postal y Contacto -->
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-4 gap-6">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Código Postal</label>
                     <input type="text" name="codigo_postal" value="{{ old('codigo_postal') }}"
@@ -149,6 +149,12 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Contacto</label>
+                    <input type="text" name="contacto" value="{{ old('contacto') }}" placeholder="Nombre del contacto"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>

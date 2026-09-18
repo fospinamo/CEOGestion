@@ -12,9 +12,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Clientes</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $clientes->count() }} clientes</p>
         </div>
+        @can('clientes.crear')
         <a href="{{ route('parametros.clientes.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nuevo Cliente
         </a>
+        @endcan
     </div>
 
     <!-- Tabla de Clientes -->
@@ -23,6 +25,7 @@
             <thead class="bg-gray-100 border-b">
                 <tr>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Razón Social</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Prefijo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Tipo</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Documento</th>
                     <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
@@ -37,6 +40,13 @@
                         <td class="px-6 py-3">
                             <p class="font-semibold text-gray-900">{{ $cliente->razon_social }}</p>
                             <p class="text-xs text-gray-500">{{ $cliente->nombre_comercial ?? 'N/A' }}</p>
+                        </td>
+                        <td class="px-6 py-3">
+                            @if($cliente->prefijo)
+                                <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">{{ $cliente->prefijo }}</span>
+                            @else
+                                <span class="text-gray-400 text-xs">—</span>
+                            @endif
                         </td>
                         <td class="px-6 py-3">
                             <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -67,9 +77,12 @@
                                 <a href="{{ route('parametros.clientes.show', $cliente) }}" class="text-blue-600 hover:text-blue-900" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('clientes.editar')
                                 <a href="{{ route('parametros.clientes.edit', $cliente) }}" class="text-yellow-600 hover:text-yellow-900" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('clientes.eliminar')
                                 <form action="{{ route('parametros.clientes.destroy', $cliente) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar cliente?')">
                                     @csrf
                                     @method('DELETE')
@@ -77,12 +90,13 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
                             <p>No hay clientes registrados</p>
                         </td>
@@ -104,7 +118,7 @@ $(document).ready(function() {
         },
         "responsive": true,
         "columnDefs": [
-            { "orderable": false, "targets": 6 }
+            { "orderable": false, "targets": 7 }
         ],
         "order": [[0, "asc"]],
         "pageLength": 10

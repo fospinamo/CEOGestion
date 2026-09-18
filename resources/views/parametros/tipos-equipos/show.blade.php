@@ -59,7 +59,7 @@
                     @foreach($tipoEquipo->equipos->take(5) as $equipo)
                         <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-gray-900">{{ $equipo->codigo_interno }}</p>
+                                <p class="font-semibold text-gray-900">{{ $equipo->codigo_activo_cliente }}</p>
                                 <p class="text-xs text-gray-500">Estado: <span class="font-semibold">{{ $equipo->estado }}</span></p>
                             </div>
                             <a href="{{ route('parametros.equipos.show', $equipo) }}" class="text-blue-600 hover:text-blue-900">
@@ -86,9 +86,12 @@
     <div class="space-y-6">
         <!-- Acciones -->
         <div class="bg-white rounded-lg shadow p-6 space-y-2">
+            @can('tipos-equipos.editar')
             <a href="{{ route('parametros.tipos-equipos.edit', $tipoEquipo) }}" class="w-full block text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
                 <i class="fas fa-edit"></i> Editar
             </a>
+            @endcan
+            @can('tipos-equipos.eliminar')
             @if($tipoEquipo->equipos()->count() === 0)
                 <form action="{{ route('parametros.tipos-equipos.destroy', $tipoEquipo) }}" method="POST" onsubmit="return confirm('¿Eliminar este tipo de equipo?')">
                     @csrf @method('DELETE')
@@ -97,6 +100,7 @@
                     </button>
                 </form>
             @endif
+            @endcan
         </div>
 
         <!-- Información del Sistema -->

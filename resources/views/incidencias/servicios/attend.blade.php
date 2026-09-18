@@ -16,7 +16,7 @@
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <p class="text-gray-600">Equipo Principal</p>
-                    <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_interno }} - {{ $servicio->equipo->modelo }}</p>
+                    <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_activo_cliente }} - {{ $servicio->equipo->modelo }}</p>
                 </div>
                 <div>
                     <p class="text-gray-600">Ubicación (Área)</p>
@@ -47,8 +47,8 @@
                             <input type="checkbox" name="equipos_adicionales[]" value="{{ $equipo->id }}" 
                                 class="w-4 h-4 text-blue-600 rounded">
                             <div class="ml-3 flex-1">
-                                <p class="font-semibold text-gray-900">{{ $equipo->codigo_interno }}</p>
-                                <p class="text-xs text-gray-600">{{ $equipo->marca }} {{ $equipo->modelo }} - {{ $equipo->area->nombre }}</p>
+                                <p class="font-semibold text-gray-900">{{ $equipo->codigo_activo_cliente }}</p>
+                                <p class="text-xs text-gray-600">{{ $equipo->marca?->nombre ?? '' }} {{ $equipo->modelo }} - {{ $equipo->area->nombre }}</p>
                             </div>
                             <span class="text-xs font-semibold px-2 py-1 bg-green-100 text-green-800 rounded-full">
                                 {{ $equipo->estado_operativo }}
@@ -78,6 +78,61 @@
                 @enderror
                 <p class="text-xs text-gray-500 mt-1">Mínimo 20 caracteres</p>
             </div>
+        </div>
+
+        <!-- Complementos / Repuestos -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">
+                <i class="fas fa-cogs"></i> Complementos / Repuestos
+                <span class="text-sm font-normal text-gray-500 ml-2">(Opcional)</span>
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">Registra los repuestos o complementos utilizados en el servicio.</p>
+
+            <div id="repuestos-container">
+                <div class="repuesto-row grid grid-cols-6 gap-3 mb-3 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Código</label>
+                        <input type="text" name="repuestos_codigo[]" placeholder="Cód."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Descripción</label>
+                        <input type="text" name="repuestos_descripcion[]" placeholder="Nombre del repuesto"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Marca</label>
+                        <input type="text" name="repuestos_marca[]" placeholder="Marca"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Modelo</label>
+                        <input type="text" name="repuestos_modelo[]" placeholder="Modelo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Serie</label>
+                        <input type="text" name="repuestos_serie[]" placeholder="Serie"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Cant.</label>
+                            <input type="number" name="repuestos_cantidad[]" value="1" min="1"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="button" onclick="eliminarRepuesto(this)"
+                            class="mt-5 px-2 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition" title="Eliminar repuesto">
+                            <i class="fas fa-trash-alt text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="agregarRepuesto()"
+                class="mt-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold transition">
+                <i class="fas fa-plus"></i> Agregar repuesto
+            </button>
         </div>
 
         <!-- Datos del Receptor -->
@@ -167,9 +222,11 @@
             <a href="{{ route('incidencias.servicios.show', $servicio) }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-semibold">
                 <i class="fas fa-times"></i> Cancelar
             </a>
+            @can('servicios.editar')
             <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold">
                 <i class="fas fa-check"></i> Cerrar Servicio
             </button>
+            @endcan
         </div>
     </form>
 </div>
@@ -178,6 +235,54 @@
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
 <script>
+function agregarRepuesto() {
+    const container = document.getElementById('repuestos-container');
+    const row = document.createElement('div');
+    row.className = 'repuesto-row grid grid-cols-6 gap-3 mb-3 items-end';
+    row.innerHTML = `
+        <div>
+            <input type="text" name="repuestos_codigo[]" placeholder="Cód."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <input type="text" name="repuestos_descripcion[]" placeholder="Nombre del repuesto"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <input type="text" name="repuestos_marca[]" placeholder="Marca"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <input type="text" name="repuestos_modelo[]" placeholder="Modelo"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <input type="text" name="repuestos_serie[]" placeholder="Serie"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex gap-2">
+            <div class="flex-1">
+                <input type="number" name="repuestos_cantidad[]" value="1" min="1"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="button" onclick="eliminarRepuesto(this)"
+                class="px-2 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition" title="Eliminar repuesto">
+                <i class="fas fa-trash-alt text-sm"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+function eliminarRepuesto(btn) {
+    const container = document.getElementById('repuestos-container');
+    if (container.children.length > 1) {
+        btn.closest('.repuesto-row').remove();
+    } else {
+        alert('Debe haber al menos una fila si va a registrar repuestos. Si no desea registrar ninguno, deje los campos vacíos.');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('signatureCanvas');
     const signatureInput = document.getElementById('signatureInput');

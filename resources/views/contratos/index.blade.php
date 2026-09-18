@@ -12,9 +12,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Contratos</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $contratos->count() }} contratos</p>
         </div>
+        @can('contratos.crear')
         <a href="{{ route('parametros.contratos.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-plus"></i> Nuevo Contrato
         </a>
+        @endcan
     </div>
 
     <!-- Tabla de Contratos -->
@@ -79,9 +81,12 @@
                                 <a href="{{ route('parametros.contratos.show', $contrato) }}" class="text-blue-600 hover:text-blue-900 transition" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('contratos.editar')
                                 <a href="{{ route('parametros.contratos.edit', $contrato) }}" class="text-yellow-600 hover:text-yellow-900 transition" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('contratos.eliminar')
                                 <form action="{{ route('parametros.contratos.destroy', $contrato) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar contrato?')">
                                     @csrf
                                     @method('DELETE')
@@ -89,6 +94,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

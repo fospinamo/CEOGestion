@@ -57,7 +57,7 @@
                 <a href="{{ route('incidencias.servicios.show', $documento->entidad) }}" class="text-lg font-semibold text-blue-600 hover:underline">
                     Servicio #{{ $documento->entidad->id }}
                 </a>
-                <p class="text-sm text-gray-600 mt-2">Equipo: {{ $documento->entidad->equipo->codigo_interno }}</p>
+                <p class="text-sm text-gray-600 mt-2">Equipo: {{ $documento->entidad->equipo->codigo_activo_cliente }}</p>
             @endif
         </div>
     </div>

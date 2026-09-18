@@ -49,15 +49,19 @@
 
     <!-- Action Buttons -->
     <div class="flex gap-3">
+        @can('paises.editar')
         <a href="{{ route('administrativo.paises.edit', $paise) }}" class="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition">
             ✏️ Editar
         </a>
+        @endcan
+        @can('paises.eliminar')
         <form action="{{ route('administrativo.paises.destroy', $paise) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este país?')">
             @csrf @method('DELETE')
             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                 🗑️ Eliminar
             </button>
         </form>
+        @endcan
         <a href="{{ route('administrativo.paises.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition">
             ← Volver
         </a>

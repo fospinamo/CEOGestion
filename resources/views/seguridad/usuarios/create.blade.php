@@ -91,6 +91,19 @@
                 </select>
             </div>
 
+            <!-- Cargo -->
+            <div>
+                <label for="cargo_id" class="block text-sm font-semibold text-gray-700 mb-1">Cargo</label>
+                <select name="cargo_id" id="cargo_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <option value="">Seleccionar cargo...</option>
+                    @foreach($cargos as $cargo)
+                        <option value="{{ $cargo->id }}" {{ old('cargo_id') == $cargo->id ? 'selected' : '' }}>
+                            {{ $cargo->codigo }} - {{ $cargo->descripcion }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Cédula -->
             <div>
                 <label for="cedula" class="block text-sm font-semibold text-gray-700 mb-1">Cédula</label>
@@ -143,7 +156,7 @@
             }
 
             // Llamar API para obtener sedes de la empresa
-            fetch(`/api/sedes-por-empresa?empresa_id=${empresaId}`)
+            fetch(`${window.Laravel.baseUrl}/api/sedes-por-empresa?empresa_id=${empresaId}`)
                 .then(response => response.json())
                 .then(sedes => {
                     // Limpiar opciones anteriores

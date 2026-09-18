@@ -1,0 +1,57 @@
+/* ============================================================================
+   SIDEBAR - Layout CSS
+   ============================================================================ */
+
+[x-cloak] { display: none !important; }
+
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    h1 { font-size: 1.5rem !important; }
+    h2 { font-size: 1.25rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    p { font-size: 0.95rem !important; }
+
+    button, a.btn, [role="button"] {
+        min-height: 44px;
+        padding: 10px 12px !important;
+    }
+}
+
+/* Sidebar behavior — more reliable than dynamic Tailwind */
+#sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 256px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 40;
+}
+
+#sidebar.sidebar-open {
+    transform: translateX(0);
+}
+
+#sidebarOverlay {
+    display: none;
+}
+
+#sidebarOverlay.overlay-visible {
+    display: block;
+}
+
+/* Desktop (768px+): show sidebar statically */
+@media (min-width: 768px) {
+    #sidebar {
+        position: static !important;
+        transform: none !important;
+        width: auto;
+    }
+
+    #sidebarOverlay {
+        display: none !important;
+    }
+}

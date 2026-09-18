@@ -41,6 +41,13 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Prefijo de Activo</label>
+                    <input type="text" name="prefijo" value="{{ old('prefijo', $cliente->prefijo ?? '') }}" maxlength="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('prefijo') border-red-500 @enderror" placeholder="Ej: C, EMP, MED">
+                    @error('prefijo')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
+                    <p class="text-gray-500 text-xs mt-1">Código para generar códigos de activo: <strong>C-001</strong>, <strong>C-002</strong>, etc.</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Documento *</label>
                     <select name="tipo_documento" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('tipo_documento') border-red-500 @enderror" required>
                         <option value="">Seleccione</option>
@@ -78,8 +85,8 @@
 
         <!-- Datos de Persona Natural (si aplica) -->
         <div class="border-b pb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Datos Personales</h3>
-            
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Datos </h3>
+            <p class="text-sm text-gray-500 mb-4">solo para diferentes a NIT </p>
             <div class="grid grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Primer Nombre</label>
@@ -102,7 +109,7 @@
 
         <!-- Contacto Principal -->
         <div class="border-b pb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contacto Principal</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Datos del cliente</h3>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>

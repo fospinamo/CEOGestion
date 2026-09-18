@@ -12,9 +12,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Marcas</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $marcas->count() }} marcas</p>
         </div>
+        @can('marcas.crear')
         <a href="{{ route('parametros.marcas.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nueva Marca
         </a>
+        @endcan
     </div>
 
     <!-- Tabla -->
@@ -59,9 +61,12 @@
                                 <a href="{{ route('parametros.marcas.show', $marca) }}" class="px-3 py-1 text-sm bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('marcas.editar')
                                 <a href="{{ route('parametros.marcas.edit', $marca) }}" class="px-3 py-1 text-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('marcas.eliminar')
                                 @if($marca->equipos_count === 0)
                                     <form action="{{ route('parametros.marcas.destroy', $marca) }}" method="POST" class="inline">
                                         @csrf
@@ -71,6 +76,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                @endcan
                             </div>
                         </td>
                     </tr>

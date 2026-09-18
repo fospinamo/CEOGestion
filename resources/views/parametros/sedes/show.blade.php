@@ -106,9 +106,12 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Acciones</h3>
             <div class="space-y-2">
+                @can('sedes.editar')
                 <a href="{{ route('parametros.sedes.edit', $sede) }}" class="block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center">
                     <i class="fas fa-edit mr-2"></i> Editar
                 </a>
+                @endcan
+                @can('sedes.eliminar')
                 <form action="{{ route('parametros.sedes.destroy', $sede) }}" method="POST" onsubmit="return confirm('¿Estás seguro?')">
                     @csrf
                     @method('DELETE')
@@ -116,6 +119,7 @@
                         <i class="fas fa-trash mr-2"></i> Eliminar
                     </button>
                 </form>
+                @endcan
                 <a href="{{ route('parametros.sedes.index') }}" class="block px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-center">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </a>

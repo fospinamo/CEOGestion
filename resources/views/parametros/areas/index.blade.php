@@ -9,9 +9,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Áreas</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $areas->count() }} áreas</p>
         </div>
+        @can('areas.crear')
         <a href="{{ route('parametros.areas.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nueva Área
         </a>
+        @endcan
     </div>
 
     <!-- Filtros -->
@@ -119,11 +121,15 @@
                         <td class="px-6 py-3 text-center">
                             <div class="flex justify-center gap-2">
                                 <a href="{{ route('parametros.areas.show', $area) }}" class="text-blue-600 hover:text-blue-900"><i class="fas fa-eye"></i></a>
+                                @can('areas.editar')
                                 <a href="{{ route('parametros.areas.edit', $area) }}" class="text-yellow-600 hover:text-yellow-900"><i class="fas fa-edit"></i></a>
+                                @endcan
+                                @can('areas.eliminar')
                                 <form action="{{ route('parametros.areas.destroy', $area) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

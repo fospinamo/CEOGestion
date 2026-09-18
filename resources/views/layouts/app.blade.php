@@ -18,61 +18,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-
-        @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-            h1 { font-size: 1.5rem !important; }
-            h2 { font-size: 1.25rem !important; }
-            h3 { font-size: 1.1rem !important; }
-            p { font-size: 0.95rem !important; }
-            
-            button, a.btn, [role="button"] {
-                min-height: 44px;
-                padding: 10px 12px !important;
-            }
-        }
-        
-        /* Estilos CSS personalizados para el sidebar (más confiables que Tailwind dinámico) */
-        #sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 256px;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 40;
-        }
-        
-        #sidebar.sidebar-open {
-            transform: translateX(0);
-        }
-        
-        #sidebarOverlay {
-            display: none;
-        }
-        
-        #sidebarOverlay.overlay-visible {
-            display: block;
-        }
-        
-        /* En desktop (768px+), mostrar sidebar estáticamente */
-        @media (min-width: 768px) {
-            #sidebar {
-                position: static !important;
-                transform: none !important;
-                width: auto;
-            }
-            
-            #sidebarOverlay {
-                display: none !important;
-            }
-        }
-    </style>
 </head>
 <body class="bg-gray-50">
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30" onclick="closeSidebar()"></div>
@@ -110,17 +55,11 @@
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Inicio</span>
                         </a>
-                        @if(auth()->check() && auth()->user()->hasRole('tecnico'))
-                            <a href="{{ route('incidencias.servicios.mi-panel') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.mi-panel') ? 'bg-blue-700' : '' }}">
-                                <i class="fas fa-tasks w-5"></i>
-                                <span>Mis Servicios</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
 
                 {{-- Clientes --}}
-                @if(auth()->check() && (auth()->user()->hasPermission('empresas.ver') || auth()->user()->hasPermission('sedes.ver') || auth()->user()->hasPermission('clientes.ver') || auth()->user()->hasPermission('areas.ver') || auth()->user()->hasPermission('equipos.ver') || auth()->user()->hasPermission('marcas.ver') || auth()->user()->hasPermission('tipos-equipos.ver') || auth()->user()->hasPermission('parametros.categorias.ver')))
+                @if(auth()->check() && (auth()->user()->hasPermission('empresas.ver') || auth()->user()->hasPermission('sedes.ver') || auth()->user()->hasPermission('clientes.ver') || auth()->user()->hasPermission('areas.ver') || auth()->user()->hasPermission('equipos.ver') || auth()->user()->hasPermission('marcas.ver') || auth()->user()->hasPermission('tipos-equipos.ver') || auth()->user()->hasPermission('categorias.ver')))
                     <div class="space-y-1">
                         <button type="button" @click="toggle('clientes')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
                             <span class="flex items-center gap-3 font-semibold">
@@ -172,10 +111,16 @@
                                     <span>Tipos de Equipos</span>
                                 </a>
                             @endif
-                            @if(auth()->user()->hasPermission('parametros.categorias.ver'))
+                            @if(auth()->user()->hasPermission('categorias.ver'))
                                 <a href="{{ route('parametros.categorias.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.categorias.*') ? 'bg-blue-700' : '' }}">
                                     <i class="fas fa-tags w-5"></i>
                                     <span>Categorías</span>
+                                </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('informe-formatos.ver'))
+                                <a href="{{ route('parametros.informe-formatos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.informe-formatos.*') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-file-invoice w-5"></i>
+                                    <span>Formatos Informe</span>
                                 </a>
                             @endif
                         </div>
@@ -198,6 +143,18 @@
                                 <span>Contratos</span>
                             </a>
                         </div>
+                    </div>
+                @endif
+
+                {{-- Cargos --}}
+                @if(auth()->user()->hasPermission('cargos.ver'))
+                    <div class="space-y-1">
+                        <a href="{{ route('parametros.cargos.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.cargos.*') ? 'bg-blue-700' : '' }}">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span>👤</span>
+                                <span>Cargos</span>
+                            </span>
+                        </a>
                     </div>
                 @endif
 
@@ -263,6 +220,12 @@
                                     <span>Estadísticas</span>
                                 </a>
                             @endif
+                            @if(auth()->user()->hasPermission('servicios.panel-tech'))
+                                <a href="{{ route('incidencias.servicios.mi-panel') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('incidencias.servicios.mi-panel') ? 'bg-blue-700' : '' }}">
+                                    <i class="fas fa-user-cog w-5"></i>
+                                    <span>Mis Servicios</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endif
@@ -281,22 +244,40 @@
                             <i class="fas fa-sliders-h w-5"></i>
                             <span>Parametros</span>
                         </span>
-                        <a href="{{ route('parametros.procesos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.procesos.*') ? 'bg-blue-700' : '' }}">
-                            <i class="fas fa-project-diagram w-5"></i>
-                            <span>Procesos</span>
-                        </a>
-                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
-                            <i class="fas fa-envelope-open-text w-5"></i>
-                            <span>Correspondencia</span>
-                        </span>
+                        @if(auth()->user()->hasPermission('procesos.ver'))
+                            <a href="{{ route('parametros.procesos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('parametros.procesos.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-project-diagram w-5"></i>
+                                <span>Procesos</span>
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasPermission('clases_documentales.ver'))
+                            <a href="{{ route('documentacion.parametros.clases_documentales.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('documentacion.parametros.clases_documentales.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-file-alt w-5"></i>
+                                <span>Clases Documentales</span>
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasPermission('trd.ver'))
+                            <a href="{{ route('documentacion.tablas_retencion.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-700 transition {{ request()->routeIs('documentacion.tablas_retencion.*') ? 'bg-blue-700' : '' }}">
+                                <i class="fas fa-table w-5"></i>
+                                <span>TRD</span>
+                            </a>
+                        @endif
+                        @if(auth()->user()->hasPermission('documentos.ver'))
+                            <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                                <i class="fas fa-envelope-open-text w-5"></i>
+                                <span>Correspondencia</span>
+                            </span>
+                        @endif
                         <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
                             <i class="fas fa-archive w-5"></i>
                             <span>Archivo</span>
                         </span>
-                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
-                            <i class="fas fa-file-image w-5"></i>
-                            <span>Digitalizacion</span>
-                        </span>
+                        @if(auth()->user()->hasPermission('digitalizaciones.ver'))
+                            <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
+                                <i class="fas fa-file-image w-5"></i>
+                                <span>Digitalizacion</span>
+                            </span>
+                        @endif
                         <span class="flex items-center gap-3 px-4 py-2 rounded-lg text-blue-200 cursor-not-allowed opacity-70">
                             <i class="fas fa-eye w-5"></i>
                             <span>Visualizacion</span>
@@ -418,8 +399,8 @@
                     contratos: {{ request()->routeIs('parametros.contratos.*') ? 'true' : 'false' }},
                     ubicacion: {{ request()->routeIs('administrativo.paises.*') || request()->routeIs('administrativo.departamentos.*') || request()->routeIs('administrativo.municipios.*') ? 'true' : 'false' }},
                     incidencias: {{ request()->routeIs('incidencias.servicios.*') ? 'true' : 'false' }},
-                    configuracion: {{ request()->routeIs('seguridad.usuarios.*') || request()->routeIs('seguridad.roles.*') || request()->routeIs('seguridad.permissions.*') ? 'true' : 'false' }}
-                    ,documentacion: false
+                    configuracion: {{ request()->routeIs('seguridad.usuarios.*') || request()->routeIs('seguridad.roles.*') || request()->routeIs('seguridad.permissions.*') ? 'true' : 'false' }},
+                    documentacion: {{ request()->routeIs('documentacion.*') ? 'true' : 'false' }}
                 },
                 init() {
                     try {

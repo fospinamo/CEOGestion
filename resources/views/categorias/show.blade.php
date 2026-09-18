@@ -115,9 +115,12 @@
         <a href="{{ route('parametros.categorias.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
+        @can('categorias.editar')
         <a href="{{ route('parametros.categorias.edit', $categoria) }}" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-edit"></i> Editar
         </a>
+        @endcan
+        @can('categorias.eliminar')
         @if($categoria->tiposEquipos()->count() == 0)
             <form action="{{ route('parametros.categorias.destroy', $categoria) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar esta categoría?')">
                 @csrf
@@ -131,6 +134,7 @@
                 <i class="fas fa-trash"></i> Eliminar (No permitido)
             </button>
         @endif
+        @endcan
     </div>
 </div>
 @endsection

@@ -238,6 +238,74 @@
                 @enderror
             </div>
 
+            <!-- REPUESTOS INSTALADOS -->
+            <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2" style="border-color: #f59e0b;">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">🔩 Repuestos Instalados</h2>
+                    <button type="button" onclick="abrirModalRepuesto()"
+                        class="inline-flex items-center gap-2 text-white font-semibold py-2 px-4 rounded-lg transition text-sm shadow"
+                        style="background-color: #f59e0b;">
+                        <i class="fas fa-plus"></i> Agregar Repuesto
+                    </button>
+                </div>
+
+                <div id="repuestos-list" class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full text-sm">
+                        <thead style="background-color: #fef3c7;">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-amber-800">Código</th>
+                                <th class="px-3 py-2 text-left text-amber-800">Descripción</th>
+                                <th class="px-3 py-2 text-left text-amber-800">Marca</th>
+                                <th class="px-3 py-2 text-left text-amber-800">Modelo</th>
+                                <th class="px-3 py-2 text-left text-amber-800">Serial</th>
+                                <th class="px-3 py-2 text-center text-amber-800">Cant.</th>
+                                <th class="px-3 py-2 text-center text-amber-800">Facturable</th>
+                                <th class="px-3 py-2 text-left text-amber-800">N° Factura</th>
+                                <th class="px-3 py-2 text-center text-amber-800">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repuestos-tbody">
+                            @forelse($servicio->repuestos->load('marca') as $repuesto)
+                                <tr class="border-t hover:bg-gray-50" data-repuesto-id="{{ $repuesto->id }}">
+                                    <td class="px-3 py-2 font-semibold text-gray-900">{{ $repuesto->codigo ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $repuesto->descripcion }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $repuesto->marca->nombre ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $repuesto->modelo ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $repuesto->serial ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-center font-semibold">{{ $repuesto->cantidad }}</td>
+                                    <td class="px-3 py-2 text-center">
+                                        @if($repuesto->facturable)
+                                            <span class="inline-block px-2 py-1 text-xs rounded-full font-semibold" style="background-color: #d1fae5; color: #065f46;">Sí</span>
+                                        @else
+                                            <span class="inline-block px-2 py-1 text-xs rounded-full" style="background-color: #f3f4f6; color: #374151;">No</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-700">{{ $repuesto->numero_factura ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-center">
+                                        <button type="button" onclick='editarRepuesto(@json($repuesto))' class="text-amber-600 hover:text-amber-800 mx-1" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" onclick="eliminarRepuesto({{ $repuesto->id }})" class="text-red-600 hover:text-red-800 mx-1" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr id="repuestos-empty">
+                                    <td colspan="9" class="px-3 py-8 text-center text-gray-500">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <i class="fas fa-box-open text-3xl text-gray-300"></i>
+                                            <p>No hay repuestos registrados</p>
+                                            <p class="text-xs text-gray-400">Haga clic en "Agregar Repuesto" para añadir uno</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- DESCRIPCIÓN DEL PROBLEMA (SOLO LECTURA) -->
             <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8">
                 <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 pb-3 sm:pb-4 border-b-2 border-red-500">📝 Descripción del Problema (Solicitud Registrada)</h2>
@@ -255,14 +323,23 @@
                 <div>
                     <div class="flex items-center justify-between gap-3 mb-2">
                         <label for="diagnostico_validacion" class="block text-sm font-semibold text-gray-700">Diagnóstico / Validación / Labor realizada *</label>
-                        <button type="button" data-dictation-target="diagnostico_validacion" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-300 text-indigo-700 hover:bg-indigo-50 transition">
-                            🎤 Dictar
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" data-dictation-target="diagnostico_validacion" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-300 text-indigo-700 hover:bg-indigo-50 transition">
+                                🎤 Dictar
+                            </button>
+                            <button type="button" data-ia-target="diagnostico_validacion" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50 transition hidden" id="btn-ia-diagnostico_validacion">
+                                🤖 Mejorar con IA
+                            </button>
+                        </div>
                     </div>
                     <textarea name="diagnostico_validacion" id="diagnostico_validacion" rows="4"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Describe el diagnóstico realizado y la validación del servicio..."
                         required>{{ old('diagnostico_validacion', $servicio->diagnostico_validacion) }}</textarea>
+                    
+                    <!-- Campo oculto para guardar texto original -->
+                    <input type="hidden" id="diagnostico_validacion_original" name="diagnostico_validacion_original" value="">
+                    
                     <p class="text-xs text-gray-500 mt-1" data-dictation-status-for="diagnostico_validacion">Haz clic en Dictar para iniciar reconocimiento de voz.</p>
                     @error('diagnostico_validacion')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -277,13 +354,22 @@
                 <div>
                     <div class="flex items-center justify-between gap-3 mb-2">
                         <label for="observaciones_informe" class="block text-sm font-semibold text-gray-700">Observaciones Adicionales (Opcional)</label>
-                        <button type="button" data-dictation-target="observaciones_informe" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-cyan-300 text-cyan-700 hover:bg-cyan-50 transition">
-                            🎤 Dictar
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" data-dictation-target="observaciones_informe" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-cyan-300 text-cyan-700 hover:bg-cyan-50 transition">
+                                🎤 Dictar
+                            </button>
+                            <button type="button" data-ia-target="observaciones_informe" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50 transition hidden" id="btn-ia-observaciones_informe">
+                                🤖 Mejorar con IA
+                            </button>
+                        </div>
                     </div>
                     <textarea name="observaciones_informe" id="observaciones_informe" rows="3"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         placeholder="Notas, recomendaciones, comentarios...">{{ old('observaciones_informe', $servicio->observaciones_informe) }}</textarea>
+                    
+                    <!-- Campo oculto para guardar texto original -->
+                    <input type="hidden" id="observaciones_informe_original" name="observaciones_informe_original" value="">
+                    
                     <p class="text-xs text-gray-500 mt-1" data-dictation-status-for="observaciones_informe"></p>
                     @error('observaciones_informe')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -618,6 +704,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (finalTranscript) {
             appendTextToTarget(activeTargetId, finalTranscript);
+            
+            // NUEVO: Guardar texto original y mostrar botón de IA
+            const target = document.getElementById(activeTargetId);
+            const originalInput = document.getElementById(activeTargetId + '_original');
+            if (originalInput) {
+                originalInput.value = target.value;
+            }
+            
+            // Mostrar botón de IA
+            const btnIA = document.getElementById('btn-ia-' + activeTargetId);
+            if (btnIA) {
+                btnIA.classList.remove('hidden');
+            }
         }
 
         setStatus(activeTargetId, interimTranscript ? ('Escuchando: ' + interimTranscript) : 'Escuchando...');
@@ -683,6 +782,510 @@ document.addEventListener('DOMContentLoaded', function() {
                 activeTargetId = null;
             }
         });
+    });
+    
+    // ===== PROCESAMIENTO CON IA (DEEPSEEK) =====
+    
+    /**
+     * Procesa texto con IA para mejorar redacción y acentuaciones
+     */
+    function procesarConIA(targetId) {
+        const textarea = document.getElementById(targetId);
+        const btnIA = document.getElementById('btn-ia-' + targetId);
+        const statusDiv = document.querySelector('[data-dictation-status-for="' + targetId + '"]');
+        
+        if (!textarea || !textarea.value.trim()) {
+            if (statusDiv) statusDiv.textContent = '⚠️ No hay texto para procesar';
+            return;
+        }
+        
+        // Mostrar estado de procesamiento
+        if (statusDiv) {
+            statusDiv.textContent = '🤖 Procesando con IA... por favor espera';
+            statusDiv.classList.add('text-blue-600', 'font-semibold');
+        }
+        if (btnIA) {
+            btnIA.disabled = true;
+            btnIA.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+        // Llamar endpoint de backend
+        fetch('{{ route("incidencias.servicios.procesar-voz") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                texto_capturado: textarea.value,
+                campo: targetId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // ✅ Si IA está habilitada, mostrar modal de confirmación
+                if (data.ia_enabled && data.require_confirmation) {
+                    mostrarModalConfirmacion(targetId, data.texto_original, data.texto_procesado);
+                } else if (!data.ia_enabled) {
+                    // IA deshabilitada, mantener texto original
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            ℹ️ <strong>IA deshabilitada</strong><br>
+                            <small>Usando captura de voz sin procesar</small>
+                        `;
+                        statusDiv.classList.add('text-gray-600', 'font-semibold');
+                    }
+                } else {
+                    // Fallback: actualizar directamente
+                    textarea.value = data.texto_procesado;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            ✅ <strong>Texto procesado</strong><br>
+                            <small>Confirma que sea correcto</small>
+                        `;
+                        statusDiv.classList.add('text-green-600', 'font-semibold');
+                    }
+                }
+            } else {
+                // Si falla IA, mantener original
+                if (statusDiv) {
+                    statusDiv.innerHTML = `
+                        ⚠️ <strong>IA no disponible</strong><br>
+                        <small>Se mantiene el texto original capturado</small>
+                    `;
+                    statusDiv.classList.add('text-yellow-600', 'font-semibold');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (statusDiv) {
+                statusDiv.innerHTML = `
+                    ❌ <strong>Error al procesar</strong><br>
+                    <small>El texto original se mantiene intacto</small>
+                `;
+                statusDiv.classList.add('text-red-600', 'font-semibold');
+            }
+        })
+        .finally(() => {
+            // Rehabilitar botón
+            if (btnIA) {
+                btnIA.disabled = false;
+                btnIA.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    }
+    
+    /**
+     * Mostrar modal de confirmación: Comparar original vs procesado
+     */
+    function mostrarModalConfirmacion(targetId, textoOriginal, textoProcesado) {
+        const modal = document.getElementById('modal-confirmacion-ia') || crearModalConfirmacion();
+        
+        document.getElementById('modal-ia-original').textContent = textoOriginal;
+        document.getElementById('modal-ia-procesado').textContent = textoProcesado;
+        
+        // Botones de acción
+        const btnConfirmar = document.getElementById('btn-confirmar-ia');
+        const btnRechazar = document.getElementById('btn-rechazar-ia');
+        
+        btnConfirmar.onclick = () => {
+            document.getElementById(targetId).value = textoProcesado;
+            document.getElementById(targetId).dispatchEvent(new Event('input', { bubbles: true }));
+            modal.classList.add('hidden');
+            
+            const statusDiv = document.querySelector('[data-dictation-status-for="' + targetId + '"]');
+            if (statusDiv) {
+                statusDiv.innerHTML = `✅ <strong>Texto confirmado</strong>`;
+                statusDiv.classList.add('text-green-600', 'font-semibold');
+            }
+        };
+        
+        btnRechazar.onclick = () => {
+            modal.classList.add('hidden');
+        };
+        
+        modal.classList.remove('hidden');
+    }
+    
+    /**
+     * Crear modal de confirmación si no existe
+     */
+    function crearModalConfirmacion() {
+        const template = document.createElement('div');
+        template.id = 'modal-confirmacion-ia';
+        template.className = 'fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4';
+        template.innerHTML = `
+            <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 border-b">
+                    <h3 class="text-lg font-bold">🔍 Revisar Cambios de IA</h3>
+                    <p class="text-sm text-blue-100">Compara el texto original con la versión mejorada</p>
+                </div>
+                
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Original -->
+                    <div class="bg-orange-50 border-2 border-orange-300 rounded-lg p-4">
+                        <h4 class="font-bold text-orange-900 mb-2">📝 Texto Captado (Original)</h4>
+                        <div id="modal-ia-original" class="bg-white p-3 rounded text-sm text-gray-800 max-h-64 overflow-y-auto whitespace-pre-wrap"></div>
+                    </div>
+                    
+                    <!-- Procesado -->
+                    <div class="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                        <h4 class="font-bold text-green-900 mb-2">✨ Texto Procesado (IA)</h4>
+                        <div id="modal-ia-procesado" class="bg-white p-3 rounded text-sm text-gray-800 max-h-64 overflow-y-auto whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+                
+                <div class="border-t p-4 flex gap-3 justify-end bg-gray-50">
+                    <button type="button" id="btn-rechazar-ia" class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-semibold transition">
+                        ❌ Rechazar
+                    </button>
+                    <button type="button" id="btn-confirmar-ia" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition">
+                        ✅ Confirmar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(template);
+        return template;
+    }
+    
+    // Agregar listeners a botones de IA
+    document.querySelectorAll('[data-ia-target]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.dataset.iaTarget;
+            procesarConIA(targetId);
+        });
+    });
+});
+</script>
+
+<!-- MODAL REPUESTO -->
+<div id="modal-repuesto" class="fixed inset-0 z-50 hidden items-center justify-center" style="display:none;">
+    <div class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm" onclick="cerrarModalRepuesto()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 max-h-[90vh] overflow-y-auto" style="animation: modalIn 0.2s ease-out;">
+        
+        <!-- Header -->
+        <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b rounded-t-2xl" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <h3 id="modal-repuesto-title" class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i> Agregar Repuesto
+            </h3>
+            <button type="button" onclick="cerrarModalRepuesto()" class="text-white hover:text-gray-200 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form id="form-repuesto" class="p-6">
+            @csrf
+            
+            <div id="repuesto-errors" class="hidden mb-4 p-3 rounded-lg text-sm" style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;"></div>
+
+            <!-- Fila 1: Código + Cantidad -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="col-span-2">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Código</label>
+                    <input type="text" id="repuesto-codigo" name="codigo" maxlength="100"
+                        class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-0 transition"
+                        style="background: transparent;" placeholder="Ej: CPU-001">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Cantidad *</label>
+                    <input type="number" id="repuesto-cantidad" name="cantidad" min="1" value="1" required
+                        class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 focus:border-amber-500 focus:ring-0 transition text-center font-bold text-lg"
+                        style="background: transparent;">
+                </div>
+            </div>
+
+            <!-- Fila 2: Descripción -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descripción *</label>
+                <input type="text" id="repuesto-descripcion" name="descripcion" maxlength="255" required
+                    class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-0 transition"
+                    style="background: transparent;" placeholder="Nombre del repuesto o componente">
+            </div>
+
+            <!-- Fila 3: Marca + Modelo -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Marca</label>
+                    <select id="repuesto-marca_id" name="marca_id"
+                        class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 focus:border-amber-500 focus:ring-0 transition"
+                        style="background: transparent;">
+                        <option value="">-- Seleccione --</option>
+                        @foreach($marcas as $marca)
+                            <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Modelo</label>
+                    <input type="text" id="repuesto-modelo" name="modelo" maxlength="150"
+                        class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-0 transition"
+                        style="background: transparent;" placeholder="Modelo del repuesto">
+                </div>
+            </div>
+
+            <!-- Fila 4: Serial -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Número de Serie</label>
+                <input type="text" id="repuesto-serial" name="serial" maxlength="150"
+                    class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-0 transition"
+                    style="background: transparent;" placeholder="Serial del fabricante (si aplica)">
+            </div>
+
+            <!-- Fila 5: Facturable + N° Factura -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Facturación</label>
+                    <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition hover:shadow-md"
+                        style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b;" id="facturable-label">
+                        <input type="checkbox" id="repuesto-facturable" name="facturable" value="1"
+                            class="w-5 h-5 rounded cursor-pointer" style="accent-color: #d97706;">
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">💰 Facturable</p>
+                            <p class="text-xs text-gray-600">Marcar si debe facturarse al cliente</p>
+                        </div>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">N° Factura</label>
+                    <input type="text" id="repuesto-numero_factura" name="numero_factura" maxlength="100"
+                        class="w-full border-0 border-b-2 border-gray-200 rounded-lg px-0 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-0 transition"
+                        style="background: transparent;" placeholder="Número de factura">
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-3 pt-4 border-t border-gray-100">
+                <button type="submit" id="btn-guardar-repuesto"
+                    class="flex-1 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-save"></i> Guardar Repuesto
+                </button>
+                <button type="button" onclick="cerrarModalRepuesto()"
+                    class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+#form-repuesto input:focus,
+#form-repuesto select:focus {
+    outline: none;
+    box-shadow: none;
+}
+</style>
+
+<script>
+const servicioId = {{ $servicio->id }};
+const urlStore = '{{ route("incidencias.servicios.repuestos.store", $servicio) }}';
+const urlRepuestosBase = '{{ url("incidencias/servicios") }}/' + servicioId + '/repuestos';
+const csrfToken = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
+
+function abrirModalRepuesto(repuesto = null) {
+    const title = document.getElementById('modal-repuesto-title');
+    const form = document.getElementById('form-repuesto');
+    const errorsDiv = document.getElementById('repuesto-errors');
+    
+    form.reset();
+    errorsDiv.classList.add('hidden');
+    errorsDiv.innerHTML = '';
+    
+    if (repuesto) {
+        title.innerHTML = '<i class="fas fa-edit"></i> Editar Repuesto';
+        document.getElementById('repuesto-codigo').value = repuesto.codigo || '';
+        document.getElementById('repuesto-descripcion').value = repuesto.descripcion || '';
+        document.getElementById('repuesto-marca_id').value = repuesto.marca_id || '';
+        document.getElementById('repuesto-modelo').value = repuesto.modelo || '';
+        document.getElementById('repuesto-serial').value = repuesto.serial || '';
+        document.getElementById('repuesto-cantidad').value = repuesto.cantidad || 1;
+        document.getElementById('repuesto-facturable').checked = !!repuesto.facturable;
+        document.getElementById('repuesto-numero_factura').value = repuesto.numero_factura || '';
+        form.dataset.editId = repuesto.id;
+    } else {
+        title.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Repuesto';
+        delete form.dataset.editId;
+    }
+    
+    const modal = document.getElementById('modal-repuesto');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = '';
+}
+
+function cerrarModalRepuesto() {
+    const modal = document.getElementById('modal-repuesto');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+function editarRepuesto(repuesto) {
+    abrirModalRepuesto(repuesto);
+}
+
+function eliminarRepuesto(id) {
+    if (!confirm('¿Está seguro de eliminar este repuesto permanentemente?')) return;
+    
+    fetch(urlRepuestosBase + '/' + id, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const row = document.querySelector(`tr[data-repuesto-id="${id}"]`);
+            if (row) {
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.remove();
+                    verificarVacio();
+                }, 300);
+            }
+        }
+    });
+}
+
+function verificarVacio() {
+    const tbody = document.getElementById('repuestos-tbody');
+    if (tbody.children.length === 0) {
+        tbody.innerHTML = `
+            <tr id="repuestos-empty">
+                <td colspan="9" class="px-3 py-8 text-center text-gray-500">
+                    <div class="flex flex-col items-center gap-2">
+                        <i class="fas fa-box-open text-3xl text-gray-300"></i>
+                        <p>No hay repuestos registrados</p>
+                        <p class="text-xs text-gray-400">Haga clic en "Agregar Repuesto" para añadir uno</p>
+                    </div>
+                </td>
+            </tr>`;
+    }
+}
+
+document.getElementById('form-repuesto').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const btn = document.getElementById('btn-guardar-repuesto');
+    const errorsDiv = document.getElementById('repuesto-errors');
+    
+    // Bloquear botón
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    errorsDiv.classList.add('hidden');
+    
+    const editId = form.dataset.editId;
+    const url = editId ? urlRepuestosBase + '/' + editId : urlStore;
+    
+    const formData = new FormData(form);
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(r => {
+        if (!r.ok) {
+            return r.json().then(err => { throw err; });
+        }
+        return r.json();
+    })
+    .then(data => {
+        if (data.success) {
+            cerrarModalRepuesto();
+            const rep = data.repuesto;
+            const isEdit = !!form.dataset.editId;
+            
+            if (isEdit) {
+                // Actualizar fila existente
+                const row = document.querySelector(`tr[data-repuesto-id="${rep.id}"]`);
+                if (row) {
+                    row.cells[0].textContent = rep.codigo || '-';
+                    row.cells[1].textContent = rep.descripcion || '';
+                    row.cells[2].textContent = rep.marca?.nombre || '-';
+                    row.cells[3].textContent = rep.modelo || '-';
+                    row.cells[4].textContent = rep.serial || '-';
+                    row.cells[5].textContent = rep.cantidad || '';
+                    row.cells[6].innerHTML = rep.facturable 
+                        ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:9999px;font-size:11px;">Sí</span>'
+                        : '<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:9999px;font-size:11px;">No</span>';
+                    row.cells[7].textContent = rep.numero_factura || '-';
+                    // Actualizar botones de acción
+                    row.cells[8].innerHTML = `
+                        <button type="button" onclick='editarRepuesto(${JSON.stringify(rep)})' class="text-amber-600 hover:text-amber-800 mx-1" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button type="button" onclick="eliminarRepuesto(${rep.id})" class="text-red-600 hover:text-red-800 mx-1" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                }
+            } else {
+                // Agregar nueva fila
+                const tbody = document.getElementById('repuestos-tbody');
+                const empty = document.getElementById('repuestos-empty');
+                if (empty) empty.remove();
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-t hover:bg-gray-50';
+                tr.dataset.repuestoId = rep.id;
+                tr.style.opacity = '0';
+                tr.innerHTML = `
+                    <td class="px-3 py-2 font-semibold text-gray-900">${rep.codigo || '-'}</td>
+                    <td class="px-3 py-2 text-gray-700">${rep.descripcion || ''}</td>
+                    <td class="px-3 py-2 text-gray-700">${rep.marca?.nombre || '-'}</td>
+                    <td class="px-3 py-2 text-gray-700">${rep.modelo || '-'}</td>
+                    <td class="px-3 py-2 text-gray-700">${rep.serial || '-'}</td>
+                    <td class="px-3 py-2 text-center font-semibold">${rep.cantidad || ''}</td>
+                    <td class="px-3 py-2 text-center">${rep.facturable 
+                        ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:9999px;font-size:11px;">Sí</span>'
+                        : '<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:9999px;font-size:11px;">No</span>'}</td>
+                    <td class="px-3 py-2 text-gray-700">${rep.numero_factura || '-'}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button type="button" onclick='editarRepuesto(${JSON.stringify(rep)})' class="text-amber-600 hover:text-amber-800 mx-1" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button type="button" onclick="eliminarRepuesto(${rep.id})" class="text-red-600 hover:text-red-800 mx-1" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                tbody.appendChild(tr);
+                // Animación de entrada
+                requestAnimationFrame(() => { tr.style.transition = 'opacity 0.3s'; tr.style.opacity = '1'; });
+            }
+            
+            // Resetear botón
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar Repuesto';
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Repuesto';
+        
+        if (err.errors) {
+            let html = '<strong><i class="fas fa-exclamation-circle"></i> Corrija los siguientes errores:</strong><ul class="mt-2 ml-4 list-disc">';
+            for (const [field, messages] of Object.entries(err.errors)) {
+                html += `<li>${messages[0]}</li>`;
+            }
+            html += '</ul>';
+            errorsDiv.innerHTML = html;
+            errorsDiv.classList.remove('hidden');
+        } else {
+            errorsDiv.innerHTML = '<strong>Error:</strong> No se pudo guardar el repuesto. Intente nuevamente.';
+            errorsDiv.classList.remove('hidden');
+        }
     });
 });
 </script>

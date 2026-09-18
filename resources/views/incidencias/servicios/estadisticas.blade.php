@@ -106,10 +106,10 @@
                 @forelse($serviciosPorTecnico->sortByDesc('cantidad')->take(5) as $item)
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($item->tecnicoResponsable?->name) }}&background=0D8ABC&color=fff" 
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($item->tecnico?->name) }}&background=0D8ABC&color=fff" 
                                  alt="Avatar" class="w-8 h-8 rounded-full">
                             <p class="text-sm font-semibold text-gray-800">
-                                {{ $item->tecnicoResponsable?->name ?? 'Técnico desconocido' }}
+                                {{ $item->tecnico?->name ?? 'Técnico desconocido' }}
                             </p>
                         </div>
                         <div class="text-right">
@@ -143,7 +143,7 @@
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-3 text-sm text-gray-700">{{ $index + 1 }}</td>
                             <td class="px-4 py-3 text-sm text-gray-900 font-semibold">
-                                {{ $item->equipo?->cliente?->razon_social ?? 'Cliente desconocido' }}
+                                {{ $item->razon_social ?? 'Cliente desconocido' }}
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">

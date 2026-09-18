@@ -122,7 +122,7 @@
                 @forelse($equipos as $equipo)
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-3">
-                            <p class="font-semibold text-gray-900">{{ $equipo->codigo_interno }}</p>
+                            <p class="font-semibold text-gray-900">{{ $equipo->codigo_activo_cliente }}</p>
                             <p class="text-xs text-gray-500">SN: {{ $equipo->serial }}</p>
                         </td>
                         <td class="px-6 py-3">
@@ -131,7 +131,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-3">
-                            <p class="text-sm text-gray-900">{{ $equipo->marca }} {{ $equipo->modelo }}</p>
+                            <p class="text-sm text-gray-900">{{ $equipo->marca?->nombre ?? '' }} {{ $equipo->modelo }}</p>
                             @if($equipo->descripcion)
                                 <p class="text-xs text-gray-600 mt-1 italic truncate" title="{{ $equipo->descripcion }}">
                                     {{ substr($equipo->descripcion, 0, 60) }}{{ strlen($equipo->descripcion) > 60 ? '...' : '' }}
@@ -183,9 +183,12 @@
                                 <a href="{{ route('parametros.equipos.show', $equipo) }}" class="text-blue-600 hover:text-blue-900" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('equipos.editar')
                                 <a href="{{ route('parametros.equipos.edit', $equipo) }}" class="text-yellow-600 hover:text-yellow-900" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('equipos.eliminar')
                                 <form action="{{ route('parametros.equipos.destroy', $equipo) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar?')">
                                     @csrf
                                     @method('DELETE')
@@ -193,6 +196,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

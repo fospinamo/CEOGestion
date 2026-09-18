@@ -16,13 +16,8 @@
                     <h3 class="text-2xl font-bold text-gray-900">{{ $usuario->name }}</h3>
                     <p class="text-gray-600 mt-1">{{ $usuario->email }}</p>
                     <div class="mt-4 flex gap-2">
-                        <span class="px-3 py-1 rounded-full text-sm font-semibold
-                            {{ $usuario->rol === 'admin' ? 'bg-red-100 text-red-800' : '' }}
-                            {{ $usuario->rol === 'gerente' ? 'bg-blue-100 text-blue-800' : '' }}
-                            {{ $usuario->rol === 'coordinador' ? 'bg-green-100 text-green-800' : '' }}
-                            {{ $usuario->rol === 'empleado' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                        ">
-                            {{ ucfirst($usuario->rol) }}
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                            {{ $usuario->role?->name ?? 'Sin rol' }}
                         </span>
                         <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $usuario->estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                             {{ $usuario->estado ? 'Activo' : 'Inactivo' }}
@@ -107,15 +102,11 @@
         <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
             <h4 class="font-bold text-blue-900 mb-3">Permisos del Rol</h4>
             <div class="space-y-2 text-sm text-blue-800">
-                @if($usuario->rol === 'admin')
+                @if($usuario->hasRole('admin'))
                     <p>✓ Acceso total al sistema</p>
                     <p>✓ Gestionar empresas, sedes y usuarios</p>
                     <p>✓ Configuración del sistema</p>
-                @elseif($usuario->rol === 'gerente')
-                    <p>✓ Gestionar sedes de la empresa</p>
-                    <p>✓ Crear usuarios subordinados</p>
-                    <p>✓ Ver reportes de empresa</p>
-                @elseif($usuario->rol === 'coordinador')
+                @elseif($usuario->hasRole('coordinador'))
                     <p>✓ Gestionar actividades de la sede</p>
                     <p>✓ Supervisar empleados</p>
                     <p>✓ Generar reportes operacionales</p>

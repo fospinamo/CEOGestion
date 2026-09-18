@@ -1,0 +1,14 @@
+ARCHIVO RESPALDADO: report-technician-v2.blade.php
+FECHA: 2026-07-15
+DESCRIPCIÓN: Backup antes de implementar procesamiento de voz con Deepseek IA
+
+Este archivo contiene la versión original del formulario de informe técnico.
+Para restaurar, copia el contenido de este archivo y reemplaza report-technician-v2.blade.php
+
+UBICACIÓN ORIGINAL: c:\xampp\htdocs\CEOGestion\resources\views\incidencias\servicios\report-technician-v2.blade.php
+
+CAMBIOS A REALIZAR:
+1. Agregar campos ocultos para guardar texto original
+2. Agregar botones de procesamiento con IA
+3. Agregar modal de confirmación
+4. Agregar JS para procesar con Deepseek

@@ -9,9 +9,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Documentos</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $documentos->count() }} documentos</p>
         </div>
+        @can('documentos.crear')
         <a href="{{ route('documentacion.documentos.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nuevo Documento
         </a>
+        @endcan
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -39,12 +41,16 @@
                         <td class="px-6 py-3 text-center">
                             <div class="flex justify-center gap-2">
                                 <a href="{{ route('documentacion.documentos.show', ['documento' => $documento->id]) }}" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Ver</a>
+                                @can('documentos.editar')
                                 <a href="{{ route('documentacion.documentos.edit', ['documento' => $documento->id]) }}" class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">Editar</a>
+                                @endcan
+                                @can('documentos.eliminar')
                                 <form action="{{ route('documentacion.documentos.destroy', ['documento' => $documento->id]) }}" method="POST" onsubmit="return confirm('¿Eliminar este documento?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200">Eliminar</button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

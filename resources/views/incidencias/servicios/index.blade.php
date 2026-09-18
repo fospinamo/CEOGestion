@@ -17,9 +17,11 @@
                 @endif
             </p>
         </div>
+        @can('servicios.crear')
         <a href="{{ route('incidencias.servicios.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nuevo Servicio
         </a>
+        @endcan
     </div>
 
     <!-- Panel de Filtros -->
@@ -119,7 +121,7 @@
                         </td>
                         <td class="px-6 py-3">
                             @if($servicio->equipo)
-                                <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_interno }}</p>
+                                <p class="font-semibold text-gray-900">{{ $servicio->equipo->codigo_activo_cliente }}</p>
                                 <p class="text-xs text-gray-500">{{ $servicio->equipo->area?->nombre ?? 'N/A' }}</p>
                             @else
                                 <p class="text-sm text-gray-500 italic">Sin equipo</p>
@@ -146,9 +148,9 @@
                             </span>
                         </td>
                         <td class="px-6 py-3">
-                            @if($servicio->tecnicoResponsable)
-                                <p class="text-sm font-semibold text-gray-900">{{ $servicio->tecnicoResponsable->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $servicio->tecnicoResponsable->telefono }}</p>
+                            @if($servicio->tecnico)
+                                <p class="text-sm font-semibold text-gray-900">{{ $servicio->tecnico->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $servicio->tecnico->telefono }}</p>
                             @else
                                 <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
                                     Sin asignar
@@ -175,25 +177,31 @@
                                 <a href="{{ route('incidencias.servicios.show', $servicio) }}" class="text-blue-600 hover:text-blue-900 font-bold" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('servicios.editar')
                                 <a href="{{ route('incidencias.servicios.edit', $servicio) }}" class="text-yellow-600 hover:text-yellow-900 font-bold" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
                                 @if($servicio->persona_receptora_nombre)
                                     <a href="{{ route('incidencias.servicios.download-informe-pdf', $servicio) }}" class="text-red-600 hover:text-red-900 font-bold" title="Descargar PDF">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
                                 @endif
+                                @can('servicios.asignar')
                                 @if(!$servicio->tecnico_id)
                                     <a href="{{ route('incidencias.servicios.assign', $servicio) }}" class="text-green-600 hover:text-green-900 font-bold" title="Asignar Técnico">
                                         <i class="fas fa-user-plus"></i>
                                     </a>
                                 @endif
+                                @endcan
+                                @can('servicios.eliminar')
                                 <form action="{{ route('incidencias.servicios.destroy', $servicio) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900 font-bold" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

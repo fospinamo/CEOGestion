@@ -12,9 +12,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Categorías</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $categorias->count() }} categorías</p>
         </div>
+        @can('categorias.crear')
         <a href="{{ route('parametros.categorias.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-plus"></i> Nueva Categoría
         </a>
+        @endcan
     </div>
 
     <!-- Tabla de Categorías -->
@@ -65,9 +67,12 @@
                         </td>
                         <td class="px-6 py-3 text-center">
                             <div class="flex justify-center gap-2 flex-wrap">
+                                @can('categorias.editar')
                                 <a href="{{ route('parametros.categorias.edit', $categoria) }}" class="text-yellow-600 hover:text-yellow-900 transition" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('categorias.eliminar')
                                 <form action="{{ route('parametros.categorias.destroy', $categoria) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar categoría?')">
                                     @csrf
                                     @method('DELETE')
@@ -75,6 +80,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

@@ -128,9 +128,12 @@
         <a href="{{ route('parametros.contratos.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
+        @can('contratos.editar')
         <a href="{{ route('parametros.contratos.edit', $contrato) }}" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition flex items-center gap-2 whitespace-nowrap">
             <i class="fas fa-edit"></i> Editar
         </a>
+        @endcan
+        @can('contratos.eliminar')
         <form action="{{ route('parametros.contratos.destroy', $contrato) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este contrato?')">
             @csrf
             @method('DELETE')
@@ -138,6 +141,7 @@
                 <i class="fas fa-trash"></i> Eliminar
             </button>
         </form>
+        @endcan
     </div>
 </div>
 @endsection

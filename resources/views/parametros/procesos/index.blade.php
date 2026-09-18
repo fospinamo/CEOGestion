@@ -9,9 +9,11 @@
             <h2 class="text-2xl font-bold text-gray-900">Procesos</h2>
             <p class="text-gray-600 text-sm mt-1">Total: {{ $procesos->count() }} procesos</p>
         </div>
+        @can('procesos.crear')
         <a href="{{ route('parametros.procesos.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Nuevo Proceso
         </a>
+        @endcan
     </div>
 
     <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
@@ -94,12 +96,16 @@
                         <td class="px-6 py-3 text-center">
                             <div class="flex justify-center gap-2">
                                 <a href="{{ route('parametros.procesos.show', ['proceso' => $proceso->id]) }}" class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Ver</a>
+                                @can('procesos.editar')
                                 <a href="{{ route('parametros.procesos.edit', ['proceso' => $proceso->id]) }}" class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">Editar</a>
+                                @endcan
+                                @can('procesos.eliminar')
                                 <form action="{{ route('parametros.procesos.destroy', ['proceso' => $proceso->id]) }}" method="POST" onsubmit="return confirm('¿Eliminar este proceso?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200">Eliminar</button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

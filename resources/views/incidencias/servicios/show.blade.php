@@ -8,7 +8,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Información del Servicio</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
-                <div><span class="text-gray-600">Equipo:</span> <p class="font-semibold">{{ $servicio->equipo->codigo_interno }}</p></div>
+                <div><span class="text-gray-600">Equipo:</span> <p class="font-semibold">{{ $servicio->equipo->codigo_activo_cliente }}</p></div>
                 <div><span class="text-gray-600">Tipo:</span> <p class="font-semibold">{{ $servicio->tipo_servicio }}</p></div>
                 <div><span class="text-gray-600">Prioridad:</span> <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">{{ $servicio->prioridad }}</span></div>
                 <div><span class="text-gray-600">Estado:</span> <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ $servicio->estado }}</span></div>
@@ -31,6 +31,20 @@
             @endphp
             <p class="text-gray-700 text-sm leading-relaxed">{{ $diagnosticoTecnico ?: 'Pendiente' }}</p>
         </div>
+
+        @if($servicio->observaciones)
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Observaciones del Servicio</h3>
+                <p class="text-gray-700 text-sm leading-relaxed">{{ $servicio->observaciones }}</p>
+            </div>
+        @endif
+
+        @if($servicio->observaciones_asignacion)
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Observaciones de la Asignación</h3>
+                <p class="text-gray-700 text-sm leading-relaxed">{{ $servicio->observaciones_asignacion }}</p>
+            </div>
+        @endif
 
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Archivos Adjuntos</h3>
@@ -85,8 +99,8 @@
                 @endif
             </div>
             
-            @if($servicio->tecnicoResponsable)
-                <p class="text-sm mb-2"><strong>Técnico Asignado:</strong> <span class="text-green-600">{{ $servicio->tecnicoResponsable->name }}</span></p>
+            @if($servicio->tecnico)
+                <p class="text-sm mb-2"><strong>Técnico Asignado:</strong> <span class="text-green-600">{{ $servicio->tecnico->name }}</span></p>
             @else
                 <p class="text-sm text-red-600"><strong>⚠️ Sin técnico asignado</strong></p>
             @endif
@@ -97,6 +111,7 @@
             <h3 class="font-semibold text-gray-900 mb-3">Acciones</h3>
             <div class="space-y-2">
                 {{-- Asignar Técnico - PROMINENTE --}}
+                @can('servicios.asignar')
                 @if(!$servicio->tecnico_id)
                     <a href="{{ route('incidencias.servicios.assign', $servicio) }}" class="block w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded font-bold transition text-center">
                         <i class="fas fa-user-plus mr-2"></i> Asignar Técnico
@@ -106,8 +121,10 @@
                         <i class="fas fa-sync-alt mr-2"></i> Reasignar Técnico
                     </a>
                 @endif
+                @endcan
 
                 {{-- Informe Técnico --}}
+                @can('servicios.reportar')
                 @if($servicio->tecnico_id && !$servicio->descripcion_atencion)
                     <a href="{{ route('incidencias.servicios.report', $servicio) }}" class="block w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-semibold transition text-center">
                         <i class="fas fa-clipboard-list mr-2"></i> Informe Técnico
@@ -116,16 +133,21 @@
                     <div class="px-4 py-2 bg-purple-100 text-purple-800 rounded text-sm text-center font-semibold mb-2">
                         <i class="fas fa-check-circle mr-2"></i> Informe Completado
                     </div>
-                    <!-- Botones para descargar/ver PDF -->
+                @endif
+                @endcan
+                @if($servicio->descripcion_atencion || $servicio->persona_receptora_nombre)
+                    @can('servicios.imprimir-pdf')
                     <a href="{{ route('incidencias.servicios.download-informe-pdf', $servicio) }}" class="block w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition text-center text-sm">
                         <i class="fas fa-file-pdf mr-2"></i> Descargar PDF
                     </a>
                     <a href="{{ route('incidencias.servicios.view-informe-pdf', $servicio) }}" target="_blank" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-center text-sm">
                         <i class="fas fa-print mr-2"></i> Ver/Imprimir
                     </a>
+                    @endcan
                 @endif
 
                 {{-- Editar --}}
+                @can('servicios.editar')
                 @if($servicio->estado === 'CERRADO')
                     <button type="button" class="block w-full px-4 py-2 bg-gray-100 text-gray-400 rounded font-semibold text-center cursor-not-allowed" disabled>
                         <i class="fas fa-edit mr-2"></i> Editar (Inactivo)
@@ -135,8 +157,10 @@
                         <i class="fas fa-edit mr-2"></i> Editar
                     </a>
                 @endif
+                @endcan
 
                 {{-- Eliminar --}}
+                @can('servicios.eliminar')
                 @if($servicio->estado === 'CERRADO')
                     <button type="button" class="w-full px-4 py-2 bg-gray-100 text-gray-400 rounded font-semibold transition text-sm cursor-not-allowed" disabled>
                         <i class="fas fa-trash mr-2"></i> Eliminar (Inactivo)
@@ -149,6 +173,7 @@
                         </button>
                     </form>
                 @endif
+                @endcan
             </div>
         </div>
 

@@ -152,10 +152,10 @@ $(document).ready(function() {
         console.log('🔍 FILTRO 3: Area seleccionada -', areaId);
         
         if (areaId) {
-            console.log('📡 Enviando AJAX a: /incidencias/incidencias/servicios/equipos-area/' + areaId);
+            console.log('📡 Enviando AJAX a: ' + window.Laravel.baseUrl + '/incidencias/servicios/equipos-area/' + areaId);
             // Cargar equipos del área
             $.ajax({
-                url: `/incidencias/servicios/equipos-area/${areaId}`,
+                url: `${window.Laravel.baseUrl}/incidencias/servicios/equipos-area/${areaId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(equipos) {
@@ -224,7 +224,7 @@ $(document).ready(function() {
             console.log('📡 FILTRO 4: Enviando AJAX a: /incidencias/servicios/contrato-activo/' + clienteId);
             // Cargar contrato activo y servicios cubiertos
             $.ajax({
-                url: `/incidencias/servicios/contrato-activo/${clienteId}`,
+                url: `${window.Laravel.baseUrl}/incidencias/servicios/contrato-activo/${clienteId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
@@ -388,7 +388,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('⏳ Creando...');
         
         $.ajax({
-            url: '/incidencias/servicios/crear-equipo',
+            url: `${window.Laravel.baseUrl}/incidencias/servicios/crear-equipo`,
             type: 'POST',
             data: formData,
             processData: false,

@@ -11,9 +11,11 @@
         <div class="flex gap-2">
             <input type="text" placeholder="Buscar empresa..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
+        @can('empresas.crear')
         <a href="{{ route('parametros.empresas.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
             <i class="fas fa-plus"></i> Nueva Empresa
         </a>
+        @endcan
     </div>
 
     <!-- Table -->
@@ -56,9 +58,12 @@
                                 <a href="{{ route('parametros.empresas.show', $empresa) }}" class="text-blue-600 hover:text-blue-900 transition" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('empresas.editar')
                                 <a href="{{ route('parametros.empresas.edit', $empresa) }}" class="text-green-600 hover:text-green-900 transition" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('empresas.eliminar')
                                 <form action="{{ route('parametros.empresas.destroy', $empresa) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro?')">
                                     @csrf
                                     @method('DELETE')
@@ -66,6 +71,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

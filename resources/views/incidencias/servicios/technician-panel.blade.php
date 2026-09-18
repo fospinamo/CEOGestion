@@ -60,7 +60,7 @@
                                     #{{ $servicio->id }}
                                 </h3>
                                 <p class="text-xs sm:text-sm text-gray-600 truncate">
-                                    {{ $servicio->equipo->codigo_interno }}
+                                    {{ $servicio->equipo->codigo_activo_cliente }}
                                 </p>
                                 <p class="text-xs text-gray-500 truncate">
                                     {{ $servicio->equipo->area->nombre }}
@@ -121,7 +121,7 @@
                                     #{{ $servicio->id }}
                                 </h3>
                                 <p class="text-xs sm:text-sm text-gray-600 truncate">
-                                    {{ $servicio->equipo->codigo_interno }}
+                                    {{ $servicio->equipo->codigo_activo_cliente }}
                                 </p>
                                 <p class="text-xs text-gray-500 truncate">
                                     {{ $servicio->equipo->area->nombre }}
@@ -160,7 +160,7 @@
                                     #{{ $servicio->id }}
                                 </h3>
                                 <p class="text-xs sm:text-sm text-gray-600 truncate">
-                                    {{ $servicio->equipo->codigo_interno }}
+                                    {{ $servicio->equipo->codigo_activo_cliente }}
                                 </p>
                                 <p class="text-xs text-gray-500 truncate">
                                     {{ $servicio->equipo->area->nombre }}
@@ -196,7 +196,7 @@
                 <div class="bg-green-50 rounded-lg p-4 sm:p-5 border-l-4 border-green-400">
                     <div class="flex justify-between items-start gap-3 mb-3">
                         <div class="min-w-0 flex-1">
-                            <p class="text-sm sm:text-base font-semibold text-gray-900 truncate">#{{ $servicio->id }} - {{ $servicio->equipo->codigo_interno }}</p>
+                            <p class="text-sm sm:text-base font-semibold text-gray-900 truncate">#{{ $servicio->id }} - {{ $servicio->equipo->codigo_activo_cliente }}</p>
                             <p class="text-xs text-gray-600">Completado: {{ $servicio->fecha_firma?->format('d/m/Y H:i') ?? 'N/A' }}</p>
                         </div>
                     </div>

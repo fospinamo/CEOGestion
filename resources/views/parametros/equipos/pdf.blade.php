@@ -178,8 +178,8 @@
             @forelse($equipos as $equipo)
                 <tr>
                     <td class="text-center">{{ $equipo->id }}</td>
-                    <td>{{ $equipo->codigo_interno }}</td>
-                    <td>{{ $equipo->marca }}</td>
+                    <td>{{ $equipo->codigo_activo_cliente }}</td>
+                    <td>{{ $equipo->marca?->nombre ?? '' }}</td>
                     <td>{{ $equipo->modelo }}</td>
                     <td>{{ $equipo->serie }}</td>
                     <td class="text-center">

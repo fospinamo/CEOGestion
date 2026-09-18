@@ -117,10 +117,16 @@
             
             <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Código Activo Cliente *</label>
-                    <input type="text" name="codigo_activo_cliente" value="{{ old('codigo_activo_cliente', $equipo->codigo_activo_cliente ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('codigo_activo_cliente') border-red-500 @enderror" placeholder="Ej: ACT-001" required>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Código Activo Cliente</label>
+                    @if($equipo && $equipo->codigo_activo_cliente)
+                        <input type="text" name="codigo_activo_cliente" value="{{ $equipo->codigo_activo_cliente }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly>
+                        <p class="text-gray-500 text-xs mt-1">Código asignado (no editable)</p>
+                    @else
+                        <input type="text" id="codigo_activo_cliente_preview" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 italic" readonly placeholder="Seleccione un cliente...">
+                        <input type="hidden" name="codigo_activo_cliente" id="codigo_activo_cliente_hidden" value="">
+                        <p class="text-gray-500 text-xs mt-1">Se genera automáticamente según el prefijo del cliente</p>
+                    @endif
                     @error('codigo_activo_cliente')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
-                    <p class="text-gray-500 text-xs mt-1">Código único del cliente para este activo</p>
                 </div>
 
                 <div>
@@ -175,7 +181,8 @@
 
                 <div class="col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Especificaciones (JSON)</label>
-                    <textarea name="especificaciones_tecnicas" rows="2" placeholder='{"ram":"8GB","procesador":"Intel i5"}' class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm">{{ old('especificaciones_tecnicas', $equipo?->especificaciones_tecnicas ? json_encode($equipo->especificaciones_tecnicas, JSON_PRETTY_PRINT) : '') }}</textarea>
+                    <textarea name="especificaciones_tecnicas" rows="2" placeholder='{"ram":"8GB","procesador":"Intel i5"}' class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm @error('especificaciones_tecnicas') border-red-500 @enderror">{{ old('especificaciones_tecnicas', $equipo?->especificaciones_tecnicas ? json_encode($equipo->especificaciones_tecnicas, JSON_PRETTY_PRINT) : '') }}</textarea>
+                    @error('especificaciones_tecnicas')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
@@ -192,12 +199,14 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">IP</label>
-                    <input type="text" name="ip_asignada" value="{{ old('ip_asignada', $equipo->ip_asignada ?? '') }}" placeholder="192.168.1.100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="text" name="ip_asignada" value="{{ old('ip_asignada', $equipo->ip_asignada ?? '') }}" placeholder="192.168.1.100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('ip_asignada') border-red-500 @enderror">
+                    @error('ip_asignada')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">MAC Address</label>
-                    <input type="text" name="mac_address" value="{{ old('mac_address', $equipo->mac_address ?? '') }}" placeholder="00:1A:2B:3C:4D:5E" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="text" name="mac_address" value="{{ old('mac_address', $equipo->mac_address ?? '') }}" placeholder="00:1A:2B:3C:4D:5E" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('mac_address') border-red-500 @enderror">
+                    @error('mac_address')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
             </div>
         </div>
@@ -209,22 +218,26 @@
             <div class="grid grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Compra</label>
-                    <input type="date" name="fecha_compra" value="{{ old('fecha_compra', $equipo?->fecha_compra?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="fecha_compra" value="{{ old('fecha_compra', $equipo?->fecha_compra?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_compra') border-red-500 @enderror">
+                    @error('fecha_compra')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Instalación</label>
-                    <input type="date" name="fecha_instalacion" value="{{ old('fecha_instalacion', $equipo?->fecha_instalacion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="fecha_instalacion" value="{{ old('fecha_instalacion', $equipo?->fecha_instalacion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_instalacion') border-red-500 @enderror">
+                    @error('fecha_instalacion')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Garantía</label>
-                    <input type="date" name="fecha_garantia" value="{{ old('fecha_garantia', $equipo?->fecha_garantia?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="fecha_garantia" value="{{ old('fecha_garantia', $equipo?->fecha_garantia?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_garantia') border-red-500 @enderror">
+                    @error('fecha_garantia')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Valor Compra</label>
-                    <input type="number" name="valor_compra" step="0.01" value="{{ old('valor_compra', $equipo?->valor_compra ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="number" name="valor_compra" step="0.01" value="{{ old('valor_compra', $equipo?->valor_compra ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('valor_compra') border-red-500 @enderror">
+                    @error('valor_compra')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
             </div>
         </div>
@@ -236,37 +249,43 @@
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Mantenimientos al año</label>
-                    <input type="number" name="mantenimientos_anuales" min="0" value="{{ old('mantenimientos_anuales', $equipo->mantenimientos_anuales ?? 1) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="number" name="mantenimientos_anuales" min="0" value="{{ old('mantenimientos_anuales', $equipo->mantenimientos_anuales ?? 1) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('mantenimientos_anuales') border-red-500 @enderror">
+                    @error('mantenimientos_anuales')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                     <p class="text-gray-500 text-xs mt-1">Cuántos mantenimientos debe tener por año</p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Calibraciones al año</label>
-                    <input type="number" name="calibraciones_anuales" min="0" value="{{ old('calibraciones_anuales', $equipo->calibraciones_anuales ?? 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="number" name="calibraciones_anuales" min="0" value="{{ old('calibraciones_anuales', $equipo->calibraciones_anuales ?? 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('calibraciones_anuales') border-red-500 @enderror">
+                    @error('calibraciones_anuales')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                     <p class="text-gray-500 text-xs mt-1">Cuántas calibraciones debe tener por año</p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Último Mantenimiento</label>
-                    <input type="date" name="fecha_ultimo_mantenimiento" value="{{ old('fecha_ultimo_mantenimiento', $equipo?->fecha_ultimo_mantenimiento?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="fecha_ultimo_mantenimiento" value="{{ old('fecha_ultimo_mantenimiento', $equipo?->fecha_ultimo_mantenimiento?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_ultimo_mantenimiento') border-red-500 @enderror">
+                    @error('fecha_ultimo_mantenimiento')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Última Calibración</label>
-                    <input type="date" name="fecha_ultima_calibracion" value="{{ old('fecha_ultima_calibracion', $equipo?->fecha_ultima_calibracion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="fecha_ultima_calibracion" value="{{ old('fecha_ultima_calibracion', $equipo?->fecha_ultima_calibracion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('fecha_ultima_calibracion') border-red-500 @enderror">
+                    @error('fecha_ultima_calibracion')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Próximo Mantenimiento</label>
-                    <input type="date" name="proxima_fecha_mantenimiento" value="{{ old('proxima_fecha_mantenimiento', $equipo?->proxima_fecha_mantenimiento?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="proxima_fecha_mantenimiento" value="{{ old('proxima_fecha_mantenimiento', $equipo?->proxima_fecha_mantenimiento?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('proxima_fecha_mantenimiento') border-red-500 @enderror">
+                    @error('proxima_fecha_mantenimiento')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                     <p class="text-gray-500 text-xs mt-1">Se calcula automáticamente</p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Próxima Calibración</label>
-                    <input type="date" name="proxima_fecha_calibracion" value="{{ old('proxima_fecha_calibracion', $equipo?->proxima_fecha_calibracion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <input type="date" name="proxima_fecha_calibracion" value="{{ old('proxima_fecha_calibracion', $equipo?->proxima_fecha_calibracion?->format('Y-m-d') ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('proxima_fecha_calibracion') border-red-500 @enderror">
+                    @error('proxima_fecha_calibracion')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                     <p class="text-gray-500 text-xs mt-1">Se calcula automáticamente</p>
                 </div>
             </div>
@@ -275,7 +294,8 @@
         <!-- Observaciones -->
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Observaciones</label>
-            <textarea name="observaciones" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">{{ old('observaciones', $equipo->observaciones ?? '') }}</textarea>
+            <textarea name="observaciones" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 @error('observaciones') border-red-500 @enderror">{{ old('observaciones', $equipo->observaciones ?? '') }}</textarea>
+            @error('observaciones')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
         </div>
 
         <!-- Botones -->
@@ -441,7 +461,39 @@ $(document).ready(function() {
         filterSedes();
         filterAreas();
         filterContratos();
+        cargarSiguienteCodigo();
     });
+
+    function cargarSiguienteCodigo() {
+        var clienteId = $('#cliente_id').val();
+        var $preview = $('#codigo_activo_cliente_preview');
+        var $hidden = $('#codigo_activo_cliente_hidden');
+
+        if (!clienteId || $preview.length === 0) {
+            return;
+        }
+
+        $preview.val('Generando...').addClass('italic');
+
+        $.ajax({
+            url: '{{ url("/api/siguiente-codigo-activo") }}',
+            type: 'GET',
+            data: { cliente_id: clienteId },
+            success: function(response) {
+                if (response.codigo) {
+                    $preview.val(response.codigo).removeClass('italic');
+                    $hidden.val(response.codigo);
+                } else {
+                    $preview.val(response.error || 'Cliente sin prefijo').removeClass('italic').addClass('text-red-500');
+                    $hidden.val('');
+                }
+            },
+            error: function() {
+                $preview.val('Error al consultar').removeClass('italic').addClass('text-red-500');
+                $hidden.val('');
+            }
+        });
+    }
     
     $('#sede_id').on('change', function() {
         filterAreas();
@@ -451,6 +503,11 @@ $(document).ready(function() {
     filterSedes();
     filterAreas();
     filterContratos();
+
+    // Cargar preview del código si hay cliente preseleccionado
+    if ($('#cliente_id').val() && $('#codigo_activo_cliente_preview').length) {
+        cargarSiguienteCodigo();
+    }
 });
 </script>
 @endif

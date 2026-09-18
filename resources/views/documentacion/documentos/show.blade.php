@@ -44,7 +44,9 @@
     </div>
 
     <div class="flex gap-3">
+        @can('documentos.editar')
         <a href="{{ route('documentacion.documentos.edit', ['documento' => $documento->id]) }}" class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">Editar</a>
+        @endcan
         <a href="{{ route('documentacion.documentos.index') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Volver</a>
     </div>
 </div>

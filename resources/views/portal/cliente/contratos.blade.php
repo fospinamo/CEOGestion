@@ -3,58 +3,51 @@
 @section('title', 'Contratos - Portal del Cliente')
 
 @section('content')
-    <h1 style="margin-bottom: 30px; font-size: 28px; font-weight: 700;">
-        <i class="fas fa-file-contract" style="margin-right: 10px; color: #3b82f6;"></i>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="fas fa-file-contract text-blue-500 mr-2"></i>
         Contratos Activos
     </h1>
 
     @if($contratos->isEmpty())
-        <div class="card" style="text-align: center; padding: 40px;">
-            <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 20px;"></i>
-            <p style="color: #6b7280; font-size: 16px;">No tienes contratos activos en este momento.</p>
-        </div>
+        <x-card class="text-center py-10">
+            <x-empty-state icon="fa-file-contract" message="No tienes contratos activos en este momento." />
+        </x-card>
     @else
         @foreach($contratos as $contrato)
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: start;">
-                    <!-- Información Principal -->
-                    <div style="grid-column: 1 / 2;">
-                        <div style="font-size: 28px; font-weight: 700; color: #3b82f6;">
-                            #{{ $contrato->numero_contrato }}
-                        </div>
+            <x-card class="mb-5">
+                <div class="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-5 items-start">
+                    <!-- Número de Contrato -->
+                    <div class="text-[28px] font-bold text-blue-500">
+                        #{{ $contrato->numero_contrato }}
                     </div>
 
                     <!-- Detalles -->
                     <div>
-                        <table style="width: 100%; border-collapse: collapse;">
+                        <table class="w-full border-collapse">
                             <tr>
-                                <td style="width: 50%; padding: 8px 0; border: none;">
-                                    <strong style="color: #6b7280; font-size: 12px;">Tipo de Contrato:</strong>
-                                    <div style="color: #111827; margin-top: 3px;">{{ $contrato->tipo_contrato }}</div>
+                                <td class="w-1/2 py-2 border-0">
+                                    <p class="text-xs text-gray-500 font-semibold">Tipo de Contrato:</p>
+                                    <div class="text-gray-900 mt-0.5">{{ $contrato->tipo_contrato }}</div>
                                 </td>
-                                <td style="width: 50%; padding: 8px 0; border: none; padding-left: 20px;">
-                                    <strong style="color: #6b7280; font-size: 12px;">Período:</strong>
-                                    <div style="color: #111827; margin-top: 3px;">
+                                <td class="w-1/2 py-2 border-0 pl-5">
+                                    <p class="text-xs text-gray-500 font-semibold">Período:</p>
+                                    <div class="text-gray-900 mt-0.5">
                                         {{ $contrato->fecha_inicio->format('d/m/Y') }} - {{ $contrato->fecha_vencimiento->format('d/m/Y') }}
                                     </div>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="width: 50%; padding: 8px 0; border: none;">
-                                    <strong style="color: #6b7280; font-size: 12px;">Estado:</strong>
-                                    <div style="margin-top: 3px;">
-                                        @php
-                                            $estadoColor = $contrato->estado === 'ACTIVO' ? '#d1fae5' : '#fee2e2';
-                                            $estadoTextColor = $contrato->estado === 'ACTIVO' ? '#065f46' : '#991b1b';
-                                        @endphp
-                                        <span class="badge" style="background: {{ $estadoColor }}; color: {{ $estadoTextColor }};">
+                                <td class="w-1/2 py-2 border-0">
+                                    <p class="text-xs text-gray-500 font-semibold">Estado:</p>
+                                    <div class="mt-0.5">
+                                        <x-badge :variant="$contrato->estado === 'ACTIVO' ? 'green' : 'red'">
                                             {{ $contrato->estado }}
-                                        </span>
+                                        </x-badge>
                                     </div>
                                 </td>
-                                <td style="width: 50%; padding: 8px 0; border: none; padding-left: 20px;">
-                                    <strong style="color: #6b7280; font-size: 12px;">Valor Contrato:</strong>
-                                    <div style="color: #111827; margin-top: 3px; font-weight: 600;">
+                                <td class="w-1/2 py-2 border-0 pl-5">
+                                    <p class="text-xs text-gray-500 font-semibold">Valor Contrato:</p>
+                                    <div class="text-gray-900 mt-0.5 font-semibold">
                                         ${{ number_format($contrato->valor_total, 0, ',', '.') }}
                                     </div>
                                 </td>
@@ -63,17 +56,17 @@
                     </div>
 
                     <!-- SLA Info -->
-                    <div style="grid-column: 3 / 4; background: #f0f9ff; padding: 15px; border-radius: 6px; border-left: 3px solid #3b82f6;">
-                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div class="bg-blue-50 p-4 rounded-md border-l-[3px] border-blue-500 hidden lg:block">
+                        <div class="text-xs text-gray-500 mb-2">
                             <strong>Cobertura de Servicios:</strong>
                         </div>
-                        <div style="font-size: 13px; color: #111827; line-height: 1.6;">
+                        <div class="text-[13px] text-gray-900 leading-relaxed">
                             @if($contrato->servicios)
                                 @php
                                     $serviciosIncluidos = $contrato->servicios->where('incluido', true)->pluck('tipo_servicio');
                                 @endphp
                                 @foreach($serviciosIncluidos as $servicio)
-                                    <div><i class="fas fa-check" style="color: #10b981;"></i> {{ $servicio }}</div>
+                                    <div><i class="fas fa-check text-emerald-500"></i> {{ $servicio }}</div>
                                 @endforeach
                             @endif
                         </div>
@@ -82,13 +75,13 @@
 
                 <!-- SLA Times -->
                 @if($contrato->servicios)
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 10px;"><strong>SLA por Tipo de Servicio:</strong></div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-xs text-gray-500 mb-3"><strong>SLA por Tipo de Servicio:</strong></p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                             @foreach($contrato->servicios->where('incluido', true) as $servicio)
-                                <div style="background: #f9fafb; padding: 10px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 12px;">
-                                    <div style="font-weight: 600; color: #111827; margin-bottom: 5px;">{{ $servicio->tipo_servicio }}</div>
-                                    <div style="color: #6b7280;">
+                                <div class="bg-gray-50 p-3 rounded-md border border-gray-200 text-xs">
+                                    <div class="font-semibold text-gray-900 mb-1">{{ $servicio->tipo_servicio }}</div>
+                                    <div class="text-gray-500">
                                         Respuesta: <strong>{{ $servicio->sla_horas_respuesta }}h</strong> | Solución: <strong>{{ $servicio->sla_horas_solucion }}h</strong>
                                     </div>
                                 </div>
@@ -96,7 +89,7 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </x-card>
         @endforeach
     @endif
 @endsection

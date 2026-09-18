@@ -16,27 +16,65 @@
    - [ ] Identificar raíz del problema
    - [ ] Revisar si ya fue corregido antes (puede ser regresión)
 
-2. **ANÁLISIS DE SEGURIDAD**
-   - [ ] ¿Afecta rutas API?
-   - [ ] ¿Necesita validación/sanitización?
-   - [ ] ¿Hay riesgos CSRF/CORS?
-   - [ ] ¿Cumple con autenticación?
+### Antes de CERRAR un cambio (VERIFICACIÓN OBLIGATORIA):
 
-3. **DOCUMENTACIÓN PREVIA**
-   - [ ] Documentar problema
-   - [ ] Documentar solución propuesta
-   - [ ] Listar archivos a cambiar
-   - [ ] Incluir antes/después de código
+2. **IMPACTO EN CADENA** (CADA CAMBIO PUEDE AFECTAR MÚLTIPLES ARCHIVOS)
+   - [ ] **MODELO:** ¿Qué campos/relaciones tiene el modelo afectado?
+   - [ ] **CONTROLADOR:** ¿Qué métodos del controlador usan ese modelo? (index, show, create, edit, store, update, destroy)
+   - [ ] **VISTAS:** ¿Qué vistas Blade muestran los campos del modelo?
+   - [ ] **PDF/EXPORTES:** ¿Hay vistas PDF o exportación que usen esos campos?
+   - [ ] **AJAX/JS:** ¿Hay llamadas AJAX que retornen datos del modelo?
+   - [ ] **EAGER-LOADING:** ¿Todos los `with()` incluyen las relaciones necesarias?
 
-4. **IMPLEMENTACIÓN**
-   - [ ] Cambios en desarrollo
-   - [ ] Test en localhost
-   - [ ] Verificar en otros módulos
-   - [ ] Cache limpio
+3. **CHECKLIST DE VERIFICACIÓN POR TIPO DE CAMBIO**
+
+   **Si cambias un CAMPO en BD (renombrar, agregar, eliminar):**
+   - [ ] `Schema::getColumnListing('tabla')` → verificar columnas reales
+   - [ ] Modelo `$fillable` → agregar/quitar campo
+   - [ ] Modelo `$casts` → si aplica
+   - [ ] Controlador `store()` → actualizar validación
+   - [ ] Controlador `update()` → actualizar validación
+   - [ ] Controlador `create()` → pasar datos a vista si es catálogo
+   - [ ] Controlador `edit()` → pasar datos a vista si es catálogo
+   - [ ] TODAS las vistas que muestran el campo → actualizar nombre
+   - [ ] TODOS los controladores que eager-load → incluir relación
+   - [ ] PDFs y exportes → actualizar si muestran el campo
+   - [ ] JavaScript/AJAX → actualizar si mapea el campo
+
+   **Si agregas una RELACIÓN (FK) a un modelo:**
+   - [ ] Modelo: agregar método `belongsTo()` / `hasMany()`
+   - [ ] Modelo: agregar FK a `$fillable`
+   - [ ] Controlador: agregar `with('relacion')` en TODOS los queries
+   - [ ] Vistas: cambiar `$modelo->campo_string` → `$modelo->relacion?->campo`
+   - [ ] PDFs: idem
+   - [ ] AJAX: idem
+
+   **Si creas un CRUD completo:**
+   - [ ] SIEMPRE usar `form.blade.php` compartido para create/edit
+   - [ ] NUNCA duplicar formularios en create.blade.php y edit.blade.php
+   - [ ] Verificar que `store()` y `update()` validen los MISMOS campos que el formulario
+   - [ ] Verificar que los `name=""` del HTML coincidan con las reglas `validate()`
+
+4. **COMANDOS DE VERIFICACIÓN RÁPIDA**
+   ```bash
+   # Verificar columnas reales de una tabla
+   php artisan tinker --execute="echo implode(',', Schema::getColumnListing('NOMBRE_TABLA'));"
+   
+   # Verificar que una relación existe en el modelo
+   php artisan tinker --execute="echo method_exists(App\Models\ModeleName::class, 'relacion') ? 'EXISTS' : 'MISSING';"
+   
+   # Limpiar caches después de cambios
+   php artisan view:clear; php artisan cache:clear; php artisan route:clear;
+   
+   # Verificar rutas
+   php artisan route:list --name=NOMBRE_RUTA
+   ```
+
+### Después del cambio:
 
 5. **REVISIÓN POST-CAMBIO**
    - [ ] Verificar que no rompe otras funciones
-   - [ ] Buscar efectos secundarios
+   - [ ] Buscar efectos secundarios (usar grep por campo/relación afectada)
    - [ ] Documentar en bitácora
    - [ ] Commit descriptivo en git
 
@@ -695,6 +733,196 @@ ANTES DE PRODUCCIÓN:
 - Archivos modificados:
     - `app/Http/Controllers/Incidencias/ServicioController.php`
     - `.env`
+
+---
+
+### ERROR #7: RelationNotFoundException - Undefined relationship [marca] on model [Equipo] (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- Error 500 al acceder a `/incidencias/servicios/{id}/informe`.
+- Mensaje: `Call to undefined relationship [marca] on model [App\Models\Equipo]`.
+- Archivo: `vendor\laravel\framework\src\Illuminate\Database\Eloquent\RelationNotFoundException.php:35`
+
+**Causa raíz:**
+- La BD tiene columna `marca_id` como FK (migración `2026_05_25_000002`), pero el modelo `Equipo` nunca se actualizó:
+    - Faltaba método `marca()` (belongsTo Marca).
+    - Faltaba `marca_id` y `codigo_activo_cliente` en `$fillable`.
+    - `ServicioController` usaba `Equipo::with('marca')` y `$e->marca?->nombre` tratándola como relación.
+
+**Archivos corregidos:**
+- `app/Models/Equipo.php`
+    - Agregado `marca_id` y `codigo_activo_cliente` a `$fillable`.
+    - Agregado método `marca()` → `belongsTo(Marca::class)`.
+- `app/Http/Controllers/Incidencias/ServicioController.php`
+    - `getEquiposByCliente()`: removido `marca_id` del `get()` (ya no es necesario con la relación).
+    - `getEquiposByArea()`: idem.
+    - `crearEquipo()`: ahora busca Marca por nombre y guarda `marca_id` + `marca` string.
+
+**Regla preventiva (obligatoria):**
+- Cuando una migración agrega una FK (ej. `marca_id`), actualizar TODOS los:modelo (agregar relación + $fillable), controladores y vistas en el mismo cambio.
+- No asumir que un campo string (ej. `marca`) seguirá siendo string si existe una migración de normalización.
+
+---
+
+### ERROR #8: Column not found - diagnostico_validacion no existe en servicios (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- Error 500 al guardar informe técnico (POST `/incidencias/servicios/{id}/informe`).
+- Mensaje: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'diagnostico_validacion' in 'field list'`.
+- Archivo: `app/Http/Controllers/Incidencias/ServicioController.php:905`
+
+**Causa raíz:**
+- La BD tiene columna `diagnostico`, NO `diagnostico_validacion`.
+- El código enviaba ambos campos al `update()`:
+    - `diagnostico_validacion` → falla (columna no existe)
+    - `diagnostico` → funciona
+- ERROR #3 (27 Mayo) documentó este mismo patrón pero la corrección fue parcial.
+
+**Archivos corregidos:**
+- `app/Http/Controllers/Incidencias/ServicioController.php`
+    - `storeAttendance()` línea 864: eliminada clave `diagnostico_validacion` del `$updateData` (redundante con `diagnostico`).
+    - `storeReport()` línea 1262: cambiado `diagnostico_validacion` → `diagnostico` en el `$updateData`.
+
+**Regla preventiva (obligatoria):**
+- El nombre de campo en `validate()` puede ser diferente al columna real en BD (ej. `diagnostico_validacion` → `diagnostico`).
+- SIEMPRE verificar columnas reales con `Schema::getColumnListing('tabla')` antes de hacer `update()` o `create()`.
+- Si la vista envía un campo con nombre distinto a la columna, mapear explícitamente en el controlador.
+
+---
+
+### ERROR #9: Select de Marca en create equipo era un input text (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- En `/parametros/equipos/create`, el campo Marca era un `<input type="text">` en lugar de un `<select>` con datos de la tabla `marcas`.
+- La vista `edit.blade.php` (vía `form.blade.php`) ya tenía el select correcto.
+
+**Causa raíz:**
+- `create.blade.php` no fue actualizado cuando se implementó el módulo de marcas.
+- El controlador `EquipoController::create()` no pasaba `$marcas` a la vista.
+
+**Archivos corregidos:**
+- `app/Http/Controllers/Parametros/EquipoController.php`
+    - `create()`: agregada consulta `$marcas` y se pasa a la vista.
+    - `edit()`: agregada consulta `$marcas` (ya existía pero faltaba).
+    - `store()`: cambiado validación `marca` string → `marca_id` exists:marcas,id + se resuelve nombre.
+    - `update()`: idem.
+- `resources/views/parametros/equipos/create.blade.php`
+    - Campo Marca cambiado de `<input type="text">` a `<select name="marca_id">`.
+
+**Regla preventiva (obligatoria):**
+- Cuando se crea un CRUD que usa una tabla de catálogo (ej. marcas), verificar que AMBAS vistas (create y edit) usen select.
+- Si `form.blade.php` es compartido, verificar que create.blade.php lo incluya o tenga la misma estructura.
+
+---
+
+### ERROR #10: Validación Pedía "codigo_interno" pero el formulario envía "codigo_activo_cliente" (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- Error de validación al editar equipo: "The codigo interno field is required."
+- El formulario muestra campo "Código Activo Cliente" con datos, pero la validación lo rechaza.
+
+**Causa raíz:**
+- Mismatch entre nombre de campo en formulario y regla de validación:
+    - Formulario (`form.blade.php`): envía `codigo_activo_cliente`
+    - Controlador (`store/update`): validaba `codigo_interno` como required
+- La columna real en BD es `codigo_activo_cliente` (renombrada en migración `2026_05_25_000002`).
+
+**Archivos corregidos:**
+- `app/Http/Controllers/Parametros/EquipoController.php`
+    - `store()`: eliminada validación `codigo_interno`, cambiado `codigo_activo_cliente` de nullable a required.
+    - `update()`: idem.
+
+**Regla preventiva (obligatoria):**
+- Cuando una migración renombra una columna, actualizar TODAS las referencias: validación, formularios, queries.
+- El nombre del campo en `validate()` debe coincidir exactamente con el `name="..."` del formulario HTML.
+- Usar `Schema::getColumnListing('tabla')` para verificar nombres reales antes de escribir validaciones.
+
+---
+
+### ERROR #11: Create y Edit de equipos tenían formularios distintos y desorganizados (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- Create faltaba campo `cliente_id` (name), usaba `codigo_interno` en vez de `codigo_activo_cliente`.
+- Create no tenía sección Mantenimiento & Calibración.
+- Create tenía código duplicado y desorganizado vs form.blade.php.
+
+**Causa raíz:**
+- `create.blade.php` tenía su propio formulario completo duplicado (~387 líneas) en vez de incluir `form.blade.php`.
+- `edit.blade.php` correctamente usaba `@include('parametros.equipos.form')`.
+- Resultado: dos formularios desalineados.
+
+**Solución implementada:**
+- `create.blade.php` reescrito para usar `@include('parametros.equipos.form')` igual que `edit.blade.php`.
+- Ambos formularios ahora son idénticos (mismos campos, misma validación, mismo JS).
+
+**Regla preventiva (obligatoria):**
+- Siempre usar un form.blade.php compartido para create/edit del mismo modelo.
+- NUNCA duplicar formularios completos en create y edit separados.
+- Al agregar un campo, verificar que form.blade.php lo incluya para ambos flujos.
+
+---
+
+### ERROR #12: Column not found 'marca' al actualizar equipo (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- Error 500 al actualizar equipo: `Unknown column 'marca' in 'field list'`.
+- SQL mostraba: `set marca_id = 1, ..., marca = LENOVO` — la columna `marca` no existe.
+
+**Causa raíz:**
+- `EquipoController::store/update()` hacía `$validated['marca'] = $marca->nombre` para guardar el string.
+- Pero la BD solo tiene columna `marca_id` (FK), no `marca`.
+- El campo `marca` estaba en `$fillable` del modelo pero la columna no existe en la tabla.
+
+**Archivos corregidos:**
+- `app/Http/Controllers/Parametros/EquipoController.php`
+    - `store()`: eliminada línea `$validated['marca'] = $marca->nombre`.
+    - `update()`: idem.
+- `app/Models/Equipo.php`
+    - Eliminado `'marca'` de `$fillable` (columna no existe en BD).
+
+**Regla preventiva (obligatoria):**
+- Antes de agregar un campo a `$fillable`, verificar que la columna exista en la BD con `Schema::getColumnListing('tabla')`.
+- No asumir que un campo en `$fillable` = columna existente en la tabla.
+
+---
+
+### ERROR #13: Views mostraban objeto Marca en vez de nombre al listar equipos (13 Junio 2026)
+
+**Estado:** ✅ RESUELTO
+
+**Síntoma:**
+- En índice de equipos, columna "Marca / Modelo" mostraba JSON en vez del nombre de la marca.
+- Causa: `$equipo->marca` ahora retorna objeto Marca (relación), no string.
+
+**Archivos corregidos:**
+- `resources/views/parametros/equipos/index.blade.php` → `$equipo->marca?->nombre`
+- `resources/views/parametros/equipos/pdf.blade.php` → `$equipo->marca?->nombre`
+- `resources/views/parametros/equipos/show.blade.php` → `$equipo->marca?->nombre` (2 lugares)
+- `resources/views/incidencias/servicios/attend.blade.php` → `$equipo->marca?->nombre`
+- `app/Http/Controllers/Parametros/EquipoController.php` → agregado `marca` a TODOS los `with()`
+- `app/Http/Controllers/Parametros/MantenimientoController.php` → idem
+- `app/Http/Controllers/Parametros/EquipoDocumentoController.php` → idem
+- `app/Http/Controllers/Parametros/MantenimientoCalibrationController.php` → idem
+
+**Regla preventiva (obligatoria) — NUEVO PROTOCOLO DE VERIFICACIÓN:**
+CUANDO SE CAMBIA UNA RELACIÓN O CAMPO EN UN MODELO:
+1. Buscar con `grep` TODAS las referencias al campo/relación en TODO el proyecto
+2. Verificar CADA vista que lo muestra
+3. Verificar CADA controlador que lo eager-loads
+4. Verificar PDFs, exportes, AJAX
+5. Usar el checklist de verificación de la sección 1
 
 ---
 

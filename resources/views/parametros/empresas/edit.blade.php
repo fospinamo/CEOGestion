@@ -146,6 +146,20 @@
                 </label>
             </div>
 
+            <!-- Formato de Informe -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Formato de Informe Técnico</label>
+                <select name="informe_formato_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Sin formato asignado</option>
+                    @foreach($formatos as $formato)
+                        <option value="{{ $formato->id }}" {{ old('informe_formato_id', $empresa->informe_formato_id) == $formato->id ? 'selected' : '' }}>
+                            {{ $formato->codigo }} - {{ $formato->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Formato de PDF que se generará para los informes técnicos de esta empresa</p>
+            </div>
+
             <!-- Buttons -->
             <div class="flex gap-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('parametros.empresas.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">

@@ -15,9 +15,12 @@
             @endif
         </div>
         <div class="flex gap-2">
+            @can('clientes.editar')
             <a href="{{ route('parametros.clientes.edit', $cliente) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2">
                 <i class="fas fa-edit"></i> Editar
             </a>
+            @endcan
+            @can('clientes.eliminar')
             <form action="{{ route('parametros.clientes.destroy', $cliente) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar cliente?')">
                 @csrf
                 @method('DELETE')
@@ -25,6 +28,7 @@
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
             </form>
+            @endcan
         </div>
     </div>
 
@@ -53,6 +57,15 @@
                     <div>
                         <p class="text-gray-600 text-sm">Empresa Asociada</p>
                         <p class="text-lg font-semibold text-gray-900">{{ $cliente->empresa->nombre }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 text-sm">Prefijo de Activo</p>
+                        @if($cliente->prefijo)
+                            <span class="inline-block px-3 py-1 bg-purple-100 text-purple-800 font-semibold rounded-full text-sm">{{ $cliente->prefijo }}</span>
+                            <p class="text-xs text-gray-500 mt-1">Códigos: {{ $cliente->prefijo }}-001, {{ $cliente->prefijo }}-002, ...</p>
+                        @else
+                            <p class="text-lg text-gray-400">No asignado</p>
+                        @endif
                     </div>
                     <div>
                         <p class="text-gray-600 text-sm">Estado</p>

@@ -96,9 +96,12 @@
     <div class="space-y-6">
         <!-- Acciones -->
         <div class="bg-white rounded-lg shadow p-6 space-y-2">
+            @can('marcas.editar')
             <a href="{{ route('parametros.marcas.edit', $marca) }}" class="w-full block text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
                 <i class="fas fa-edit mr-2"></i>Editar
             </a>
+            @endcan
+            @can('marcas.eliminar')
             @if(($marca->equipos_count ?? 0) === 0)
                 <form action="{{ route('parametros.marcas.destroy', $marca) }}" method="POST">
                     @csrf
@@ -108,6 +111,7 @@
                     </button>
                 </form>
             @endif
+            @endcan
             <a href="{{ route('parametros.marcas.index') }}" class="w-full block text-center px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i>Volver
             </a>

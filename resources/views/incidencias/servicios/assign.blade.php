@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Equipo</p>
-                    <p class="text-lg font-semibold">{{ $servicio->equipo->codigo_interno }}</p>
+                    <p class="text-lg font-semibold">{{ $servicio->equipo->codigo_activo_cliente }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-600">Cliente</p>
@@ -100,10 +100,12 @@
                         class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition text-center">
                         Cancelar
                     </a>
+                    @can('servicios.asignar')
                     <button type="submit" 
                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                         ✅ Asignar Técnico
                     </button>
+                    @endcan
                 </div>
             </div>
         </form>

@@ -3,231 +3,181 @@
 @section('title', 'Detalle del Servicio #' . $servicio->id . ' - Portal del Cliente')
 
 @section('content')
-    <a href="{{ route('portal.servicios') }}" style="color: #3b82f6; text-decoration: none; margin-bottom: 20px; display: inline-block;">
+    <a href="{{ route('portal.servicios') }}" class="text-blue-500 no-underline mb-5 inline-block hover:underline">
         <i class="fas fa-arrow-left"></i> Volver a Servicios
     </a>
 
-    <h1 style="margin-bottom: 30px; font-size: 28px; font-weight: 700;">
-        <i class="fas fa-tools" style="margin-right: 10px; color: #3b82f6;"></i>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="fas fa-tools text-blue-500 mr-2"></i>
         Servicio #{{ $servicio->id }}
     </h1>
 
     <!-- Información General -->
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">Información General</div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+    <x-card class="mb-5">
+        <h2 class="text-lg font-semibold mb-4">Información General</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Estado:</strong>
+                <p class="text-xs text-gray-500 font-semibold">Estado:</p>
                 @php
-                    $estadoConfig = [
-                        'REPORTADO' => ['bg' => '#cffafe', 'text' => '#164e63'],
-                        'EN_ESPERA_ASIGNACION' => ['bg' => '#fef3c7', 'text' => '#92400e'],
-                        'EN_PROCESO' => ['bg' => '#fed7aa', 'text' => '#92400b'],
-                        'RESUELTO' => ['bg' => '#d1fae5', 'text' => '#065f46'],
-                        'CERRADO' => ['bg' => '#f3f4f6', 'text' => '#374151'],
-                    ];
-                    $config = $estadoConfig[$servicio->estado] ?? ['bg' => '#f3f4f6', 'text' => '#374151'];
+                    $estadoMap = ['REPORTADO' => 'blue', 'EN_ESPERA_ASIGNACION' => 'yellow', 'EN_PROCESO' => 'yellow', 'RESUELTO' => 'green', 'CERRADO' => 'gray'];
                 @endphp
-                <div style="margin-top: 8px;">
-                    <span class="badge" style="background: {{ $config['bg'] }}; color: {{ $config['text'] }}; padding: 8px 12px;">
-                        {{ str_replace('_', ' ', $servicio->estado) }}
-                    </span>
+                <div class="mt-2">
+                    <x-badge :variant="$estadoMap[$servicio->estado] ?? 'gray'" size="sm">{{ str_replace('_', ' ', $servicio->estado) }}</x-badge>
                 </div>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Tipo de Servicio:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->tipo_servicio }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Tipo de Servicio:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->tipo_servicio }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Prioridad:</strong>
+                <p class="text-xs text-gray-500 font-semibold">Prioridad:</p>
                 @php
-                    $prioridadConfig = [
-                        'BAJA' => ['bg' => '#dcfce7', 'text' => '#166534'],
-                        'MEDIA' => ['bg' => '#fef3c7', 'text' => '#92400e'],
-                        'ALTA' => ['bg' => '#fed7aa', 'text' => '#92400b'],
-                        'CRITICA' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
-                    ];
-                    $config = $prioridadConfig[$servicio->prioridad] ?? ['bg' => '#f3f4f6', 'text' => '#374151'];
+                    $prioridadMap = ['BAJA' => 'green', 'MEDIA' => 'yellow', 'ALTA' => 'red', 'CRITICA' => 'red'];
                 @endphp
-                <div style="margin-top: 8px;">
-                    <span class="badge" style="background: {{ $config['bg'] }}; color: {{ $config['text'] }}; padding: 8px 12px;">
-                        {{ $servicio->prioridad }}
-                    </span>
+                <div class="mt-2">
+                    <x-badge :variant="$prioridadMap[$servicio->prioridad] ?? 'gray'" size="sm">{{ $servicio->prioridad }}</x-badge>
                 </div>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Fecha de Reporte:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->created_at->format('d/m/Y H:i') }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Fecha de Reporte:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->created_at->format('d/m/Y H:i') }}</p>
             </div>
         </div>
-    </div>
+    </x-card>
 
     <!-- Equipo Afectado -->
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">Equipo Afectado</div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+    <x-card class="mb-5">
+        <h2 class="text-lg font-semibold mb-4">Equipo Afectado</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Código Interno:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->codigo_interno }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Código Interno:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->codigo_activo_cliente }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Tipo de Equipo:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->tipo->nombre ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Tipo de Equipo:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->tipo->nombre ?? 'N/A' }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Ubicación:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->ubicacion ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Ubicación:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->ubicacion ?? 'N/A' }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Serial/Modelo:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->numero_serie ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Serial/Modelo:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->numero_serie ?? 'N/A' }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Área:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->area->nombre ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Área:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->area->nombre ?? 'N/A' }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Sede:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->equipo->area->sede->nombre ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Sede:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->equipo->area->sede->nombre ?? 'N/A' }}</p>
             </div>
         </div>
-    </div>
+    </x-card>
 
     <!-- Descripción del Problema -->
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">Descripción del Problema</div>
-        
-        <div style="background: #f9fafb; padding: 15px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+    <x-card class="mb-5">
+        <h2 class="text-lg font-semibold mb-4">Descripción del Problema</h2>
+        <div class="bg-gray-50 p-4 rounded-md border-l-[3px] border-blue-500">
             {{ $servicio->descripcion_problema }}
         </div>
-    </div>
+    </x-card>
 
     <!-- Información de Contacto -->
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">Información de Contacto</div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+    <x-card class="mb-5">
+        <h2 class="text-lg font-semibold mb-4">Información de Contacto</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Reportado por:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->reportado_por }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Reportado por:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->reportado_por }}</p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Teléfono:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">
-                    <a href="tel:{{ $servicio->telefono_contacto }}" style="color: #3b82f6; text-decoration: none;">
-                        {{ $servicio->telefono_contacto }}
-                    </a>
-                </div>
+                <p class="text-xs text-gray-500 font-semibold">Teléfono:</p>
+                <p class="text-base mt-2">
+                    <a href="tel:{{ $servicio->telefono_contacto }}" class="text-blue-500 no-underline hover:underline">{{ $servicio->telefono_contacto }}</a>
+                </p>
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Email:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">
-                    <a href="mailto:{{ $servicio->email_contacto }}" style="color: #3b82f6; text-decoration: none;">
-                        {{ $servicio->email_contacto }}
-                    </a>
-                </div>
+                <p class="text-xs text-gray-500 font-semibold">Email:</p>
+                <p class="text-base mt-2">
+                    <a href="mailto:{{ $servicio->email_contacto }}" class="text-blue-500 no-underline hover:underline">{{ $servicio->email_contacto }}</a>
+                </p>
             </div>
         </div>
-    </div>
+    </x-card>
 
     <!-- SLA y Técnico -->
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">SLA y Asignación</div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+    <x-card class="mb-5">
+        <h2 class="text-lg font-semibold mb-4">SLA y Asignación</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">SLA Respuesta:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->sla_horas_respuesta }} horas</div>
+                <p class="text-xs text-gray-500 font-semibold">SLA Respuesta:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->sla_horas_respuesta }} horas</p>
                 @if($servicio->fecha_limite_respuesta)
-                    <small style="color: #6b7280; display: block; margin-top: 5px;">
-                        Límite: {{ $servicio->fecha_limite_respuesta->format('d/m/Y H:i') }}
-                    </small>
+                    <small class="text-gray-500 block mt-1">Límite: {{ $servicio->fecha_limite_respuesta->format('d/m/Y H:i') }}</small>
                 @endif
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">SLA Solución:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">{{ $servicio->sla_horas_solucion }} horas</div>
+                <p class="text-xs text-gray-500 font-semibold">SLA Solución:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->sla_horas_solucion }} horas</p>
                 @if($servicio->fecha_limite_solucion)
-                    <small style="color: #6b7280; display: block; margin-top: 5px;">
-                        Límite: {{ $servicio->fecha_limite_solucion->format('d/m/Y H:i') }}
-                    </small>
+                    <small class="text-gray-500 block mt-1">Límite: {{ $servicio->fecha_limite_solucion->format('d/m/Y H:i') }}</small>
                 @endif
             </div>
-
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Técnico Asignado:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 8px;">
-                    {{ $servicio->tecnicoAsignado?->name ?? 'Sin asignar' }}
-                </div>
+                <p class="text-xs text-gray-500 font-semibold">Técnico Asignado:</p>
+                <p class="text-base text-gray-900 mt-2">{{ $servicio->tecnicoAsignado?->name ?? 'Sin asignar' }}</p>
             </div>
         </div>
-    </div>
+    </x-card>
 
     <!-- Historial de Seguimiento -->
     @if($servicio->seguimientos->isNotEmpty())
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-title">Historial de Seguimiento</div>
-            
-            <div style="position: relative; padding: 20px 0;">
+        <x-card class="mb-5">
+            <h2 class="text-lg font-semibold mb-4">Historial de Seguimiento</h2>
+
+            <div class="relative py-5">
                 @foreach($servicio->seguimientos as $seguimiento)
-                    <div style="display: flex; margin-bottom: 20px;">
-                        <div style="width: 30px; height: 30px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; margin-right: 15px;">
-                            <i class="fas fa-check" style="font-size: 14px;"></i>
+                    <div class="flex mb-5">
+                        <div class="w-[30px] h-[30px] bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 mr-4">
+                            <i class="fas fa-check text-sm"></i>
                         </div>
-                        
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: #111827;">
+
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900">
                                 {{ $seguimiento->accion }}
                                 @if($seguimiento->usuario)
-                                    <span style="color: #6b7280; font-weight: 400; font-size: 12px;">por {{ $seguimiento->usuario->name }}</span>
+                                    <span class="text-gray-500 font-normal text-xs">por {{ $seguimiento->usuario->name }}</span>
                                 @endif
                             </div>
-                            
+
                             @if($seguimiento->observacion)
-                                <div style="color: #6b7280; font-size: 14px; margin-top: 5px;">
-                                    {{ $seguimiento->observacion }}
-                                </div>
+                                <div class="text-gray-500 text-sm mt-1">{{ $seguimiento->observacion }}</div>
                             @endif
-                            
+
                             @if($seguimiento->estado_anterior && $seguimiento->estado_nuevo)
-                                <div style="color: #6b7280; font-size: 12px; margin-top: 5px;">
-                                    {{ $seguimiento->estado_anterior }} → {{ $seguimiento->estado_nuevo }}
-                                </div>
+                                <div class="text-gray-500 text-xs mt-1">{{ $seguimiento->estado_anterior }} → {{ $seguimiento->estado_nuevo }}</div>
                             @endif
-                            
-                            <div style="color: #9ca3af; font-size: 12px; margin-top: 8px;">
-                                {{ $seguimiento->created_at->format('d/m/Y H:i:s') }}
-                            </div>
+
+                            <div class="text-gray-400 text-xs mt-2">{{ $seguimiento->created_at->format('d/m/Y H:i:s') }}</div>
                         </div>
                     </div>
                 @endforeach
             </div>
-        </div>
+        </x-card>
     @endif
 
     <!-- Botones de Acción -->
-    <div style="display: flex; gap: 10px; margin-top: 30px;">
-        <a href="{{ route('portal.servicios') }}" class="btn btn-primary">
+    <div class="flex gap-3 mt-6">
+        <x-button href="{{ route('portal.servicios') }}">
             <i class="fas fa-arrow-left"></i> Volver
-        </a>
-        
+        </x-button>
+
         @if($servicio->estado === 'CERRADO' || $servicio->estado === 'RESUELTO')
-            <a href="{{ route('portal.servicios.descargar', $servicio->id) }}" class="btn btn-primary" style="background: #10b981;">
+            <x-button href="{{ route('portal.servicios.descargar', $servicio->id) }}" variant="success">
                 <i class="fas fa-download"></i> Descargar PDF
-            </a>
+            </x-button>
         @endif
     </div>
 @endsection

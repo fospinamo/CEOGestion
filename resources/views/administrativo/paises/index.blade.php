@@ -12,9 +12,11 @@
             <h1 class="text-3xl font-bold text-gray-900">🌍 Países</h1>
             <p class="text-gray-600 mt-2">Administra los países registrados en el sistema</p>
         </div>
+        @can('paises.crear')
         <a href="{{ route('administrativo.paises.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
             ➕ Nuevo País
         </a>
+        @endcan
     </div>
 
     <!-- Table -->
@@ -45,15 +47,19 @@
                                 <a href="{{ route('administrativo.paises.show', $pais) }}" class="text-blue-600 hover:text-blue-900 transition" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('paises.editar')
                                 <a href="{{ route('administrativo.paises.edit', $pais) }}" class="text-yellow-600 hover:text-yellow-900 transition" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('paises.eliminar')
                                 <form action="{{ route('administrativo.paises.destroy', $pais) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este país?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900 transition" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

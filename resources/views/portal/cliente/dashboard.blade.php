@@ -3,104 +3,97 @@
 @section('title', 'Dashboard - Portal del Cliente')
 
 @section('content')
-    <h1 style="margin-bottom: 30px; font-size: 28px; font-weight: 700;">
-        <i class="fas fa-chart-line" style="margin-right: 10px; color: #3b82f6;"></i>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="fas fa-chart-line text-blue-500 mr-2"></i>
         Dashboard
     </h1>
 
     <!-- Información del Cliente -->
-    <div class="card" style="margin-bottom: 30px;">
-        <div class="card-title">Información del Cliente</div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+    <x-card class="mb-6">
+        <h2 class="text-lg font-semibold mb-4">Información del Cliente</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Razón Social:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 5px;">{{ $cliente->razon_social }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Razón Social:</p>
+                <p class="text-base text-gray-900 mt-1">{{ $cliente->razon_social }}</p>
             </div>
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Documento:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 5px;">{{ $cliente->tipo_documento }}: {{ $cliente->documento }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Documento:</p>
+                <p class="text-base text-gray-900 mt-1">{{ $cliente->tipo_documento }}: {{ $cliente->documento }}</p>
             </div>
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Email Principal:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 5px;">{{ $cliente->email_principal }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Email Principal:</p>
+                <p class="text-base text-gray-900 mt-1">{{ $cliente->email_principal }}</p>
             </div>
             <div>
-                <strong style="color: #6b7280; font-size: 12px;">Teléfono:</strong>
-                <div style="font-size: 16px; color: #111827; margin-top: 5px;">{{ $cliente->telefono_movil ?? $cliente->telefono_fijo ?? 'N/A' }}</div>
+                <p class="text-xs text-gray-500 font-semibold">Teléfono:</p>
+                <p class="text-base text-gray-900 mt-1">{{ $cliente->telefono_movil ?? $cliente->telefono_fijo ?? 'N/A' }}</p>
             </div>
         </div>
-    </div>
+    </x-card>
 
     <!-- Estadísticas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <!-- Contratos Activos -->
-        <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-            <div class="number"><i class="fas fa-file-contract"></i> {{ $contratos }}</div>
-            <div class="label">Contratos Activos</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-lg p-5 text-center">
+            <div class="text-[28px] font-bold mb-1"><i class="fas fa-file-contract"></i> {{ $contratos }}</div>
+            <div class="text-sm opacity-90">Contratos Activos</div>
         </div>
-
-        <!-- Equipos -->
-        <div class="stat-card" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
-            <div class="number"><i class="fas fa-server"></i> {{ $equipos }}</div>
-            <div class="label">Equipos</div>
+        <div class="bg-gradient-to-br from-sky-500 to-sky-700 text-white rounded-lg p-5 text-center">
+            <div class="text-[28px] font-bold mb-1"><i class="fas fa-server"></i> {{ $equipos }}</div>
+            <div class="text-sm opacity-90">Equipos</div>
         </div>
-
-        <!-- Servicios Últimos 30 días -->
-        <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-            <div class="number"><i class="fas fa-tools"></i> {{ $servicios_recientes }}</div>
-            <div class="label">Servicios (últimos 30 días)</div>
+        <div class="bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-lg p-5 text-center">
+            <div class="text-[28px] font-bold mb-1"><i class="fas fa-tools"></i> {{ $servicios_recientes }}</div>
+            <div class="text-sm opacity-90">Servicios (últimos 30 días)</div>
         </div>
-
-        <!-- Estado de Servicios -->
-        <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-            <div class="number"><i class="fas fa-chart-bar"></i> {{ array_sum($servicios_por_estado->toArray()) }}</div>
-            <div class="label">Total de Servicios</div>
+        <div class="bg-gradient-to-br from-violet-500 to-violet-700 text-white rounded-lg p-5 text-center">
+            <div class="text-[28px] font-bold mb-1"><i class="fas fa-chart-bar"></i> {{ array_sum($servicios_por_estado->toArray()) }}</div>
+            <div class="text-sm opacity-90">Total de Servicios</div>
         </div>
     </div>
 
     <!-- Estado de Servicios Detallado -->
-    <div class="card">
-        <div class="card-title">Estado de Servicios Activos</div>
-        
+    <x-card>
+        <h2 class="text-lg font-semibold mb-4">Estado de Servicios Activos</h2>
+
         @if($servicios_por_estado->isEmpty())
-            <p style="color: #6b7280; text-align: center; padding: 20px;">No hay servicios registrados</p>
+            <p class="text-gray-500 text-center py-5">No hay servicios registrados</p>
         @else
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-                @php
-                    $estados = [
-                        'REPORTADO' => ['color' => '#cffafe', 'text' => '#164e63', 'label' => 'Reportado'],
-                        'EN_ESPERA_ASIGNACION' => ['color' => '#fef3c7', 'text' => '#92400e', 'label' => 'En Espera'],
-                        'EN_PROCESO' => ['color' => '#fed7aa', 'text' => '#92400b', 'label' => 'En Proceso'],
-                        'RESUELTO' => ['color' => '#d1fae5', 'text' => '#065f46', 'label' => 'Resuelto'],
-                        'CERRADO' => ['color' => '#f3f4f6', 'text' => '#374151', 'label' => 'Cerrado'],
-                    ];
-                @endphp
-                
+            @php
+                $estados = [
+                    'REPORTADO' => ['bg' => 'bg-cyan-100', 'text' => 'text-cyan-800', 'label' => 'Reportado'],
+                    'EN_ESPERA_ASIGNACION' => ['bg' => 'bg-amber-100', 'text' => 'text-amber-800', 'label' => 'En Espera'],
+                    'EN_PROCESO' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'label' => 'En Proceso'],
+                    'RESUELTO' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Resuelto'],
+                    'CERRADO' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => 'Cerrado'],
+                ];
+            @endphp
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 @foreach($estados as $estado => $config)
                     @if(isset($servicios_por_estado[$estado]))
-                        <div style="background: {{ $config['color'] }}; color: {{ $config['text'] }}; padding: 15px; border-radius: 6px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">{{ $servicios_por_estado[$estado] }}</div>
-                            <div style="font-size: 12px; margin-top: 5px;">{{ $config['label'] }}</div>
+                        <div class="{{ $config['bg'] }} {{ $config['text'] }} p-4 rounded-md text-center">
+                            <div class="text-2xl font-bold">{{ $servicios_por_estado[$estado] }}</div>
+                            <div class="text-xs mt-1">{{ $config['label'] }}</div>
                         </div>
                     @endif
                 @endforeach
             </div>
         @endif
-    </div>
+    </x-card>
 
     <!-- Acciones Rápidas -->
-    <div class="card" style="margin-top: 30px;">
-        <div class="card-title">Acciones Rápidas</div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="{{ route('portal.contratos') }}" class="btn btn-primary">
+    <x-card class="mt-6">
+        <h2 class="text-lg font-semibold mb-4">Acciones Rápidas</h2>
+        <div class="flex gap-3 flex-wrap">
+            <x-button href="{{ route('portal.contratos') }}">
                 <i class="fas fa-file-contract"></i> Ver Contratos
-            </a>
-            <a href="{{ route('portal.equipos') }}" class="btn btn-primary">
+            </x-button>
+            <x-button href="{{ route('portal.equipos') }}">
                 <i class="fas fa-server"></i> Ver Equipos
-            </a>
-            <a href="{{ route('portal.servicios') }}" class="btn btn-primary">
+            </x-button>
+            <x-button href="{{ route('portal.servicios') }}">
                 <i class="fas fa-tools"></i> Ver Servicios
-            </a>
+            </x-button>
         </div>
-    </div>
+    </x-card>
 @endsection

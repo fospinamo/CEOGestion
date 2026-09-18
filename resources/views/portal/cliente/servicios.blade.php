@@ -3,128 +3,98 @@
 @section('title', 'Servicios - Portal del Cliente')
 
 @section('content')
-    <h1 style="margin-bottom: 30px; font-size: 28px; font-weight: 700;">
-        <i class="fas fa-tools" style="margin-right: 10px; color: #3b82f6;"></i>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="fas fa-tools text-blue-500 mr-2"></i>
         Mis Servicios
     </h1>
 
     <!-- Botón para Crear Servicio -->
-    <div style="margin-bottom: 20px;">
-        <button class="btn btn-primary" onclick="document.getElementById('modalNuevoServicio').style.display='block';">
+    <div class="mb-5">
+        <x-button tag="button" onclick="document.getElementById('modalNuevoServicio').classList.remove('hidden');">
             <i class="fas fa-plus"></i> Reportar Nuevo Servicio
-        </button>
+        </x-button>
     </div>
 
     @if($servicios->isEmpty())
-        <div class="card" style="text-align: center; padding: 40px;">
-            <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 20px;"></i>
-            <p style="color: #6b7280; font-size: 16px;">No tienes servicios reportados.</p>
-        </div>
+        <x-card class="text-center py-10">
+            <x-empty-state icon="fa-tools" message="No tienes servicios reportados." />
+        </x-card>
     @else
-        <div class="card">
-            <table id="tablaServicios" class="responsive" style="width: 100%;">
-                <thead>
+        <x-card :padding="false">
+            <table id="tablaServicios" class="w-full responsive">
+                <thead class="bg-gray-100 border-b border-gray-200">
                     <tr>
-                        <th>#</th>
-                        <th>Equipo</th>
-                        <th>Tipo</th>
-                        <th>Prioridad</th>
-                        <th>Estado</th>
-                        <th>Fecha Reporte</th>
-                        <th>Técnico</th>
-                        <th>Acciones</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">#</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Equipo</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tipo</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Prioridad</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha Reporte</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Técnico</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100">
                     @foreach($servicios as $servicio)
-                        <tr>
-                            <td>
-                                <strong style="color: #3b82f6;">#{{ $servicio->id }}</strong>
-                            </td>
-                            <td>
-                                {{ $servicio->equipo?->codigo_interno ?? 'N/A' }}
-                            </td>
-                            <td>
-                                <span class="badge" style="background: #cffafe; color: #164e63;">
-                                    {{ $servicio->tipo_servicio }}
-                                </span>
-                            </td>
-                            <td>
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3"><strong class="text-blue-500">#{{ $servicio->id }}</strong></td>
+                            <td class="px-4 py-3">{{ $servicio->equipo?->codigo_activo_cliente ?? 'N/A' }}</td>
+                            <td class="px-4 py-3"><x-badge variant="blue">{{ $servicio->tipo_servicio }}</x-badge></td>
+                            <td class="px-4 py-3">
                                 @php
-                                    $prioridadConfig = [
-                                        'BAJA' => ['bg' => '#dcfce7', 'text' => '#166534'],
-                                        'MEDIA' => ['bg' => '#fef3c7', 'text' => '#92400e'],
-                                        'ALTA' => ['bg' => '#fed7aa', 'text' => '#92400b'],
-                                        'CRITICA' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
-                                    ];
-                                    $config = $prioridadConfig[$servicio->prioridad] ?? ['bg' => '#f3f4f6', 'text' => '#374151'];
+                                    $prioridadMap = ['BAJA' => 'green', 'MEDIA' => 'yellow', 'ALTA' => 'red', 'CRITICA' => 'red'];
                                 @endphp
-                                <span class="badge" style="background: {{ $config['bg'] }}; color: {{ $config['text'] }};">
-                                    {{ $servicio->prioridad }}
-                                </span>
+                                <x-badge :variant="$prioridadMap[$servicio->prioridad] ?? 'gray'">{{ $servicio->prioridad }}</x-badge>
                             </td>
-                            <td>
+                            <td class="px-4 py-3">
                                 @php
-                                    $estadoConfig = [
-                                        'REPORTADO' => ['bg' => '#cffafe', 'text' => '#164e63'],
-                                        'EN_ESPERA_ASIGNACION' => ['bg' => '#fef3c7', 'text' => '#92400e'],
-                                        'EN_PROCESO' => ['bg' => '#fed7aa', 'text' => '#92400b'],
-                                        'RESUELTO' => ['bg' => '#d1fae5', 'text' => '#065f46'],
-                                        'CERRADO' => ['bg' => '#f3f4f6', 'text' => '#374151'],
-                                    ];
-                                    $config = $estadoConfig[$servicio->estado] ?? ['bg' => '#f3f4f6', 'text' => '#374151'];
+                                    $estadoMap = ['REPORTADO' => 'blue', 'EN_ESPERA_ASIGNACION' => 'yellow', 'EN_PROCESO' => 'yellow', 'RESUELTO' => 'green', 'CERRADO' => 'gray'];
                                 @endphp
-                                <span class="badge" style="background: {{ $config['bg'] }}; color: {{ $config['text'] }};">
-                                    {{ str_replace('_', ' ', $servicio->estado) }}
-                                </span>
+                                <x-badge :variant="$estadoMap[$servicio->estado] ?? 'gray'">{{ str_replace('_', ' ', $servicio->estado) }}</x-badge>
                             </td>
-                            <td>
-                                {{ $servicio->created_at->format('d/m/Y H:i') }}
-                            </td>
-                            <td>
-                                {{ $servicio->tecnicoAsignado?->name ?? 'Sin asignar' }}
-                            </td>
-                            <td style="text-align: center;">
-                                <a href="{{ route('portal.servicios.detalle', $servicio->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                            <td class="px-4 py-3">{{ $servicio->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="px-4 py-3">{{ $servicio->tecnicoAsignado?->name ?? 'Sin asignar' }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <x-button href="{{ route('portal.servicios.detalle', $servicio->id) }}" class="!px-3 !py-1.5 !text-xs">
                                     <i class="fas fa-eye"></i> Ver
-                                </a>
+                                </x-button>
                                 @if($servicio->estado === 'CERRADO' || $servicio->estado === 'RESUELTO')
-                                    <a href="{{ route('portal.servicios.descargar', $servicio->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; background: #10b981;">
+                                    <x-button href="{{ route('portal.servicios.descargar', $servicio->id) }}" variant="success" class="!px-3 !py-1.5 !text-xs">
                                         <i class="fas fa-download"></i> Descargar
-                                    </a>
+                                    </x-button>
                                 @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-card>
     @endif
 
     <!-- Modal Nuevo Servicio -->
-    <div id="modalNuevoServicio" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-        <div style="background-color: white; margin: 10% auto; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-size: 20px; font-weight: 700;">Reportar Nuevo Servicio</h2>
-                <button onclick="document.getElementById('modalNuevoServicio').style.display='none';" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">×</button>
+    <div id="modalNuevoServicio" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white mx-auto mt-[10%] p-7 rounded-lg w-[90%] max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-bold">Reportar Nuevo Servicio</h2>
+                <button onclick="this.closest('#modalNuevoServicio').classList.add('hidden');" class="text-gray-500 hover:text-gray-700 text-2xl border-0 bg-transparent cursor-pointer">&times;</button>
             </div>
 
             <form action="{{ route('portal.servicios.crear') }}" method="POST">
                 @csrf
 
-                <div class="form-group">
-                    <label>Equipo *</label>
-                    <select name="equipo_id" required>
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Equipo *</label>
+                    <select name="equipo_id" required class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                         <option value="">Selecciona un equipo</option>
                         @foreach($servicios->pluck('equipo')->unique('id') as $equipo)
-                            <option value="{{ $equipo->id }}">{{ $equipo->codigo_interno }} - {{ $equipo->area?->nombre ?? 'N/A' }}</option>
+                            <option value="{{ $equipo->id }}">{{ $equipo->codigo_activo_cliente }} - {{ $equipo->area?->nombre ?? 'N/A' }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Tipo de Servicio *</label>
-                    <select name="tipo_servicio" required>
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Tipo de Servicio *</label>
+                    <select name="tipo_servicio" required class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                         <option value="">Selecciona el tipo</option>
                         <option value="PREVENTIVO">Preventivo</option>
                         <option value="CORRECTIVO">Correctivo</option>
@@ -135,9 +105,9 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Prioridad *</label>
-                    <select name="prioridad" required>
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Prioridad *</label>
+                    <select name="prioridad" required class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                         <option value="">Selecciona la prioridad</option>
                         <option value="BAJA">Baja</option>
                         <option value="MEDIA">Media</option>
@@ -146,33 +116,33 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Descripción del Problema *</label>
-                    <textarea name="descripcion_problema" required placeholder="Describe el problema detalladamente..."></textarea>
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Descripción del Problema *</label>
+                    <textarea name="descripcion_problema" required placeholder="Describe el problema detalladamente..." class="w-full p-2.5 border border-gray-300 rounded-md text-sm min-h-[100px] resize-y focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label>Reportado por *</label>
-                    <input type="text" name="reportado_por" required placeholder="Tu nombre">
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Reportado por *</label>
+                    <input type="text" name="reportado_por" required placeholder="Tu nombre" class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                 </div>
 
-                <div class="form-group">
-                    <label>Teléfono de Contacto *</label>
-                    <input type="tel" name="telefono_contacto" required placeholder="+57 300 123 4567">
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Teléfono de Contacto *</label>
+                    <input type="tel" name="telefono_contacto" required placeholder="+57 300 123 4567" class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                 </div>
 
-                <div class="form-group">
-                    <label>Email de Contacto *</label>
-                    <input type="email" name="email_contacto" required placeholder="tu@email.com">
+                <div class="mb-5">
+                    <label class="block mb-1.5 font-medium text-gray-700">Email de Contacto *</label>
+                    <input type="email" name="email_contacto" required placeholder="tu@email.com" class="w-full p-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10">
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-danger" onclick="document.getElementById('modalNuevoServicio').style.display='none';">
+                <div class="flex gap-3 justify-end">
+                    <x-button tag="button" variant="danger" onclick="this.closest('#modalNuevoServicio').classList.add('hidden');">
                         Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
+                    </x-button>
+                    <x-button tag="button" variant="primary">
                         <i class="fas fa-save"></i> Registrar Servicio
-                    </button>
+                    </x-button>
                 </div>
             </form>
         </div>
@@ -195,11 +165,10 @@
                 });
             });
 
-            // Cerrar modal al hacer click fuera
             window.onclick = function(event) {
                 const modal = document.getElementById('modalNuevoServicio');
                 if (event.target === modal) {
-                    modal.style.display = 'none';
+                    modal.classList.add('hidden');
                 }
             }
         </script>

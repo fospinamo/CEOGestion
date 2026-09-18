@@ -27,15 +27,19 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="font-semibold text-gray-900 mb-3">Acciones</h3>
             <div class="space-y-2">
+                @can('areas.editar')
                 <a href="{{ route('parametros.areas.edit', $area) }}" class="block px-4 py-2 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition text-center text-sm font-semibold">
                     <i class="fas fa-edit mr-2"></i> Editar
                 </a>
+                @endcan
+                @can('areas.eliminar')
                 <form action="{{ route('parametros.areas.destroy', $area) }}" method="POST" onsubmit="return confirm('¿Eliminar?')">
                     @csrf @method('DELETE')
                     <button type="submit" class="w-full px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200 transition text-sm font-semibold">
                         <i class="fas fa-trash mr-2"></i> Eliminar
                     </button>
                 </form>
+                @endcan
             </div>
         </div>
 

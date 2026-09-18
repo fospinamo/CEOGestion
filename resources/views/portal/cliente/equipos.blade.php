@@ -3,62 +3,48 @@
 @section('title', 'Equipos - Portal del Cliente')
 
 @section('content')
-    <h1 style="margin-bottom: 30px; font-size: 28px; font-weight: 700;">
-        <i class="fas fa-server" style="margin-right: 10px; color: #3b82f6;"></i>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="fas fa-server text-blue-500 mr-2"></i>
         Equipos
     </h1>
 
     @if($equipos->isEmpty())
-        <div class="card" style="text-align: center; padding: 40px;">
-            <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 20px;"></i>
-            <p style="color: #6b7280; font-size: 16px;">No tienes equipos registrados.</p>
-        </div>
+        <x-card class="text-center py-10">
+            <x-empty-state icon="fa-server" message="No tienes equipos registrados." />
+        </x-card>
     @else
-        <div class="card">
-            <table id="tablaEquipos" class="responsive" style="width: 100%;">
-                <thead>
+        <x-card :padding="false">
+            <table id="tablaEquipos" class="w-full responsive">
+                <thead class="bg-gray-100 border-b border-gray-200">
                     <tr>
-                        <th>Código Interno</th>
-                        <th>Tipo de Equipo</th>
-                        <th>Ubicación</th>
-                        <th>Serial/Modelo</th>
-                        <th>Sede</th>
-                        <th>Estado</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Código Interno</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Tipo de Equipo</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Ubicación</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Serial/Modelo</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Sede</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-100">
                     @foreach($equipos as $equipo)
-                        <tr>
-                            <td>
-                                <strong style="color: #3b82f6;">{{ $equipo->codigo_interno }}</strong>
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-3">
+                                <strong class="text-blue-500">{{ $equipo->codigo_activo_cliente }}</strong>
                             </td>
-                            <td>
-                                {{ $equipo->tipo->nombre ?? 'N/A' }}
-                            </td>
-                            <td>
-                                {{ $equipo->ubicacion ?? 'N/A' }}
-                            </td>
-                            <td>
-                                {{ $equipo->numero_serie ?? 'N/A' }}
-                            </td>
-                            <td>
-                                {{ $equipo->area->sede->nombre ?? 'N/A' }}
-                            </td>
-                            <td>
-                                @php
-                                    $estadoColor = $equipo->estado_operativo ? '#d1fae5' : '#fee2e2';
-                                    $estadoTextColor = $equipo->estado_operativo ? '#065f46' : '#991b1b';
-                                    $estado = $equipo->estado_operativo ? 'Operativo' : 'Inoperativo';
-                                @endphp
-                                <span class="badge" style="background: {{ $estadoColor }}; color: {{ $estadoTextColor }};">
-                                    {{ $estado }}
-                                </span>
+                            <td class="px-4 py-3">{{ $equipo->tipo->nombre ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $equipo->ubicacion ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $equipo->numero_serie ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $equipo->area->sede->nombre ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">
+                                <x-badge :variant="$equipo->estado_operativo ? 'green' : 'red'">
+                                    {{ $equipo->estado_operativo ? 'Operativo' : 'Inoperativo' }}
+                                </x-badge>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        </x-card>
 
         @section('scripts')
             <script>

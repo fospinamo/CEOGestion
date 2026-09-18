@@ -185,7 +185,7 @@
                     </tr>
                     <tr>
                         <td class="label">Código Equipo:</td>
-                        <td class="value">{{ $servicio->equipo->codigo_interno }}</td>
+                        <td class="value">{{ $servicio->equipo->codigo_activo_cliente }}</td>
                         <td class="label">Tipo:</td>
                         <td class="value">{{ $servicio->equipo->tipo->nombre }}</td>
                     </tr>

@@ -319,100 +319,40 @@
         <div class="section-title">DESCRIPCION DEL SERVICIO SOLICITADO</div>
         <div class="box">{{ $servicio->descripcion_solicitud ?? $servicio->descripcion_problema ?? 'N/A' }}</div>
 
-        <div class="section-title">DIAGNOSTICO / VALIDACION DEL SERVICIO SOLICITADO</div>
+        <div class="section-title">DIAGNOSTICO / VALIDACION / LABOR REALIZADA</div>
         <div class="box">{{ $servicio->diagnostico_validacion ?? $servicio->diagnostico ?? 'N/A' }}</div>
-
-        <div class="section-title">LABOR REALIZADA</div>
-        <div class="box">{{ $servicio->descripcion_atencion ?? 'N/A' }}</div>
 
         <div class="section-title">OBSERVACIONES DEL INFORME</div>
         <div class="box small">{{ $servicio->observaciones_informe ?? '' }}</div>
 
-        <table class="table">
-            <tr>
-                <td style="width: 25%"><span class="label">FUNCIONALIDAD APROBADA</span></td>
-                <td style="width: 25%" class="value">
-                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> SI
-                </td>
-                <td style="width: 25%" class="value">
-                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 1 && ($servicio->calificacion_cliente ?? 0) < 4 ? 'checked' : '' }}"></span> NO
-                </td>
-                <td style="width: 25%" class="value">
-                    <span class="radio {{ ($servicio->calificacion_cliente ?? 0) === 0 ? 'checked' : '' }}"></span> N/A
-                </td>
-            </tr>
-        </table>
+        @php
+            $repuestosList = $servicio->repuestos->load('marca');
+        @endphp
 
+        @if($repuestosList->isNotEmpty())
         <table class="table">
-            <tr>
-                <th colspan="6">COMPLEMENTOS / REPUESTOS</th>
-                <th colspan="4">FACTURAR</th>
-            </tr>
             <tr>
                 <th style="width: 10%">CODIGO</th>
                 <th style="width: 28%">DESCRIPCION</th>
-                <th style="width: 12%">SERIE</th>
-                <th style="width: 10%">CANTIDAD</th>
-                <th style="width: 10%">CODIGO</th>
-                <th style="width: 20%">DESCRIPCION</th>
-                <th style="width: 5%">SI</th>
-                <th style="width: 5%">NO</th>
-                <th style="width: 5%">SERIE</th>
-                <th style="width: 5%">CANTIDAD</th>
+                <th style="width: 14%">MARCA</th>
+                <th style="width: 14%">MODELO</th>
+                <th style="width: 14%">SERIE</th>
+                <th style="width: 8%">CANT.</th>
+                <th style="width: 12%">FACTURAR</th>
             </tr>
-            @php
-                $repuestos = is_array($servicio->repuestos_utilizados ?? null) ? $servicio->repuestos_utilizados : [];
-                $maxRows = 4;
-            @endphp
-            @for($i = 0; $i < $maxRows; $i++)
-                @php
-                    $row = $repuestos[$i] ?? null;
-                @endphp
+            @foreach($repuestosList as $rep)
                 <tr>
-                    <td class="value">{{ $row['codigo'] ?? '' }}</td>
-                    <td class="value">{{ $row['descripcion'] ?? '' }}</td>
-                    <td class="value">{{ $row['serie'] ?? '' }}</td>
-                    <td class="value">{{ $row['cantidad'] ?? '' }}</td>
-                    <td class="value"></td>
-                    <td class="value"></td>
-                    <td class="value"></td>
-                    <td class="value"></td>
-                    <td class="value"></td>
-                    <td class="value"></td>
+                    <td class="value">{{ $rep->codigo ?? '' }}</td>
+                    <td class="value">{{ $rep->descripcion ?? '' }}</td>
+                    <td class="value">{{ optional($rep)->marca->nombre ?? '' }}</td>
+                    <td class="value">{{ $rep->modelo ?? '' }}</td>
+                    <td class="value">{{ $rep->serial ?? '' }}</td>
+                    <td class="value" style="text-align: center;">{{ $rep->cantidad ?? '' }}</td>
+                    <td class="value" style="text-align: center;">{{ optional($rep)->facturable ? 'SI' : 'NO' }}</td>
                 </tr>
-            @endfor
+            @endforeach
         </table>
-
-        <div class="section-title">ESPACIO PARA USO EXCLUSIVO DEL CLIENTE</div>
-        <table class="table">
-            <tr>
-                <td style="width: 60%">
-                    <span class="label">CONSIDERA UD QUE ESTE SERVICIO TECNICO FUE CERRADO SATISFACTORIAMENTE?</span>
-                    <div style="margin-top: 6px;">
-                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> SI
-                        <span style="margin-left: 16px;"></span>
-                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) > 0 && ($servicio->calificacion_cliente ?? 0) < 4 ? 'checked' : '' }}"></span> NO
-                        <span style="font-size: 8px; margin-left: 6px;">(Amplie la respuesta en comentarios y/o sugerencias)</span>
-                    </div>
-                </td>
-                <td style="width: 40%">
-                    <span class="label">CALIFIQUE EL SERVICIO PRESTADO</span>
-                    <div style="margin-top: 6px;">
-                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) >= 4 ? 'checked' : '' }}"></span> BUENO
-                        <span style="margin-left: 10px;"></span>
-                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) === 3 ? 'checked' : '' }}"></span> REGULAR
-                        <span style="margin-left: 10px;"></span>
-                        <span class="radio {{ ($servicio->calificacion_cliente ?? 0) > 0 && ($servicio->calificacion_cliente ?? 0) <= 2 ? 'checked' : '' }}"></span> MALO
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <span class="label">COMENTARIOS Y/O SUGERENCIAS:</span>
-                    <div class="box small">{{ $servicio->comentarios_cliente ?? '' }}</div>
-                </td>
-            </tr>
-        </table>
+        @endif
 
         <table class="table">
             <tr>
@@ -436,8 +376,8 @@
                 <td style="width: 30%">
                     <span class="label">TECNICO RESPONSABLE</span>
                     <div class="signature">
-                        <div>{{ $servicio->tecnicoResponsable->name ?? 'Tecnico' }}</div>
-                        <div class="muted">{{ $servicio->tecnicoResponsable->email ?? '' }}</div>
+                        <div>{{ $servicio->tecnico->name ?? 'Tecnico' }}</div>
+                        <div class="muted">{{ $servicio->tecnico->email ?? '' }}</div>
                     </div>
                 </td>
             </tr>

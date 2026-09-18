@@ -31,7 +31,6 @@ $user = \App\Models\User::updateOrCreate(
         'name' => 'Administrador',
         'password' => bcrypt('password123'),
         'tipo_rol' => 'admin',
-        'email_verified_at' => now(),
     ]
 );
 
