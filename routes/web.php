@@ -87,11 +87,8 @@ Route::middleware(['auth.token:cliente'])->group(function () {
     
     Route::get('/portal/cliente/servicios/{servicio}/descargar', 'App\Http\Controllers\PortalClienteController@descargarAtencion')
         ->name('portal.servicios.descargar');
-});
+    });
 
-// Acceso inicial al portal con token
-Route::get('/portal/acceso/{token}', 'App\Http\Controllers\PortalClienteController@verificarToken')
-    ->name('portal.acceso');
 
 // =======================================
 // RUTAS AUTENTICADAS
@@ -232,6 +229,35 @@ Route::middleware(['auth'])->group(function () {
         }
     });
 
+    // API: Preview del siguiente código de activo para un cliente
+    Route::get('/api/siguiente-codigo-activo', function () {
+        try {
+            $cliente_id = request()->query('cliente_id');
+
+            if (!$cliente_id || !is_numeric($cliente_id)) {
+                return response()->json(['codigo' => null, 'error' => 'cliente_id requerido'], 200);
+            }
+
+            $cliente = \App\Models\Cliente::find((int) $cliente_id);
+
+            if (!$cliente || empty($cliente->prefijo)) {
+                return response()->json(['codigo' => null, 'error' => 'El cliente no tiene prefijo asignado'], 200);
+            }
+
+            $codigo = \App\Models\Equipo::generarCodigoActivoCliente((int) $cliente_id);
+
+            return response()->json(['codigo' => $codigo], 200);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('API siguiente-codigo-activo error', [
+                'cliente_id' => request()->query('cliente_id'),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+            return response()->json(['codigo' => null, 'error' => $e->getMessage()], 200);
+        }
+    });
+
     /**
      * NOTA: Las rutas de recursos están organizadas por módulos:
      * 
@@ -268,3 +294,6 @@ require __DIR__ . '/administrativo.php';
 
 // Módulo Incidencias - Servicios técnicos
 require __DIR__ . '/incidencias.php';
+
+// Módulo Documentación - Digitalizaciones, Documentos, Radicaciones
+require __DIR__ . '/documentacion.php';
