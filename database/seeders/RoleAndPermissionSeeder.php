@@ -191,6 +191,14 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'radicaciones.eliminar', 'module' => 'Documentación', 'resource' => 'radicaciones', 'action' => 'eliminar', 'description' => 'Eliminar radicación'],
         ];
 
+        // MÓDULO COTIZACIONES
+        $cotizacionPermissions = [
+            ['name' => 'cotizaciones.ver', 'module' => 'Cotizaciones', 'resource' => 'cotizaciones', 'action' => 'ver', 'description' => 'Ver cotizaciones'],
+            ['name' => 'cotizaciones.crear', 'module' => 'Cotizaciones', 'resource' => 'cotizaciones', 'action' => 'crear', 'description' => 'Crear cotización'],
+            ['name' => 'cotizaciones.editar', 'module' => 'Cotizaciones', 'resource' => 'cotizaciones', 'action' => 'editar', 'description' => 'Editar cotización'],
+            ['name' => 'cotizaciones.eliminar', 'module' => 'Cotizaciones', 'resource' => 'cotizaciones', 'action' => 'eliminar', 'description' => 'Eliminar cotización'],
+        ];
+
         $allPermissions = array_merge(
             $securityPermissions,
             $adminPermissions,
@@ -198,7 +206,8 @@ class RoleAndPermissionSeeder extends Seeder
             $paramPermissions,
             $paramExtraPermissions,
             $incidenciaPermissions,
-            $docPermissions
+            $docPermissions,
+            $cotizacionPermissions
         );
 
         $permissionMap = [];

@@ -285,6 +285,35 @@
                     </div>
                 </div>
 
+                {{-- Cotizaciones --}}
+                <div class="space-y-1">
+                    <button type="button" @click="toggle('cotizaciones')" class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+                        <span class="flex items-center gap-3 font-semibold">
+                            <span>📚</span>
+                            <span>Cotizaciones</span>
+                        </span>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="sections.cotizaciones ? 'rotate-180' : ''"></i>
+                    </button>
+
+                        {{-- Submenú --}}
+                            <div x-show="sections.cotizaciones" x-transition class="ml-6 space-y-1">
+                                <a href="{{ route('cotizaciones.index') }}"
+                                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition {{ request()->routeIs('cotizaciones.index') ? 'bg-blue-700 font-semibold' : '' }}">
+                                    <i class="fas fa-list text-xs"></i>
+                                    <span>Listado</span>
+                                </a>
+
+                                <a href="{{ route('cotizaciones.create') }}"
+                                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition {{ request()->routeIs('cotizaciones.create') ? 'bg-blue-700 font-semibold' : '' }}">
+                                    <i class="fas fa-plus text-xs"></i>
+                                    <span>Nueva Cotización</span>
+                                </a>
+                            </div>
+                   
+                </div>
+
+
+
                 {{-- Configuración --}}
                 @if(auth()->check() && auth()->user()->hasRole('admin'))
                     <div class="space-y-1">
@@ -400,7 +429,8 @@
                     ubicacion: {{ request()->routeIs('administrativo.paises.*') || request()->routeIs('administrativo.departamentos.*') || request()->routeIs('administrativo.municipios.*') ? 'true' : 'false' }},
                     incidencias: {{ request()->routeIs('incidencias.servicios.*') ? 'true' : 'false' }},
                     configuracion: {{ request()->routeIs('seguridad.usuarios.*') || request()->routeIs('seguridad.roles.*') || request()->routeIs('seguridad.permissions.*') ? 'true' : 'false' }},
-                    documentacion: {{ request()->routeIs('documentacion.*') ? 'true' : 'false' }}
+                    documentacion: {{ request()->routeIs('documentacion.*') ? 'true' : 'false' }},
+                    cotizaciones: {{ request()->routeIs('cotizaciones.*') ? 'true' : 'false' }}
                 },
                 init() {
                     try {

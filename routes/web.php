@@ -297,3 +297,6 @@ require __DIR__ . '/incidencias.php';
 
 // Módulo Documentación - Digitalizaciones, Documentos, Radicaciones
 require __DIR__ . '/documentacion.php';
+
+// Módulo Cotizaciones
+require __DIR__ . '/cotizaciones.php';

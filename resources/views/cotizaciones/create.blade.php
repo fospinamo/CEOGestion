@@ -1,0 +1,1 @@
+@extends('cotizaciones.form')
